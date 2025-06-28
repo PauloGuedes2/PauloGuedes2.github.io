@@ -1,1 +1,15 @@
-remote_theme: "jekyll/minima@1e8a445"
+title: Seu Título Aqui
+description: Uma breve descrição do seu site
+baseurl: ""
+url: "https://pauloguedes2.github.io"
+
+theme: minima
+
+plugins:
+  - jekyll-feed
+
+
+author:
+  name: Paulo Guedes
+
+markdown: kramdown

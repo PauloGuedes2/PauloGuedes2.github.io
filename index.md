@@ -1,4 +1,7 @@
-# Bem-vindo ao meu Blog 🚀
+---
+layout: home
+title: Bem-vindo ao meu site!
+---
 
-Aqui compartilho tutoriais, dicas de programação e produtividade para devs.
+Olá! Aqui você encontrará meus artigos e projetos.
 
