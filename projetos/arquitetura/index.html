@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Salsi — Architecture Review Workspace</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<link rel="icon" href="logo.png">
+<link rel="apple-touch-icon" href="logo.png">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#FFFCF8">
+
+<script type="module" src="https://cdnjs.cloudflare.com/ajax/libs/model-viewer/4.1.0/model-viewer.min.js"></script>
+
+<style>
+  :root{
+    --canvas: #FFFCF8;
+    --surface-2: #FFFFFF;
+    --surface-2-border: #E9DED3;
+    --linen: #F3ECE4;
+    --ink: #2C2A28;
+    --ink-dim: #8A847D;
+    --grad-a: #C78A61;
+    --grad-b: #A96B46;
+    --danger: #C75D4C;
+    --stage-bg: #FFFFFF;
+    --radius: 28px;
+  }
+  :root[data-theme="dark"]{
+    --canvas: #211D1A;
+    --surface-2: #2A241F;
+    --surface-2-border: #3A322B;
+    --linen: #2A241F;
+    --ink: #F3ECE4;
+    --ink-dim: #B5A99B;
+  }
+
+  *{ box-sizing: border-box; }
+
+  body{
+    margin: 0;
+    min-height: 100vh;
+    background: var(--canvas);
+    color: var(--ink);
+    font-family: 'Inter', sans-serif;
+    transition: background-color .25s, color .25s;
+  }
+
+  .shell{
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-template-areas: "main" "sidebar";
+    min-height: 100vh;
+  }
+  @media (min-width: 860px){
+    .shell{ grid-template-columns: 280px 1fr; grid-template-areas: "sidebar main"; align-items: start; }
+  }
+
+  /* ---- barra lateral ---- */
+  .sidebar{
+    grid-area: sidebar;
+    background: var(--surface-2);
+    border-bottom: 1px solid var(--surface-2-border);
+    padding: 22px 20px 28px;
+  }
+  @media (min-width: 860px){
+    .sidebar{ border-bottom: none; border-right: 1px solid var(--surface-2-border); min-height: 100vh; position: sticky; top: 0; }
+  }
+  .logo{ display: flex; gap: 14px; align-items: center; margin-bottom: 26px; }
+  .logo img{ width: 50px; height: 50px; border-radius: 50%; object-fit: cover; border: 1px solid var(--surface-2-border); }
+  .logo h1{ font-family: 'Fraunces', serif; font-size: 24px; font-weight: 600; margin: 0; color: var(--ink); }
+  .logo small{ font-size: 11px; color: var(--ink-dim); }
+
+  .topbar-actions{ display: flex; gap: 8px; margin-bottom: 22px; }
+  .icon-btn{
+    width: 34px; height: 34px;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 50%;
+    border: 1px solid var(--surface-2-border);
+    background: var(--canvas);
+    color: var(--ink);
+    cursor: pointer;
+  }
+  .icon-btn svg{ width: 16px; height: 16px; }
+  .icon-btn:hover{ border-color: var(--grad-b); }
+
+  .nav h4{
+    font-size: 11px; letter-spacing: .14em; text-transform: uppercase;
+    color: var(--ink-dim); margin: 22px 0 10px; font-weight: 600;
+  }
+  .nav h4:first-child{ margin-top: 0; }
+  .pill-row{ display: flex; flex-wrap: wrap; gap: 7px; }
+
+  .pill{
+    display: inline-flex; align-items: center; gap: 7px;
+    font-family: 'Inter', sans-serif;
+    font-size: 12.5px; font-weight: 500;
+    color: var(--ink);
+    background: transparent;
+    border: 1px solid var(--surface-2-border);
+    border-radius: 999px;
+    padding: 8px 13px 8px 10px;
+    cursor: pointer;
+    transition: border-color .15s, background .15s, color .15s, transform .1s;
+  }
+  .pill svg{ width: 14px; height: 14px; flex-shrink: 0; }
+  .pill:hover{ border-color: var(--grad-b); background: var(--linen); }
+  .pill:active{ transform: scale(.96); }
+  .pill.active{
+    border-color: transparent;
+    background: linear-gradient(135deg, var(--grad-a), var(--grad-b));
+    color: #fff;
+  }
+  .pill.danger:hover{ border-color: var(--danger); color: var(--danger); background: transparent; }
+  .pill.hidden{ display: none; }
+  .pill.primary{ border-color: transparent; background: linear-gradient(135deg, var(--grad-a), var(--grad-b)); color: #fff; }
+
+  .swatch{ width: 28px; height: 28px; border-radius: 50%; border: 2px solid var(--surface-2-border); cursor: pointer; padding: 0; }
+  .swatch.active{ border-color: var(--grad-b); }
+  input[type=color].swatch{ overflow: hidden; }
+  input[type=file]{ display: none; }
+
+  /* ---- área principal ---- */
+  .main{ grid-area: main; padding: 28px clamp(16px, 4vw, 40px) 50px; }
+  .hero{ display: flex; flex-wrap: wrap; justify-content: space-between; align-items: end; gap: 16px; margin-bottom: 22px; }
+  .hero h2{ font-family: 'Fraunces', serif; font-size: clamp(26px, 4vw, 40px); font-weight: 600; margin: 0 0 6px; }
+  .hero p{ color: var(--ink-dim); margin: 0; font-size: 14px; }
+
+  .meta-row{ display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 18px; }
+  .chip{
+    font-size: 12px; font-weight: 500;
+    color: var(--ink-dim);
+    background: var(--surface-2);
+    border: 1px solid var(--surface-2-border);
+    border-radius: 999px;
+    padding: 6px 13px;
+    display: flex; gap: 6px; align-items: center;
+    font-variant-numeric: tabular-nums;
+  }
+  .chip b{ color: var(--ink); font-weight: 600; }
+
+  /* ---- palco (viewer) ---- */
+  .stage{
+    position: relative;
+    border-radius: var(--radius);
+    background: linear-gradient(180deg, #fff, var(--linen));
+    border: 1px solid var(--surface-2-border);
+    overflow: hidden;
+    box-shadow: 0 30px 80px rgba(60,40,20,.08);
+  }
+  .stage::before{
+    content: ""; position: absolute; inset: 0; z-index: 0;
+    background-image:
+      linear-gradient(rgba(199,138,97,.07) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(199,138,97,.07) 1px, transparent 1px);
+    background-size: 36px 36px;
+  }
+  model-viewer{ width: 100%; height: 52vh; min-height: 340px; display: block; position: relative; z-index: 1; --poster-color: transparent; }
+
+  .progress-wrap{
+    position: absolute; top: 12px; left: 12px; right: 12px;
+    height: 4px; border-radius: 999px; background: rgba(0,0,0,.06); overflow: hidden; z-index: 3;
+  }
+  .progress-wrap.hidden{ display: none; }
+  .progress-bar{ height: 100%; width: 0%; background: linear-gradient(90deg, var(--grad-a), var(--grad-b)); transition: width .15s linear; }
+
+  .empty-state{
+    position: absolute; inset: 0; z-index: 2;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    text-align: center; padding: 32px; gap: 14px; color: var(--ink);
+  }
+  .empty-state.hidden{ display: none; }
+  .empty-state img{ width: 84px; height: 84px; border-radius: 50%; animation: float 6s ease-in-out infinite; border: 1px solid var(--surface-2-border); }
+  .empty-state strong{ font-family: 'Fraunces', serif; font-size: 18px; font-weight: 600; }
+  .empty-state span{ font-size: 13px; color: var(--ink-dim); max-width: 380px; }
+  @keyframes float{ 50%{ transform: translateY(-10px); } }
+
+  .hotspot-pin{
+    width: 24px; height: 24px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--grad-a), var(--grad-b));
+    color: #fff; border: 2px solid #fff;
+    font-size: 11px; font-weight: 600;
+    display: flex; align-items: center; justify-content: center;
+    cursor: default; box-shadow: 0 2px 8px rgba(60,40,20,.35);
+  }
+
+  /* ---- cartão de notas (rodapé) ---- */
+  .card{
+    background: var(--surface-2); border: 1px solid var(--surface-2-border);
+    border-radius: 22px; padding: 22px; margin-top: 20px;
+    font-size: 12.5px; line-height: 1.65; color: var(--ink-dim);
+  }
+  .card strong{ color: var(--ink); }
+  .card h3{ font-family: 'Fraunces', serif; font-size: 16px; margin: 0 0 10px; color: var(--ink); font-weight: 600; }
+  .card code{ font-family: 'Inter', sans-serif; font-weight: 600; background: var(--linen); padding: 2px 6px; border-radius: 5px; color: var(--ink); }
+  .card ul{ margin: 6px 0 0; padding-left: 18px; }
+
+  /* ---- overlay de atalhos ---- */
+  .overlay{ position: fixed; inset: 0; background: rgba(44,42,40,.45); display: flex; align-items: center; justify-content: center; padding: 20px; z-index: 50; }
+  .overlay.hidden{ display: none; }
+  .overlay-card{ background: var(--surface-2); border: 1px solid var(--surface-2-border); border-radius: 22px; padding: 22px; max-width: 360px; width: 100%; color: var(--ink); }
+  .overlay-card h2{ font-family: 'Fraunces', serif; font-size: 17px; font-weight: 600; margin: 0 0 14px; display: flex; justify-content: space-between; align-items: center; }
+  .overlay-card .close{ cursor: pointer; opacity: .6; }
+  .shortcut-row{ display: flex; justify-content: space-between; font-size: 13px; padding: 7px 0; border-bottom: 1px solid var(--surface-2-border); }
+  .shortcut-row kbd{ font-family: 'Inter', sans-serif; font-weight: 600; background: var(--linen); color: var(--ink); border-radius: 6px; padding: 2px 8px; font-size: 11.5px; }
+
+  @media (prefers-reduced-motion: reduce){ * { transition: none !important; animation: none !important; } }
+</style>
+</head>
+<body>
+
+<!-- ================= sprite de ícones ================= -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+<defs>
+<symbol id="i-cube" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M12 2L20 6.5V17.5L12 22L4 17.5V6.5L12 2Z"/><path d="M12 12V22"/><path d="M12 12L20 6.5"/><path d="M12 12L4 6.5"/>
+</symbol>
+<symbol id="i-orbit" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round">
+  <ellipse cx="12" cy="12" rx="9" ry="5"/><circle cx="12" cy="12" r="1.6" fill="currentColor" stroke="none"/>
+</symbol>
+<symbol id="i-zoom-in" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round">
+  <circle cx="10" cy="10" r="6"/><line x1="14.5" y1="14.5" x2="20" y2="20"/><line x1="10" y1="7" x2="10" y2="13"/><line x1="7" y1="10" x2="13" y2="10"/>
+</symbol>
+<symbol id="i-zoom-out" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round">
+  <circle cx="10" cy="10" r="6"/><line x1="14.5" y1="14.5" x2="20" y2="20"/><line x1="7" y1="10" x2="13" y2="10"/>
+</symbol>
+<symbol id="i-fullscreen" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M4 9V4h5"/><path d="M15 4h5v5"/><path d="M20 15v5h-5"/><path d="M9 20H4v-5"/>
+</symbol>
+<symbol id="i-pin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M12 21s7-7.5 7-12a7 7 0 1 0-14 0c0 4.5 7 12 7 12z"/><circle cx="12" cy="9" r="2.3"/>
+</symbol>
+<symbol id="i-eraser" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M5 7h14"/><path d="M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/><path d="M7 7l1 13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1l1-13"/>
+</symbol>
+<symbol id="i-camera" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+  <rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7l1.5-2.5h5L16 7"/><circle cx="12" cy="13.5" r="3.5"/>
+</symbol>
+<symbol id="i-play" viewBox="0 0 24 24"><path d="M7 5l12 7-12 7V5z" fill="currentColor"/></symbol>
+<symbol id="i-pause" viewBox="0 0 24 24"><rect x="6" y="5" width="4" height="14" rx="1" fill="currentColor"/><rect x="14" y="5" width="4" height="14" rx="1" fill="currentColor"/></symbol>
+<symbol id="i-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round">
+  <circle cx="12" cy="12" r="4.2"/><line x1="12" y1="2" x2="12" y2="5"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="2" y1="12" x2="5" y2="12"/><line x1="19" y1="12" x2="22" y2="12"/>
+</symbol>
+<symbol id="i-moon" viewBox="0 0 24 24"><path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a7 7 0 0 0 10.5 10.5z" fill="currentColor"/></symbol>
+<symbol id="i-bulb" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M9 18h6"/><path d="M10 21h4"/><path d="M12 3a6 6 0 0 0-3.6 10.8c.4.3.6.8.6 1.2v.5h6v-.5c0-.4.2-.9.6-1.2A6 6 0 0 0 12 3z"/>
+</symbol>
+<symbol id="i-link" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M9 15l6-6"/><path d="M13 5h4a4 4 0 0 1 0 8h-2"/><path d="M11 19H7a4 4 0 0 1 0-8h2"/>
+</symbol>
+<symbol id="i-upload" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M12 16V4"/><path d="M7 9l5-5 5 5"/><path d="M4 18v2a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-2"/>
+</symbol>
+<symbol id="i-target" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round">
+  <circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="1.4" fill="currentColor" stroke="none"/><line x1="12" y1="2" x2="12" y2="5"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="2" y1="12" x2="5" y2="12"/><line x1="19" y1="12" x2="22" y2="12"/>
+</symbol>
+<symbol id="i-close" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+  <line x1="6" y1="6" x2="18" y2="18"/><line x1="18" y1="6" x2="6" y2="18"/>
+</symbol>
+</defs>
+</svg>
+
+<div class="shell">
+
+  <aside class="sidebar">
+    <div class="logo">
+      <img src="logo.png" alt="Salsi">
+      <div><h1>Salsi</h1><small>Architecture Review Workspace</small></div>
+    </div>
+    <div class="topbar-actions">
+      <button class="icon-btn" id="themeBtn" title="Alternar tema"><svg><use href="#i-sun"/></svg></button>
+      <button class="icon-btn" id="helpBtn" title="Atalhos de teclado">?</button>
+    </div>
+
+    <nav class="nav">
+      <h4>Vistas</h4>
+      <div class="pill-row">
+        <button class="pill viewbtn" data-orbit="0deg 90deg auto">Frente</button>
+        <button class="pill viewbtn" data-orbit="180deg 90deg auto">Trás</button>
+        <button class="pill viewbtn" data-orbit="90deg 90deg auto">Direita</button>
+        <button class="pill viewbtn" data-orbit="-90deg 90deg auto">Esquerda</button>
+        <button class="pill viewbtn" data-orbit="0deg 0.1deg auto">Topo</button>
+        <button class="pill viewbtn" data-orbit="0deg 179.9deg auto">Base</button>
+        <button class="pill viewbtn" data-orbit="45deg 55deg auto"><svg><use href="#i-cube"/></svg>Isométrica</button>
+        <button class="pill" id="resetViewBtn"><svg><use href="#i-target"/></svg>Recentrar</button>
+      </div>
+
+      <h4>Câmera &amp; interação</h4>
+      <div class="pill-row">
+        <button class="pill" id="toggleRotate"><svg><use href="#i-orbit"/></svg>Girar</button>
+        <button class="pill" id="zoomInBtn"><svg><use href="#i-zoom-in"/></svg>Zoom +</button>
+        <button class="pill" id="zoomOutBtn"><svg><use href="#i-zoom-out"/></svg>Zoom −</button>
+        <button class="pill" id="fullscreenBtn"><svg><use href="#i-fullscreen"/></svg>Tela cheia</button>
+        <button class="pill" id="annotateBtn"><svg><use href="#i-pin"/></svg>Marcar / medir</button>
+        <button class="pill danger" id="clearAnnotationsBtn"><svg><use href="#i-eraser"/></svg>Limpar</button>
+      </div>
+
+      <h4>Capturar &amp; compartilhar</h4>
+      <div class="pill-row">
+        <button class="pill primary" id="captureBtn"><svg><use href="#i-camera"/></svg>Capturar imagem</button>
+        <button class="pill" id="shareBtn"><svg><use href="#i-link"/></svg>Compartilhar vista</button>
+        <button class="pill hidden" id="animBtn"><svg><use href="#i-play"/></svg>Animação</button>
+      </div>
+
+      <h4>Cena</h4>
+      <div class="pill-row">
+        <button class="swatch active" id="swBranco" style="background:#FFFFFF" title="Fundo branco"></button>
+        <button class="swatch" id="swCinza" style="background:#E4DCD2" title="Fundo cinza"></button>
+        <button class="swatch" id="swEscuro" style="background:#211D1A" title="Fundo escuro"></button>
+        <input type="color" class="swatch" id="swCustom" value="#ffffff" title="Cor personalizada">
+        <button class="pill" id="toggleLight"><svg><use href="#i-bulb"/></svg>Iluminação: neutra</button>
+      </div>
+
+      <h4>Arquivo</h4>
+      <div class="pill-row">
+        <label class="pill" for="fileInput"><svg><use href="#i-upload"/></svg>Carregar .glb/.gltf</label>
+        <input type="file" id="fileInput" accept=".glb,.gltf">
+      </div>
+    </nav>
+  </aside>
+
+  <main class="main">
+    <div class="hero">
+      <div>
+        <h2>Projetos, revisões e detalhes.</h2>
+        <p>Um espaço elegante para explorar arquitetura em 3D — direto do navegador.</p>
+      </div>
+    </div>
+
+    <div class="meta-row">
+      <span class="chip">Arquivo: <b id="filename">modelo.glb</b></span>
+      <span class="chip">Dimensões: <b id="dims">—</b></span>
+      <span class="chip">Medida: <b id="lastMeasure">—</b></span>
+    </div>
+
+    <div class="stage">
+      <div class="progress-wrap hidden" id="progressWrap"><div class="progress-bar" id="progressBar"></div></div>
+
+      <model-viewer
+        id="viewer"
+        src="modelo.glb"
+        alt="Modelo 3D"
+        camera-controls
+        touch-action="pan-y"
+        shadow-intensity="1"
+        exposure="1"
+        environment-image="neutral"
+        min-camera-orbit="auto 0deg auto"
+        max-camera-orbit="auto 180deg auto"
+        ar
+        ar-modes="scene-viewer webxr quick-look"
+      ></model-viewer>
+
+      <div class="empty-state" id="emptyState">
+        <img src="logo.png" alt="Salsi">
+        <strong>Arraste seu modelo para a prancheta</strong>
+        <span>Coloque um arquivo <code>modelo.glb</code> na mesma pasta deste HTML, ou carregue um localmente no menu à esquerda. Aceita .glb · .gltf</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Sobre este visualizador</h3>
+      Lê arquivos <strong>.glb</strong> (ou .gltf), não o formato nativo <strong>.skp</strong>.
+      Exporte do SketchUp em <em>File → Export → 3D Model → glTF (.glb)</em> e carregue o arquivo <code>modelo.glb</code>.
+      <ul>
+        <li><strong>Marcar / medir</strong>: toque em dois pontos seguidos pra ver a distância entre eles (em metros); toque em só um pra apenas marcar.</li>
+        <li><strong>Capturar imagem</strong> desenha as marcações na própria imagem exportada e tenta abrir o menu de compartilhar do Android (com fallback pra baixar o PNG).</li>
+        <li><strong>Compartilhar vista</strong> manda um link com a câmera atual — quem abrir, vê a mesma vista.</li>
+        <li>Depois da primeira visita com internet, a página funciona <strong>offline</strong> e pode ser instalada na tela inicial do Android.</li>
+        <li><strong>AR</strong> aparece automaticamente em Android compatíveis; no iPhone exige um arquivo <code>.usdz</code> adicional, que esta versão não gera.</li>
+      </ul>
+    </div>
+  </main>
+
+</div>
+
+<div class="overlay hidden" id="shortcutsOverlay">
+  <div class="overlay-card">
+    <h2>Atalhos de teclado <span class="close" id="closeShortcuts"><svg width="18" height="18"><use href="#i-close"/></svg></span></h2>
+    <div class="shortcut-row"><span>Vistas (frente…iso)</span><kbd>1–7</kbd></div>
+    <div class="shortcut-row"><span>Recentrar vista</span><kbd>R</kbd></div>
+    <div class="shortcut-row"><span>Girar automaticamente</span><kbd>Espaço</kbd></div>
+    <div class="shortcut-row"><span>Marcar / medir ponto</span><kbd>A</kbd></div>
+    <div class="shortcut-row"><span>Capturar imagem</span><kbd>C</kbd></div>
+    <div class="shortcut-row"><span>Tela cheia</span><kbd>F</kbd></div>
+    <div class="shortcut-row"><span>Tema da interface</span><kbd>T</kbd></div>
+    <div class="shortcut-row" style="border-bottom:none"><span>Esta janela</span><kbd>?</kbd></div>
+  </div>
+</div>
+
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('/sw.js').catch(() => { /* offline indisponível, segue normal */ });
+    });
+  }
+
+  const viewer = document.getElementById('viewer');
+  const emptyState = document.getElementById('emptyState');
+  const filenameEl = document.getElementById('filename');
+  const dimsEl = document.getElementById('dims');
+  const lastMeasureEl = document.getElementById('lastMeasure');
+  const progressWrap = document.getElementById('progressWrap');
+  const progressBar = document.getElementById('progressBar');
+  const animBtn = document.getElementById('animBtn');
+  const stageEl = document.querySelector('.stage');
+
+  let hotspotCount = 0;
+  let annotateMode = false;
+  let downPoint = null;
+  let legacyLight = false;
+  let pendingPoint = null;
+
+  function clearHotspots(){
+    viewer.querySelectorAll('.hotspot-pin').forEach(el => el.remove());
+    hotspotCount = 0;
+    pendingPoint = null;
+    lastMeasureEl.textContent = '—';
+  }
+
+  function applyShareHashIfPresent(){
+    if (!location.hash) return;
+    try {
+      const params = new URLSearchParams(location.hash.slice(1));
+      const o = params.get('o'), t = params.get('t'), f = params.get('f');
+      if (o) { const [th, ph, r] = o.split(',').map(Number); viewer.cameraOrbit = `${th}rad ${ph}rad ${r}m`; }
+      if (t) { const [x, y, z] = t.split(',').map(Number); viewer.cameraTarget = `${x}m ${y}m ${z}m`; }
+      if (f) { viewer.fieldOfView = `${Number(f)}deg`; }
+      viewer.jumpCameraToGoal();
+    } catch (e) { /* hash inválido, ignora */ }
+  }
+
+  // --- carregamento ---
+  viewer.addEventListener('progress', (e) => {
+    const pct = Math.round((e.detail.totalProgress || 0) * 100);
+    progressWrap.classList.remove('hidden');
+    progressBar.style.width = pct + '%';
+    if (pct >= 100) progressWrap.classList.add('hidden');
+  });
+
+  viewer.addEventListener('error', () => {
+    emptyState.classList.remove('hidden');
+    progressWrap.classList.add('hidden');
+    dimsEl.textContent = '—';
+  });
+
+  viewer.addEventListener('load', () => {
+    emptyState.classList.add('hidden');
+    progressWrap.classList.add('hidden');
+    try {
+      const d = viewer.getDimensions();
+      dimsEl.textContent = `${d.x.toFixed(2)} × ${d.y.toFixed(2)} × ${d.z.toFixed(2)} m`;
+    } catch (e) { dimsEl.textContent = '—'; }
+    const hasAnim = !!(viewer.availableAnimations && viewer.availableAnimations.length > 0);
+    animBtn.classList.toggle('hidden', !hasAnim);
+    applyShareHashIfPresent();
+  });
+
+  // --- vistas ---
+  document.querySelectorAll('.viewbtn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      viewer.cameraOrbit = btn.dataset.orbit;
+      viewer.jumpCameraToGoal();
+    });
+  });
+  document.getElementById('resetViewBtn').addEventListener('click', () => {
+    viewer.cameraOrbit = 'auto auto auto';
+    viewer.cameraTarget = 'auto auto auto';
+    viewer.fieldOfView = 'auto';
+    viewer.jumpCameraToGoal();
+  });
+
+  // --- girar automaticamente ---
+  function toggleRotate(){
+    const on = viewer.hasAttribute('auto-rotate');
+    viewer.toggleAttribute('auto-rotate', !on);
+    document.getElementById('toggleRotate').classList.toggle('active', !on);
+  }
+  document.getElementById('toggleRotate').addEventListener('click', toggleRotate);
+
+  // --- zoom ---
+  document.getElementById('zoomInBtn').addEventListener('click', () => viewer.zoom(1));
+  document.getElementById('zoomOutBtn').addEventListener('click', () => viewer.zoom(-1));
+
+  // --- tela cheia ---
+  function goFullscreen(){
+    if (viewer.requestFullscreen) viewer.requestFullscreen();
+    else if (viewer.webkitRequestFullscreen) viewer.webkitRequestFullscreen();
+  }
+  document.getElementById('fullscreenBtn').addEventListener('click', goFullscreen);
+
+  // --- tema da interface ---
+  function toggleTheme(){
+    const isLight = document.documentElement.dataset.theme === 'light';
+    document.documentElement.dataset.theme = isLight ? 'dark' : 'light';
+    document.getElementById('themeBtn').querySelector('use').setAttribute('href', isLight ? '#i-moon' : '#i-sun');
+  }
+  document.getElementById('themeBtn').addEventListener('click', toggleTheme);
+
+  // --- atalhos / ajuda ---
+  const shortcutsOverlay = document.getElementById('shortcutsOverlay');
+  function toggleShortcuts(){ shortcutsOverlay.classList.toggle('hidden'); }
+  document.getElementById('helpBtn').addEventListener('click', toggleShortcuts);
+  document.getElementById('closeShortcuts').addEventListener('click', toggleShortcuts);
+
+  const viewKeys = {
+    '1': '0deg 90deg auto', '2': '180deg 90deg auto', '3': '90deg 90deg auto',
+    '4': '-90deg 90deg auto', '5': '0deg 0.1deg auto', '6': '0deg 179.9deg auto', '7': '45deg 55deg auto',
+  };
+  window.addEventListener('keydown', (e) => {
+    if (e.ctrlKey || e.metaKey || e.altKey) return;
+    const k = e.key;
+    if (viewKeys[k]) { viewer.cameraOrbit = viewKeys[k]; viewer.jumpCameraToGoal(); return; }
+    if (k === 'r' || k === 'R') { document.getElementById('resetViewBtn').click(); return; }
+    if (k === 'f' || k === 'F') { goFullscreen(); return; }
+    if (k === 'a' || k === 'A') { document.getElementById('annotateBtn').click(); return; }
+    if (k === 'c' || k === 'C') { document.getElementById('captureBtn').click(); return; }
+    if (k === 't' || k === 'T') { toggleTheme(); return; }
+    if (k === ' ') { e.preventDefault(); toggleRotate(); return; }
+    if (k === '?') { toggleShortcuts(); return; }
+  });
+
+  // --- iluminação ---
+  document.getElementById('toggleLight').addEventListener('click', (e) => {
+    legacyLight = !legacyLight;
+    viewer.environmentImage = legacyLight ? 'legacy' : 'neutral';
+    e.currentTarget.lastChild.textContent = `Iluminação: ${legacyLight ? 'clássica' : 'neutra'}`;
+  });
+
+  // --- fundo do palco ---
+  function setStageBg(color, swatchId){
+    stageEl.style.background = color;
+    document.querySelectorAll('.swatch').forEach(s => s.classList.remove('active'));
+    if (swatchId) document.getElementById(swatchId).classList.add('active');
+  }
+  document.getElementById('swBranco').addEventListener('click', () => setStageBg('#FFFFFF', 'swBranco'));
+  document.getElementById('swCinza').addEventListener('click', () => setStageBg('#E4DCD2', 'swCinza'));
+  document.getElementById('swEscuro').addEventListener('click', () => setStageBg('#211D1A', 'swEscuro'));
+  document.getElementById('swCustom').addEventListener('input', (e) => setStageBg(e.target.value, 'swCustom'));
+
+  // --- animação ---
+  animBtn.addEventListener('click', () => {
+    if (viewer.paused) { viewer.play(); animBtn.lastChild.textContent = 'Pausar'; animBtn.classList.add('active'); }
+    else { viewer.pause(); animBtn.lastChild.textContent = 'Animação'; animBtn.classList.remove('active'); }
+  });
+
+  // --- marcar ponto (hotspot) ---
+  document.getElementById('annotateBtn').addEventListener('click', (e) => {
+    annotateMode = !annotateMode;
+    e.currentTarget.classList.toggle('active', annotateMode);
+  });
+
+  viewer.addEventListener('pointerdown', (e) => { downPoint = { x: e.clientX, y: e.clientY }; });
+  viewer.addEventListener('pointerup', (e) => {
+    if (!annotateMode || !downPoint) { downPoint = null; return; }
+    const dx = e.clientX - downPoint.x, dy = e.clientY - downPoint.y;
+    downPoint = null;
+    if (Math.hypot(dx, dy) > 6) return;
+    const hit = viewer.positionAndNormalFromPoint(e.clientX, e.clientY);
+    if (!hit) return;
+    hotspotCount++;
+    const pin = document.createElement('button');
+    pin.slot = `hotspot-${hotspotCount}`;
+    pin.className = 'hotspot-pin';
+    pin.dataset.position = `${hit.position.x.toFixed(3)} ${hit.position.y.toFixed(3)} ${hit.position.z.toFixed(3)}`;
+    pin.dataset.normal = `${hit.normal.x.toFixed(3)} ${hit.normal.y.toFixed(3)} ${hit.normal.z.toFixed(3)}`;
+    pin.textContent = String(hotspotCount);
+
+    if (pendingPoint) {
+      const ddx = hit.position.x - pendingPoint.pos.x;
+      const ddy = hit.position.y - pendingPoint.pos.y;
+      const ddz = hit.position.z - pendingPoint.pos.z;
+      const dist = Math.sqrt(ddx*ddx + ddy*ddy + ddz*ddz);
+      pin.title = `Ponto ${hotspotCount} — ${dist.toFixed(2)} m do ponto ${pendingPoint.index}`;
+      lastMeasureEl.textContent = `#${pendingPoint.index} → #${hotspotCount}: ${dist.toFixed(2)} m`;
+      pendingPoint = null;
+    } else {
+      pin.title = `Ponto ${hotspotCount} — toque em outro ponto para medir a distância`;
+      pendingPoint = { pos: hit.position, index: hotspotCount };
+    }
+
+    viewer.appendChild(pin);
+  });
+
+  document.getElementById('clearAnnotationsBtn').addEventListener('click', clearHotspots);
+
+  // --- capturar imagem (com as marcações desenhadas na imagem final) ---
+  async function buildCompositeBlob(){
+    const pins = Array.from(viewer.querySelectorAll('.hotspot-pin'));
+    const hasPins = pins.length > 0;
+    const viewerRect = viewer.getBoundingClientRect();
+
+    // sem marcações: pode usar idealAspect para um enquadramento melhor.
+    // com marcações: mantém o enquadramento exato da tela, senão os pinos saem do lugar.
+    const blob = await viewer.toBlob({ mimeType: 'image/png', idealAspect: !hasPins });
+    const imgUrl = URL.createObjectURL(blob);
+    const img = await new Promise((resolve, reject) => {
+      const im = new Image();
+      im.onload = () => resolve(im);
+      im.onerror = reject;
+      im.src = imgUrl;
+    });
+    URL.revokeObjectURL(imgUrl);
+
+    const canvas = document.createElement('canvas');
+    canvas.width = img.naturalWidth || img.width;
+    canvas.height = img.naturalHeight || img.height;
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+    pins.forEach((pin) => {
+      const r = pin.getBoundingClientRect();
+      const relX = (r.left + r.width / 2 - viewerRect.left) / viewerRect.width;
+      const relY = (r.top + r.height / 2 - viewerRect.top) / viewerRect.height;
+      const x = relX * canvas.width;
+      const y = relY * canvas.height;
+      const radius = canvas.width * 0.018;
+      const grad = ctx.createLinearGradient(x - radius, y - radius, x + radius, y + radius);
+      grad.addColorStop(0, '#C78A61');
+      grad.addColorStop(1, '#A96B46');
+      ctx.beginPath();
+      ctx.arc(x, y, radius, 0, Math.PI * 2);
+      ctx.fillStyle = grad;
+      ctx.fill();
+      ctx.lineWidth = Math.max(2, radius * 0.18);
+      ctx.strokeStyle = '#fff';
+      ctx.stroke();
+      ctx.fillStyle = '#fff';
+      ctx.font = `${Math.round(radius * 1.1)}px sans-serif`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(pin.textContent, x, y + 1);
+    });
+
+    return await new Promise((resolve) => canvas.toBlob(resolve, 'image/png'));
+  }
+
+  document.getElementById('captureBtn').addEventListener('click', async () => {
+    try {
+      const blob = await buildCompositeBlob();
+      const filename = (filenameEl.textContent.replace(/\.[^.]+$/, '') || 'modelo') + '-captura.png';
+      const file = new File([blob], filename, { type: 'image/png' });
+
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        try { await navigator.share({ files: [file], title: 'Captura do modelo 3D' }); return; }
+        catch (e) { if (e && e.name === 'AbortError') return; }
+      }
+
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    } catch (err) { alert('Não foi possível capturar a imagem.'); }
+  });
+
+  // --- compartilhar / copiar link da vista ---
+  document.getElementById('shareBtn').addEventListener('click', async () => {
+    try {
+      const o = viewer.getCameraOrbit();
+      const t = viewer.getCameraTarget();
+      const f = viewer.getFieldOfView();
+      const params = new URLSearchParams({
+        o: `${o.theta.toFixed(4)},${o.phi.toFixed(4)},${o.radius.toFixed(4)}`,
+        t: `${t.x.toFixed(4)},${t.y.toFixed(4)},${t.z.toFixed(4)}`,
+        f: f.toFixed(2),
+      });
+      const shareUrl = `${location.origin}${location.pathname}#${params.toString()}`;
+
+      if (navigator.share) {
+        try { await navigator.share({ title: 'Vista do modelo 3D', text: 'Confira esta vista do modelo:', url: shareUrl }); return; }
+        catch (e) { if (e && e.name === 'AbortError') return; }
+      }
+
+      try {
+        await navigator.clipboard.writeText(shareUrl);
+      } catch (e) {
+        const tmp = document.createElement('input');
+        tmp.value = shareUrl;
+        document.body.appendChild(tmp);
+        tmp.select();
+        document.execCommand('copy');
+        tmp.remove();
+      }
+    } catch (err) { alert('Não foi possível compartilhar a vista.'); }
+  });
+
+  // --- carregar arquivo local ---
+  document.getElementById('fileInput').addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    clearHotspots();
+    viewer.src = URL.createObjectURL(file);
+    filenameEl.textContent = file.name;
+  });
+</script>
+
+</body>
+</html>

@@ -1,0 +1,28 @@
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Build/Cache
+_site/
+.jekyll-cache/
+*.log
+
+# Node (se usar bundler/npm)
+node_modules/
+package-lock.json
+
+# Service Worker Cache (local dev)
+# Nota: Caches do SW são limpos automaticamente pelo navegador
+# Descomente se quiser limpar localmente:
+# .sw-cache/
+
+# Secrets
+.env
+.env.local
+
