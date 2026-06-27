@@ -1,12 +1,12 @@
 {
   "name": "Salsi — Architecture Review Workspace",
   "short_name": "Salsi",
-  "description": "Visualizador 3D portátil para modelos exportados do SketchUp (.glb/.gltf), com vistas, medição e anotações.",
+  "description": "Espaço de revisão de projetos de arquitetura: modelos 3D, fotos, notas e relatórios — funciona offline, tudo guardado no aparelho.",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
-  "background_color": "#FFFCF8",
-  "theme_color": "#FFFCF8",
+  "background_color": "#F4F6F8",
+  "theme_color": "#2B3D52",
   "orientation": "any",
   "icons": [
     { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },

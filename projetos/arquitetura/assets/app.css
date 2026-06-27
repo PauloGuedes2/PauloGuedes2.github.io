@@ -1,0 +1,215 @@
+/* ===== Salsi — design system compartilhado ===== */
+:root{
+  --navy: #2B3D52;
+  --navy-deep: #1F2D3D;
+  --honey: #D99A4E;
+  --honey-deep: #C27F35;
+  --paper: #F4F6F8;
+  --white: #FFFFFF;
+  --ink: #1F2B38;
+  --ink-dim: #6B7785;
+  --line: #E4E8EC;
+  --danger: #D6553F;
+  --sidebar-w: 84px;
+}
+
+*{ box-sizing: border-box; }
+html, body{ margin: 0; min-height: 100vh; }
+body{
+  background: var(--paper);
+  color: var(--ink);
+  font-family: 'Inter', sans-serif;
+  font-variant-numeric: tabular-nums;
+}
+h1, h2, h3, .display{ font-family: 'Manrope', sans-serif; font-weight: 800; letter-spacing: -.01em; margin: 0; }
+a{ color: inherit; }
+button, input, textarea, select{ font-family: inherit; }
+
+/* ---- faixa "offline" ---- */
+.offline-banner{
+  display: none;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: var(--honey);
+  color: #fff;
+  font-weight: 600;
+  font-size: 13px;
+  padding: 9px 14px;
+  text-align: center;
+}
+.offline-banner.show{ display: flex; }
+.offline-banner img{ width: 18px; height: 18px; border-radius: 50%; }
+.offline-banner.online-flash{ background: #4C8C6B; }
+
+/* ---- layout geral ---- */
+.shell{ display: flex; min-height: 100vh; }
+
+/* ---- barra lateral ---- */
+.sidebar{
+  width: var(--sidebar-w);
+  flex: none;
+  background: var(--white);
+  border-right: 1px solid var(--line);
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  padding: 14px 0;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+}
+.sidebar .brand{
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+  padding: 4px 6px 16px; margin-bottom: 6px; border-bottom: 1px solid var(--line);
+}
+.sidebar .brand img{ width: 34px; height: 34px; border-radius: 50%; }
+.sidebar .brand span{ font-family: 'Manrope', sans-serif; font-weight: 800; font-size: 13px; color: var(--navy); }
+
+.navitem{
+  position: relative;
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+  padding: 10px 4px;
+  margin: 2px 8px;
+  border-radius: 12px;
+  color: var(--ink-dim);
+  text-decoration: none;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  background: none;
+}
+.navitem svg{ width: 22px; height: 22px; }
+.navitem:hover{ background: var(--paper); color: var(--ink); }
+.navitem.active{ background: var(--honey); color: #fff; }
+.navitem .badge{
+  position: absolute; top: 4px; right: 10px;
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--danger); border: 2px solid var(--white);
+}
+.sidebar .spacer{ flex: 1; }
+
+/* ---- área principal ---- */
+.main{ flex: 1; min-width: 0; }
+.topbar{
+  background: var(--white); border-bottom: 1px solid var(--line);
+  padding: 16px clamp(16px,3vw,32px);
+  display: flex; align-items: center; gap: 12px;
+}
+.topbar .brand-mark{ display: flex; align-items: center; gap: 10px; }
+.topbar .brand-mark img{ width: 36px; height: 36px; border-radius: 50%; }
+.topbar .brand-mark span{ font-size: 22px; color: var(--navy); }
+.topbar .project-pill{
+  margin-left: auto;
+  font-size: 12.5px; font-weight: 600; color: var(--navy);
+  background: var(--paper); border: 1px solid var(--line); border-radius: 999px;
+  padding: 7px 14px; display: flex; align-items: center; gap: 6px;
+  text-decoration: none;
+}
+.topbar .project-pill svg{ width: 14px; height: 14px; }
+
+.content{ padding: clamp(16px,3vw,32px); max-width: 1180px; }
+.page-title{ font-size: clamp(22px,3vw,28px); color: var(--navy); margin-bottom: 4px; }
+.page-sub{ color: var(--ink-dim); font-size: 14px; margin: 0 0 20px; }
+
+/* ---- cartões / componentes genéricos ---- */
+.card{
+  background: var(--white); border: 1px solid var(--line); border-radius: 18px;
+  padding: 18px; margin-bottom: 16px;
+}
+.card h3{ font-size: 15px; color: var(--navy); margin-bottom: 10px; }
+.grid{ display: grid; gap: 14px; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); }
+
+.stat{
+  background: var(--white); border: 1px solid var(--line); border-radius: 16px;
+  padding: 16px 18px;
+}
+.stat .num{ font-family: 'Manrope', sans-serif; font-weight: 800; font-size: 26px; color: var(--navy); }
+.stat .label{ font-size: 12px; color: var(--ink-dim); font-weight: 600; text-transform: uppercase; letter-spacing: .04em; }
+
+.btn{
+  display: inline-flex; align-items: center; gap: 8px;
+  font-size: 13.5px; font-weight: 600; color: var(--navy);
+  background: var(--white); border: 1px solid var(--line); border-radius: 12px;
+  padding: 10px 16px; cursor: pointer; text-decoration: none;
+}
+.btn svg{ width: 16px; height: 16px; }
+.btn:hover{ border-color: var(--honey); }
+.btn.primary{ background: var(--honey); border-color: transparent; color: #fff; }
+.btn.primary:hover{ background: var(--honey-deep); }
+.btn.danger{ color: var(--danger); }
+.btn.danger:hover{ border-color: var(--danger); }
+.btn:disabled{ opacity: .5; cursor: not-allowed; }
+
+.badge-pill{
+  font-size: 11px; font-weight: 700; padding: 3px 9px; border-radius: 999px;
+}
+.badge-pill.pending{ background: rgba(217,154,78,.15); color: var(--honey-deep); }
+.badge-pill.synced{ background: rgba(76,140,107,.15); color: #346b4d; }
+
+input[type=text], input[type=search], textarea{
+  width: 100%; font-size: 14px; color: var(--ink);
+  background: var(--paper); border: 1px solid var(--line); border-radius: 10px;
+  padding: 10px 12px;
+}
+textarea{ resize: vertical; min-height: 70px; }
+label.field-label{ font-size: 12px; font-weight: 600; color: var(--ink-dim); display: block; margin-bottom: 6px; }
+
+.empty{
+  text-align: center; padding: 50px 20px; color: var(--ink-dim);
+}
+.empty img{ width: 56px; height: 56px; border-radius: 50%; margin-bottom: 12px; opacity: .85; }
+.empty strong{ display: block; color: var(--navy); font-size: 15px; margin-bottom: 4px; font-family: 'Manrope', sans-serif; }
+
+/* ---- fila de sincronização (flutuante) ---- */
+.sync-card{
+  position: fixed; left: 20px; bottom: 20px; z-index: 40;
+  background: var(--white); border-radius: 18px; box-shadow: 0 18px 50px rgba(31,43,56,.18);
+  width: min(360px, calc(100vw - 40px));
+  overflow: hidden;
+  display: none;
+}
+.sync-card.show{ display: block; }
+.sync-card .sc-head{
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 16px; font-weight: 700; color: var(--navy); font-size: 14px;
+  font-family: 'Manrope', sans-serif;
+}
+.sync-card .sc-close{ cursor: pointer; color: var(--ink-dim); display:flex; }
+.sync-card .sc-body{ display: flex; gap: 12px; padding: 0 16px 16px; align-items: flex-end; }
+.sync-card .sc-list{ flex: 1; display: flex; flex-direction: column; gap: 8px; max-height: 160px; overflow-y: auto; }
+.sync-item{ display: flex; align-items: center; gap: 8px; font-size: 12.5px; color: var(--ink); }
+.sync-item .thumb{
+  width: 28px; height: 28px; border-radius: 8px; background: var(--paper);
+  display: flex; align-items: center; justify-content: center; flex: none; overflow: hidden;
+}
+.sync-item .thumb img{ width: 100%; height: 100%; object-fit: cover; }
+.sync-item .thumb svg{ width: 15px; height: 15px; color: var(--honey-deep); }
+.sync-card .mascot{ width: 64px; height: 64px; border-radius: 50%; flex: none; }
+.sync-card .sc-foot{ padding: 0 16px 16px; }
+.sync-card .sc-foot .btn{ width: 100%; justify-content: center; }
+
+@media (max-width: 720px){
+  :root{ --sidebar-w: 64px; }
+  .navitem{ font-size: 9.5px; }
+  .navitem svg{ width: 19px; height: 19px; }
+  .topbar .brand-mark span{ font-size: 18px; }
+  .sync-card{ left: 12px; right: 12px; width: auto; bottom: 12px; }
+}
+
+@media (prefers-reduced-motion: reduce){ *{ transition: none !important; animation: none !important; } }
+
+/* ===== Overlay (atalhos) ===== */
+.overlay{
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.overlay.hidden{
+  display: none !important;
+}

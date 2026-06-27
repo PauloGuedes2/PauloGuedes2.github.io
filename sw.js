@@ -1,12 +1,21 @@
-const CACHE_NAME = 'salsi-viewer-v3';
+const CACHE_NAME = 'salsi-viewer-v4';
 const APP_SHELL = [
   '/projetos/arquitetura/',
   '/projetos/arquitetura/index.html',
+  '/projetos/arquitetura/projects.html',
+  '/projetos/arquitetura/photos.html',
+  '/projetos/arquitetura/notes.html',
+  '/projetos/arquitetura/models.html',
+  '/projetos/arquitetura/reports.html',
+  '/projetos/arquitetura/settings.html',
   '/projetos/arquitetura/manifest.json',
   '/projetos/arquitetura/logo.png',
   '/projetos/arquitetura/icon-192.png',
   '/projetos/arquitetura/icon-512.png',
   '/projetos/arquitetura/icon-512-maskable.png',
+  '/projetos/arquitetura/assets/app.css',
+  '/projetos/arquitetura/assets/db.js',
+  '/projetos/arquitetura/assets/shell.js',
 ];
 
 self.addEventListener('install', (event) => {
@@ -29,8 +38,6 @@ self.addEventListener('activate', (event) => {
 
 // Estratégia: responde do cache imediatamente quando existir (rápido + funciona offline),
 // e em paralelo busca na rede para atualizar o cache para a próxima vez.
-// Isso cobre automaticamente o modelo.glb e os arquivos do CDN (model-viewer, fontes),
-// que passam a funcionar offline depois da primeira visita bem-sucedida.
 self.addEventListener('fetch', (event) => {
   const req = event.request;
   if (req.method !== 'GET') return;

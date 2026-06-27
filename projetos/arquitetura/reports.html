@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Home — Salsi</title>
+<title>Reports — Salsi</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="icon" href="logo.png">
@@ -99,23 +99,30 @@
   <main class="main">
     <div class="topbar">
       <div class="brand-mark"><img src="logo.png" alt="Salsi"><span class="display">Salsi</span></div>
-      
+      <a class="project-pill" href="projects.html"><svg><use href="#i-building"/></svg><span>Trocar projeto</span></a>
     </div>
     <div class="content">
-      <h1 class="page-title">Bem-vindo de volta</h1>
-      <p class="page-sub">Seu espaço de revisão de projetos, sem depender de internet.</p>
+      <h1 class="page-title">Relatório do projeto</h1>
+      <p class="page-sub">Um resumo pra imprimir ou exportar como PDF (pelo navegador).</p>
 
-      <div class="grid" style="grid-template-columns:repeat(auto-fill,minmax(150px,1fr));margin-bottom:20px">
-        <div class="stat"><div class="num" id="statProjects">0</div><div class="label">Projetos</div></div>
-        <div class="stat"><div class="num" id="statPending">0</div><div class="label">Pendentes</div></div>
-        <div class="stat"><div class="num" id="statPhotos">0</div><div class="label">Fotos</div></div>
-        <div class="stat"><div class="num" id="statNotes">0</div><div class="label">Notas</div></div>
+      <div id="noProjectState" class="empty" style="display:none">
+        <img src="logo.png" alt=""><strong>Nenhum projeto selecionado</strong>
+        <span>Escolha um projeto pra gerar o relatório.</span>
+        <div style="margin-top:14px"><a class="btn primary" href="projects.html"><svg><use href="#i-building"/></svg>Ir pra Projects</a></div>
       </div>
 
-      <div class="card" id="activeProjectCard"></div>
+      <div id="reportArea" style="display:none">
+        <div style="margin-bottom:14px"><button class="btn primary" id="printBtn"><svg><use href="#i-report"/></svg>Imprimir / exportar PDF</button></div>
+        <div class="card" id="reportBody"></div>
+      </div>
 
-      <h3 style="font-size:15px;color:var(--navy);margin:24px 0 10px">Projetos recentes</h3>
-      <div class="grid" id="recentProjects"></div>
+      <style>
+        @media print {
+          .sidebar, .topbar, .offline-banner, .sync-card, #printBtn { display: none !important; }
+          .main { margin: 0 !important; }
+          body { background: #fff !important; }
+        }
+      </style>
 
     </div>
   </main>
@@ -124,58 +131,44 @@
 <script src="assets/db.js"></script>
 <script src="assets/shell.js"></script>
 <script>
-SalsiShell.init('home');
+SalsiShell.init('reports');
 (async function () {
-  const projects = await SalsiDB.getProjects();
-  const pending = await SalsiDB.getPendingSyncItems();
-  let photoTotal = 0, noteTotal = 0;
-  for (const p of projects) {
-    photoTotal += (await SalsiDB.getPhotos(p.id)).length;
-    noteTotal += (await SalsiDB.getNotes(p.id)).length;
-  }
-  document.getElementById('statProjects').textContent = projects.length;
-  document.getElementById('statPending').textContent = pending.photos.length + pending.notes.length + pending.markups.length;
-  document.getElementById('statPhotos').textContent = photoTotal;
-  document.getElementById('statNotes').textContent = noteTotal;
+  function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+  function fmtDate(ts) { return new Date(ts).toLocaleString('pt-BR'); }
 
   const activeId = SalsiShell.getActiveProjectId();
-  const active = activeId ? await SalsiDB.getProject(activeId) : null;
-  const activeCard = document.getElementById('activeProjectCard');
-  if (active) {
-    activeCard.innerHTML = `
-      <h3>Projeto ativo</h3>
-      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px">
-        <div><strong style="font-family:'Manrope',sans-serif;color:var(--navy)">${esc(active.name)}</strong>
-        <div style="color:var(--ink-dim);font-size:13px">${esc(active.description || 'Sem descrição')}</div></div>
-        <div style="display:flex;gap:8px">
-          <a class="btn" href="models.html"><svg><use href="#i-cube"/></svg>Modelo</a>
-          <a class="btn" href="photos.html"><svg><use href="#i-camera"/></svg>Fotos</a>
-          <a class="btn" href="notes.html"><svg><use href="#i-notes"/></svg>Notas</a>
-        </div>
-      </div>`;
-  } else {
-    activeCard.innerHTML = `
-      <h3>Nenhum projeto selecionado</h3>
-      <p style="color:var(--ink-dim);font-size:13px;margin:0 0 12px">Crie ou selecione um projeto pra começar a trabalhar.</p>
-      <a class="btn primary" href="projects.html"><svg><use href="#i-plus"/></svg>Ir pra Projetos</a>`;
-  }
+  if (!activeId) { document.getElementById('noProjectState').style.display = ''; return; }
+  document.getElementById('reportArea').style.display = '';
 
-  const recentEl = document.getElementById('recentProjects');
-  if (projects.length === 0) {
-    recentEl.innerHTML = `<div class="empty" style="grid-column:1/-1"><img src="logo.png" alt=""><strong>Nenhum projeto ainda</strong><span>Crie o primeiro em "Projects".</span></div>`;
-  } else {
-    recentEl.innerHTML = projects.slice(0, 6).map(p => `
-      <div class="card">
-        <h3>${esc(p.name)}</h3>
-        <p style="color:var(--ink-dim);font-size:13px;margin:0 0 10px">${esc(p.description || '—')}</p>
-        <button class="btn" data-open="${p.id}"><svg><use href="#i-cube"/></svg>Abrir</button>
-      </div>`).join('');
-    recentEl.querySelectorAll('[data-open]').forEach(btn => {
-      btn.addEventListener('click', () => { SalsiShell.setActiveProjectId(btn.dataset.open); location.href = 'models.html'; });
-    });
-  }
+  const project = await SalsiDB.getProject(activeId);
+  const [photos, notes, markups] = await Promise.all([
+    SalsiDB.getPhotos(activeId), SalsiDB.getNotes(activeId), SalsiDB.getMarkups(activeId),
+  ]);
 
-  function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+  document.getElementById('reportBody').innerHTML = `
+    <h2 style="font-family:'Manrope',sans-serif;color:var(--navy);margin:0 0 4px">${esc(project ? project.name : 'Projeto')}</h2>
+    <p style="color:var(--ink-dim);margin:0 0 18px">${esc(project ? project.description : '')} — criado em ${project ? fmtDate(project.createdAt) : '—'}</p>
+
+    <div class="grid" style="grid-template-columns:repeat(auto-fill,minmax(120px,1fr));margin-bottom:20px">
+      <div class="stat"><div class="num">${photos.length}</div><div class="label">Fotos</div></div>
+      <div class="stat"><div class="num">${notes.length}</div><div class="label">Notas</div></div>
+      <div class="stat"><div class="num">${markups.length}</div><div class="label">Marcações</div></div>
+    </div>
+
+    <h3 style="color:var(--navy)">Notas estruturais</h3>
+    ${notes.length === 0 ? '<p style="color:var(--ink-dim)">Nenhuma nota registrada.</p>' :
+      notes.map(n => `<div style="padding:8px 0;border-bottom:1px solid var(--line)"><strong>${esc(n.title)}</strong>${n.tag ? ' — ' + esc(n.tag) : ''}<br><span style="color:var(--ink-dim);font-size:13px">${esc(n.body || '')}</span></div>`).join('')}
+
+    <h3 style="color:var(--navy);margin-top:18px">Marcações do modelo</h3>
+    ${markups.length === 0 ? '<p style="color:var(--ink-dim)">Nenhuma marcação registrada.</p>' :
+      markups.map(m => `<div style="padding:6px 0;border-bottom:1px solid var(--line);font-size:13px">Ponto ${m.number} — ${esc(m.note || '')}</div>`).join('')}
+
+    <h3 style="color:var(--navy);margin-top:18px">Fotos do local (${photos.length})</h3>
+    ${photos.length === 0 ? '<p style="color:var(--ink-dim)">Nenhuma foto registrada.</p>' :
+      `<div class="grid" style="grid-template-columns:repeat(auto-fill,minmax(100px,1fr))">${photos.map(p => `<div><img src="${URL.createObjectURL(p.blob)}" style="width:100%;height:80px;object-fit:cover;border-radius:8px"><div style="font-size:11px;color:var(--ink-dim)">${esc(p.caption || '')}</div></div>`).join('')}</div>`}
+  `;
+
+  document.getElementById('printBtn').addEventListener('click', () => window.print());
 })();
 
 </script>

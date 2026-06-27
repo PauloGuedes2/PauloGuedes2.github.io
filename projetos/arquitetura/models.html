@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Models — Salsi</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="icon" href="logo.png">
+<link rel="apple-touch-icon" href="logo.png">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#2B3D52">
+<link rel="stylesheet" href="assets/app.css">
+<script type="module" src="https://cdnjs.cloudflare.com/ajax/libs/model-viewer/4.1.0/model-viewer.min.js"></script>
+<style>
+  .meta-row{ display:flex; flex-wrap:wrap; gap:8px; margin-bottom:14px; }
+  .chip{ font-size:12px; font-weight:600; color:var(--ink-dim); background:var(--white); border:1px solid var(--line); border-radius:999px; padding:6px 13px; display:flex; gap:6px; align-items:center; }
+  .chip b{ color:var(--navy); }
+  .vstage{ position:relative; border-radius:22px; overflow:hidden; background:linear-gradient(160deg,var(--navy),var(--navy-deep)); box-shadow:0 24px 60px rgba(31,43,56,.25); }
+  model-viewer{ width:100%; height:54vh; min-height:340px; display:block; --poster-color:transparent; }
+  .float-toolbar{ position:absolute; top:14px; right:14px; display:flex; gap:4px; background:rgba(255,255,255,.95); border-radius:999px; padding:5px; box-shadow:0 8px 24px rgba(0,0,0,.25); z-index:3; }
+  .float-toolbar button{ width:34px; height:34px; border-radius:50%; border:none; background:transparent; color:var(--navy); display:flex; align-items:center; justify-content:center; cursor:pointer; }
+  .float-toolbar button svg{ width:17px; height:17px; }
+  .float-toolbar button.active{ background:var(--honey); color:#fff; }
+  .float-stack{ position:absolute; top:64px; right:14px; display:flex; flex-direction:column; gap:8px; z-index:3; }
+  .float-stack button{ width:34px; height:34px; border-radius:50%; border:none; background:rgba(255,255,255,.95); color:var(--navy); display:flex; align-items:center; justify-content:center; cursor:pointer; box-shadow:0 6px 16px rgba(0,0,0,.2); }
+  .float-stack button svg{ width:16px; height:16px; }
+  .progress-wrap{ position:absolute; top:12px; left:12px; right:64px; height:4px; border-radius:999px; background:rgba(255,255,255,.15); overflow:hidden; z-index:3; }
+  .progress-wrap.hidden{ display:none; }
+  .progress-bar{ height:100%; width:0%; background:var(--honey); transition:width .15s linear; }
+  .empty-state{ position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:32px; gap:12px; color:#fff; }
+  .empty-state.hidden{ display:none; }
+  .empty-state img{ width:64px; height:64px; border-radius:50%; }
+  .empty-state strong{ font-family:'Manrope',sans-serif; font-size:16px; }
+  .empty-state span{ font-size:13px; color:rgba(255,255,255,.7); max-width:340px; }
+  .hotspot-pin{ width:24px; height:24px; border-radius:50%; background:var(--honey); color:#fff; border:2px solid #fff; font-size:11px; font-weight:700; display:flex; align-items:center; justify-content:center; box-shadow:0 2px 8px rgba(0,0,0,.4); }
+  .viewbtn.active{ background:var(--honey); border-color:transparent; color:#fff; }
+  .overlay{
+  display:flex;
+  position:fixed;
+  inset:0;
+  align-items:center;
+  justify-content:center;
+}
+
+.overlay.hidden{
+  display:none !important;
+}
+</style>
+
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+<defs>
+<symbol id="i-home" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M4 11l8-7 8 7"/><path d="M6 10v9a1 1 0 0 0 1 1h3v-6h4v6h3a1 1 0 0 0 1-1v-9"/>
+</symbol>
+<symbol id="i-building" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+  <rect x="6" y="3" width="12" height="18" rx="1"/>
+  <rect x="9" y="6.5" width="2" height="2" fill="currentColor" stroke="none"/><rect x="13" y="6.5" width="2" height="2" fill="currentColor" stroke="none"/>
+  <rect x="9" y="11" width="2" height="2" fill="currentColor" stroke="none"/><rect x="13" y="11" width="2" height="2" fill="currentColor" stroke="none"/>
+  <rect x="9" y="15.5" width="2" height="2" fill="currentColor" stroke="none"/><rect x="13" y="15.5" width="2" height="2" fill="currentColor" stroke="none"/>
+</symbol>
+<symbol id="i-camera" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+  <rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7l1.5-2.5h5L16 7"/><circle cx="12" cy="13.5" r="3.5"/>
+</symbol>
+<symbol id="i-notes" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+  <rect x="4" y="3" width="16" height="18" rx="2"/><line x1="8" y1="8" x2="16" y2="8"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="8" y1="16" x2="13" y2="16"/>
+</symbol>
+<symbol id="i-cube" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M12 2L20 6.5V17.5L12 22L4 17.5V6.5L12 2Z"/><path d="M12 12V22"/><path d="M12 12L20 6.5"/><path d="M12 12L4 6.5"/>
+</symbol>
+<symbol id="i-report" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M7 3h7l4 4v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/><path d="M14 3v4h4"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="16" x2="15" y2="16"/>
+</symbol>
+<symbol id="i-settings" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+  <circle cx="12" cy="12" r="3.2"/><path d="M12 2.5v3M12 18.5v3M3.5 12h3M17.5 12h3M5.8 5.8l2.1 2.1M16.1 16.1l2.1 2.1M18.2 5.8l-2.1 2.1M7.9 16.1l-2.1 2.1"/>
+</symbol>
+<symbol id="i-sync" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/><path d="M3 21v-5h5"/>
+</symbol>
+<symbol id="i-close" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round">
+  <line x1="6" y1="6" x2="18" y2="18"/><line x1="18" y1="6" x2="6" y2="18"/>
+</symbol>
+<symbol id="i-plus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round">
+  <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+</symbol>
+<symbol id="i-trash" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M5 7h14"/><path d="M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/><path d="M7 7l1 13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1l1-13"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/>
+</symbol>
+<symbol id="i-download" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M12 3v12"/><path d="M7 10l5 5 5-5"/><path d="M4 19h16"/>
+</symbol>
+<symbol id="i-upload" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M12 16V4"/><path d="M7 9l5-5 5 5"/><path d="M4 18v2a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-2"/>
+</symbol>
+<symbol id="i-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M5 13l4 4L19 7"/>
+</symbol>
+<symbol id="i-pin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M12 21s7-7.5 7-12a7 7 0 1 0-14 0c0 4.5 7 12 7 12z"/><circle cx="12" cy="9" r="2.3"/>
+</symbol>
+<symbol id="i-orbit" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+  <ellipse cx="12" cy="12" rx="9" ry="5"/><circle cx="12" cy="12" r="1.6" fill="currentColor" stroke="none"/>
+</symbol>
+<symbol id="i-move" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M12 2v20M2 12h20M12 2l-2.5 2.5M12 2l2.5 2.5M12 22l-2.5-2.5M12 22l2.5-2.5M2 12l2.5-2.5M2 12l2.5 2.5M22 12l-2.5-2.5M22 12l-2.5 2.5"/>
+</symbol>
+<symbol id="i-zoom-in" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+  <circle cx="10" cy="10" r="6"/><line x1="14.5" y1="14.5" x2="20" y2="20"/><line x1="10" y1="7" x2="10" y2="13"/><line x1="7" y1="10" x2="13" y2="10"/>
+</symbol>
+<symbol id="i-zoom-out" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+  <circle cx="10" cy="10" r="6"/><line x1="14.5" y1="14.5" x2="20" y2="20"/><line x1="7" y1="10" x2="13" y2="10"/>
+</symbol>
+<symbol id="i-fullscreen" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M4 9V4h5"/><path d="M15 4h5v5"/><path d="M20 15v5h-5"/><path d="M9 20H4v-5"/>
+</symbol>
+<symbol id="i-link" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M9 15l6-6"/><path d="M13 5h4a4 4 0 0 1 0 8h-2"/><path d="M11 19H7a4 4 0 0 1 0-8h2"/>
+</symbol>
+<symbol id="i-target" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+  <circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="1.4" fill="currentColor" stroke="none"/><line x1="12" y1="2" x2="12" y2="5"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="2" y1="12" x2="5" y2="12"/><line x1="19" y1="12" x2="22" y2="12"/>
+</symbol>
+<symbol id="i-play" viewBox="0 0 24 24"><path d="M7 5l12 7-12 7V5z" fill="currentColor"/></symbol>
+<symbol id="i-pause" viewBox="0 0 24 24"><rect x="6" y="5" width="4" height="14" rx="1" fill="currentColor"/><rect x="14" y="5" width="4" height="14" rx="1" fill="currentColor"/></symbol>
+<symbol id="i-warning" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M12 3l9 16H3z"/><line x1="12" y1="9" x2="12" y2="14"/><circle cx="12" cy="17" r="0.6" fill="currentColor" stroke="none"/>
+</symbol>
+</defs>
+</svg>
+
+<div id="offline-banner-root"></div>
+<div class="shell">
+  <div id="sidebar-root"></div>
+  <main class="main">
+    <div class="topbar">
+      <div class="brand-mark"><img src="logo.png" alt="Salsi"><span class="display">Salsi</span></div>
+            <a class="project-pill" href="projects.html" id="activeProjectPill"><svg><use href="#i-building"/></svg><span>Carregando…</span></a>
+
+    </div>
+    <div class="content">
+      <h1 class="page-title" style="margin-bottom:4px">Modelo 3D</h1>
+      <p class="page-sub">Vistas, medição e marcações — tudo salvo neste projeto, mesmo offline.</p>
+
+      <div id="noProjectState" class="empty" style="display:none">
+        <img src="logo.png" alt=""><strong>Nenhum projeto selecionado</strong>
+        <span>Escolha ou crie um projeto antes de carregar um modelo.</span>
+        <div style="margin-top:14px"><a class="btn primary" href="projects.html"><svg><use href="#i-building"/></svg>Ir pra Projects</a></div>
+      </div>
+
+      <div id="modelArea" style="display:none">
+        <div class="meta-row">
+          <span class="chip">Arquivo: <b id="filename">—</b></span>
+          <span class="chip">Dimensões: <b id="dims">—</b></span>
+          <span class="chip">Medida: <b id="lastMeasure">—</b></span>
+        </div>
+
+        <div class="vstage">
+          <div class="progress-wrap hidden" id="progressWrap"><div class="progress-bar" id="progressBar"></div></div>
+
+          <div class="float-toolbar">
+            <button id="toggleRotate" title="Girar automaticamente"><svg><use href="#i-orbit"/></svg></button>
+            <button id="annotateBtn" title="Marcar / medir"><svg><use href="#i-pin"/></svg></button>
+            <button id="captureBtn" title="Capturar imagem"><svg><use href="#i-camera"/></svg></button>
+            <button id="shareBtn" title="Compartilhar vista"><svg><use href="#i-link"/></svg></button>
+          </div>
+          <div class="float-stack">
+            <button id="zoomInBtn" title="Zoom +"><svg><use href="#i-zoom-in"/></svg></button>
+            <button id="zoomOutBtn" title="Zoom −"><svg><use href="#i-zoom-out"/></svg></button>
+            <button id="fullscreenBtn" title="Tela cheia"><svg><use href="#i-fullscreen"/></svg></button>
+            <button id="clearAnnotationsBtn" title="Limpar marcações"><svg><use href="#i-trash"/></svg></button>
+          </div>
+
+          <model-viewer id="viewer" alt="Modelo 3D" camera-controls touch-action="pan-y" shadow-intensity="1" exposure="1"
+            environment-image="neutral" min-camera-orbit="auto 0deg auto" max-camera-orbit="auto 180deg auto"
+            ar ar-modes="scene-viewer webxr quick-look"></model-viewer>
+
+          <div class="empty-state" id="emptyState">
+            <img src="logo.png" alt="">
+            <strong>Nenhum modelo neste projeto</strong>
+            <span>Carregue um arquivo .glb ou .gltf exportado do SketchUp.</span>
+            <label class="btn primary" for="fileInput" style="margin-top:6px;color:var(--navy)"><svg><use href="#i-upload"/></svg>Carregar modelo</label>
+          </div>
+        </div>
+
+        <input type="file" id="fileInput" accept=".glb,.gltf" style="display:none">
+
+        <div class="card" style="margin-top:16px">
+          <h3>Vistas &amp; ferramentas</h3>
+          <div style="display:flex;flex-wrap:wrap;gap:8px">
+            <button class="btn viewbtn" data-orbit="0deg 90deg auto">Frente</button>
+            <button class="btn viewbtn" data-orbit="180deg 90deg auto">Trás</button>
+            <button class="btn viewbtn" data-orbit="90deg 90deg auto">Direita</button>
+            <button class="btn viewbtn" data-orbit="-90deg 90deg auto">Esquerda</button>
+            <button class="btn viewbtn" data-orbit="0deg 0.1deg auto">Topo</button>
+            <button class="btn viewbtn" data-orbit="0deg 179.9deg auto">Base</button>
+            <button class="btn viewbtn" data-orbit="45deg 55deg auto"><svg><use href="#i-cube"/></svg>Isométrica</button>
+            <button class="btn" id="resetViewBtn"><svg><use href="#i-target"/></svg>Recentrar</button>
+            <button class="btn hidden" id="animBtn"><svg><use href="#i-play"/></svg>Animação</button>
+            <label class="btn" for="fileInput"><svg><use href="#i-upload"/></svg>Substituir modelo</label>
+            <button class="btn" id="helpBtn">Atalhos&nbsp;<kbd style="font-size:11px">?</kbd></button>
+          </div>
+        </div>
+      </div>
+
+     <div class="overlay hidden" id="shortcutsOverlay" style="background:rgba(31,43,56,.5);padding:20px;z-index:50">
+        <div style="background:var(--white);border-radius:18px;padding:20px;max-width:340px;width:100%">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+            <strong style="font-family:'Manrope',sans-serif;color:var(--navy)">Atalhos de teclado</strong>
+            <span id="closeShortcuts" style="cursor:pointer"><svg width="18" height="18"><use href="#i-close"/></svg></span>
+          </div>
+          <div style="font-size:13px;display:flex;flex-direction:column;gap:7px;color:var(--ink)">
+            <div style="display:flex;justify-content:space-between">Vistas (frente…iso) <kbd>1–7</kbd></div>
+            <div style="display:flex;justify-content:space-between">Recentrar <kbd>R</kbd></div>
+            <div style="display:flex;justify-content:space-between">Girar automaticamente <kbd>Espaço</kbd></div>
+            <div style="display:flex;justify-content:space-between">Marcar / medir <kbd>A</kbd></div>
+            <div style="display:flex;justify-content:space-between">Capturar imagem <kbd>C</kbd></div>
+            <div style="display:flex;justify-content:space-between">Tela cheia <kbd>F</kbd></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+</div>
+<div id="sync-card-root"></div>
+<script src="assets/db.js"></script>
+<script src="assets/shell.js"></script>
+<script>
+SalsiShell.init('models');
+(async function () {
+  const activeId = SalsiShell.getActiveProjectId();
+  if (!activeId) { document.getElementById('noProjectState').style.display = ''; return; }
+  document.getElementById('modelArea').style.display = '';
+
+  const project = await SalsiDB.getProject(activeId);
+  const pillEl = document.getElementById('activeProjectPill');
+  if (pillEl) pillEl.querySelector('span').textContent = project ? project.name : 'Projeto';
+
+  const viewer = document.getElementById('viewer');
+  const emptyState = document.getElementById('emptyState');
+  const filenameEl = document.getElementById('filename');
+  const dimsEl = document.getElementById('dims');
+  const lastMeasureEl = document.getElementById('lastMeasure');
+  const progressWrap = document.getElementById('progressWrap');
+  const progressBar = document.getElementById('progressBar');
+  const animBtn = document.getElementById('animBtn');
+
+  let hotspotCount = 0;
+  let annotateMode = false;
+  let downPoint = null;
+  let pendingPoint = null;
+
+  function clearHotspotsVisual() {
+    viewer.querySelectorAll('.hotspot-pin').forEach(el => el.remove());
+    hotspotCount = 0;
+    pendingPoint = null;
+    lastMeasureEl.textContent = '—';
+  }
+
+  async function clearHotspots() {
+    clearHotspotsVisual();
+    await SalsiDB.clearMarkups(activeId);
+  }
+
+  async function hydrateMarkupsFromDB() {
+    clearHotspotsVisual();
+    const markups = await SalsiDB.getMarkups(activeId);
+    for (const m of markups) {
+      hotspotCount = Math.max(hotspotCount, m.number);
+      const pin = document.createElement('button');
+      pin.slot = `hotspot-${m.number}`;
+      pin.className = 'hotspot-pin';
+      pin.dataset.position = m.position;
+      pin.dataset.normal = m.normal;
+      pin.textContent = String(m.number);
+      pin.title = m.note || `Ponto ${m.number}`;
+      viewer.appendChild(pin);
+    }
+  }
+
+  async function loadModelForProject() {
+    const stored = await SalsiDB.getProjectModel(activeId);
+    if (stored && stored.blob) {
+      viewer.src = URL.createObjectURL(stored.blob);
+      filenameEl.textContent = stored.filename || 'modelo.glb';
+      emptyState.classList.add('hidden');
+    } else {
+      filenameEl.textContent = '—';
+      emptyState.classList.remove('hidden');
+    }
+  }
+
+  // --- carregamento do modelo ---
+  viewer.addEventListener('progress', (e) => {
+    const pct = Math.round((e.detail.totalProgress || 0) * 100);
+    progressWrap.classList.remove('hidden');
+    progressBar.style.width = pct + '%';
+    if (pct >= 100) progressWrap.classList.add('hidden');
+  });
+
+  viewer.addEventListener('error', () => {
+    emptyState.classList.remove('hidden');
+    progressWrap.classList.add('hidden');
+    dimsEl.textContent = '—';
+  });
+
+  viewer.addEventListener('load', async () => {
+    emptyState.classList.add('hidden');
+    progressWrap.classList.add('hidden');
+    try {
+      const d = viewer.getDimensions();
+      dimsEl.textContent = `${d.x.toFixed(2)} × ${d.y.toFixed(2)} × ${d.z.toFixed(2)} m`;
+    } catch (e) { dimsEl.textContent = '—'; }
+    const hasAnim = !!(viewer.availableAnimations && viewer.availableAnimations.length > 0);
+    animBtn.classList.toggle('hidden', !hasAnim);
+    await hydrateMarkupsFromDB();
+  });
+
+  // --- vistas ---
+  document.querySelectorAll('.viewbtn').forEach(btn => {
+    btn.addEventListener('click', () => { viewer.cameraOrbit = btn.dataset.orbit; viewer.jumpCameraToGoal(); });
+  });
+  document.getElementById('resetViewBtn').addEventListener('click', () => {
+    viewer.cameraOrbit = 'auto auto auto'; viewer.cameraTarget = 'auto auto auto'; viewer.fieldOfView = 'auto';
+    viewer.jumpCameraToGoal();
+  });
+
+  // --- girar automaticamente ---
+  function toggleRotate() {
+    const on = viewer.hasAttribute('auto-rotate');
+    viewer.toggleAttribute('auto-rotate', !on);
+    document.getElementById('toggleRotate').classList.toggle('active', !on);
+  }
+  document.getElementById('toggleRotate').addEventListener('click', toggleRotate);
+
+  // --- zoom ---
+  document.getElementById('zoomInBtn').addEventListener('click', () => viewer.zoom(1));
+  document.getElementById('zoomOutBtn').addEventListener('click', () => viewer.zoom(-1));
+
+  // --- tela cheia ---
+  function goFullscreen() {
+    if (viewer.requestFullscreen) viewer.requestFullscreen();
+    else if (viewer.webkitRequestFullscreen) viewer.webkitRequestFullscreen();
+  }
+  document.getElementById('fullscreenBtn').addEventListener('click', goFullscreen);
+
+  // --- atalhos / ajuda ---
+  const shortcutsOverlay = document.getElementById('shortcutsOverlay');
+  function toggleShortcuts() { shortcutsOverlay.classList.toggle('hidden'); }
+  document.getElementById('helpBtn').addEventListener('click', toggleShortcuts);
+  document.getElementById('closeShortcuts').addEventListener('click', toggleShortcuts);
+
+  const viewKeys = {
+    '1': '0deg 90deg auto', '2': '180deg 90deg auto', '3': '90deg 90deg auto',
+    '4': '-90deg 90deg auto', '5': '0deg 0.1deg auto', '6': '0deg 179.9deg auto', '7': '45deg 55deg auto',
+  };
+  window.addEventListener('keydown', (e) => {
+    if (e.ctrlKey || e.metaKey || e.altKey) return;
+    const k = e.key;
+    if (viewKeys[k]) { viewer.cameraOrbit = viewKeys[k]; viewer.jumpCameraToGoal(); return; }
+    if (k === 'r' || k === 'R') { document.getElementById('resetViewBtn').click(); return; }
+    if (k === 'f' || k === 'F') { goFullscreen(); return; }
+    if (k === 'a' || k === 'A') { document.getElementById('annotateBtn').click(); return; }
+    if (k === 'c' || k === 'C') { document.getElementById('captureBtn').click(); return; }
+    if (k === ' ') { e.preventDefault(); toggleRotate(); return; }
+    if (k === '?') { toggleShortcuts(); return; }
+  });
+
+  // --- animação ---
+  animBtn.addEventListener('click', () => {
+    if (viewer.paused) { viewer.play(); animBtn.classList.add('active'); }
+    else { viewer.pause(); animBtn.classList.remove('active'); }
+  });
+
+  // --- marcar / medir (com persistência) ---
+  document.getElementById('annotateBtn').addEventListener('click', (e) => {
+    annotateMode = !annotateMode;
+    e.currentTarget.classList.toggle('active', annotateMode);
+  });
+
+  viewer.addEventListener('pointerdown', (e) => { downPoint = { x: e.clientX, y: e.clientY }; });
+  viewer.addEventListener('pointerup', async (e) => {
+    if (!annotateMode || !downPoint) { downPoint = null; return; }
+    const dx = e.clientX - downPoint.x, dy = e.clientY - downPoint.y;
+    downPoint = null;
+    if (Math.hypot(dx, dy) > 6) return;
+    const hit = viewer.positionAndNormalFromPoint(e.clientX, e.clientY);
+    if (!hit) return;
+    hotspotCount++;
+    const posStr = `${hit.position.x.toFixed(3)} ${hit.position.y.toFixed(3)} ${hit.position.z.toFixed(3)}`;
+    const normStr = `${hit.normal.x.toFixed(3)} ${hit.normal.y.toFixed(3)} ${hit.normal.z.toFixed(3)}`;
+    let note;
+
+    if (pendingPoint) {
+      const ddx = hit.position.x - pendingPoint.pos.x, ddy = hit.position.y - pendingPoint.pos.y, ddz = hit.position.z - pendingPoint.pos.z;
+      const dist = Math.sqrt(ddx * ddx + ddy * ddy + ddz * ddz);
+      note = `${dist.toFixed(2)} m do ponto ${pendingPoint.index}`;
+      lastMeasureEl.textContent = `#${pendingPoint.index} → #${hotspotCount}: ${dist.toFixed(2)} m`;
+      pendingPoint = null;
+    } else {
+      note = 'toque em outro ponto para medir a distância';
+      pendingPoint = { pos: hit.position, index: hotspotCount };
+    }
+
+    const pin = document.createElement('button');
+    pin.slot = `hotspot-${hotspotCount}`;
+    pin.className = 'hotspot-pin';
+    pin.dataset.position = posStr;
+    pin.dataset.normal = normStr;
+    pin.textContent = String(hotspotCount);
+    pin.title = `Ponto ${hotspotCount} — ${note}`;
+    viewer.appendChild(pin);
+
+    await SalsiDB.addMarkup({ projectId: activeId, position: posStr, normal: normStr, number: hotspotCount, note });
+    await SalsiShell.refreshAll();
+  });
+
+  document.getElementById('clearAnnotationsBtn').addEventListener('click', async () => {
+    await clearHotspots();
+    await SalsiShell.refreshAll();
+  });
+
+  // --- capturar imagem (com marcações desenhadas + compartilhamento nativo) ---
+  async function buildCompositeBlob() {
+    const pins = Array.from(viewer.querySelectorAll('.hotspot-pin'));
+    const hasPins = pins.length > 0;
+    const viewerRect = viewer.getBoundingClientRect();
+    const blob = await viewer.toBlob({ mimeType: 'image/png', idealAspect: !hasPins });
+    const imgUrl = URL.createObjectURL(blob);
+    const img = await new Promise((resolve, reject) => {
+      const im = new Image();
+      im.onload = () => resolve(im);
+      im.onerror = reject;
+      im.src = imgUrl;
+    });
+    URL.revokeObjectURL(imgUrl);
+
+    const canvas = document.createElement('canvas');
+    canvas.width = img.naturalWidth || img.width;
+    canvas.height = img.naturalHeight || img.height;
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+    pins.forEach((pin) => {
+      const r = pin.getBoundingClientRect();
+      const relX = (r.left + r.width / 2 - viewerRect.left) / viewerRect.width;
+      const relY = (r.top + r.height / 2 - viewerRect.top) / viewerRect.height;
+      const x = relX * canvas.width, y = relY * canvas.height;
+      const radius = canvas.width * 0.018;
+      ctx.beginPath();
+      ctx.arc(x, y, radius, 0, Math.PI * 2);
+      ctx.fillStyle = '#D99A4E';
+      ctx.fill();
+      ctx.lineWidth = Math.max(2, radius * 0.18);
+      ctx.strokeStyle = '#fff';
+      ctx.stroke();
+      ctx.fillStyle = '#fff';
+      ctx.font = `${Math.round(radius * 1.1)}px sans-serif`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(pin.textContent, x, y + 1);
+    });
+
+    return await new Promise((resolve) => canvas.toBlob(resolve, 'image/png'));
+  }
+
+  document.getElementById('captureBtn').addEventListener('click', async () => {
+    try {
+      const blob = await buildCompositeBlob();
+      const filename = (filenameEl.textContent.replace(/\.[^.]+$/, '') || 'modelo') + '-captura.png';
+      const file = new File([blob], filename, { type: 'image/png' });
+
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        try { await navigator.share({ files: [file], title: 'Captura do modelo 3D' }); return; }
+        catch (e) { if (e && e.name === 'AbortError') return; }
+      }
+
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = filename;
+      document.body.appendChild(a); a.click(); a.remove();
+      URL.revokeObjectURL(url);
+    } catch (err) { alert('Não foi possível capturar a imagem.'); }
+  });
+
+  // --- compartilhar vista ---
+  document.getElementById('shareBtn').addEventListener('click', async () => {
+    try {
+      const o = viewer.getCameraOrbit(), t = viewer.getCameraTarget(), f = viewer.getFieldOfView();
+      const params = new URLSearchParams({
+        o: `${o.theta.toFixed(4)},${o.phi.toFixed(4)},${o.radius.toFixed(4)}`,
+        t: `${t.x.toFixed(4)},${t.y.toFixed(4)},${t.z.toFixed(4)}`,
+        f: f.toFixed(2),
+      });
+      const shareUrl = `${location.origin}${location.pathname}#${params.toString()}`;
+      if (navigator.share) {
+        try { await navigator.share({ title: 'Vista do modelo 3D', text: 'Confira esta vista:', url: shareUrl }); return; }
+        catch (e) { if (e && e.name === 'AbortError') return; }
+      }
+      try { await navigator.clipboard.writeText(shareUrl); }
+      catch (e) {
+        const tmp = document.createElement('input');
+        tmp.value = shareUrl; document.body.appendChild(tmp); tmp.select();
+        document.execCommand('copy'); tmp.remove();
+      }
+    } catch (err) { alert('Não foi possível compartilhar a vista.'); }
+  });
+
+  // --- carregar / substituir modelo (salva no projeto) ---
+  document.getElementById('fileInput').addEventListener('change', async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    if (hotspotCount > 0 && !confirm('Substituir o modelo vai apagar as marcações atuais deste projeto. Continuar?')) {
+      e.target.value = ''; return;
+    }
+    await SalsiDB.setProjectModel(activeId, file, file.name);
+    await SalsiDB.clearMarkups(activeId);
+    clearHotspotsVisual();
+    viewer.src = URL.createObjectURL(file);
+    filenameEl.textContent = file.name;
+    e.target.value = '';
+  });
+
+  // --- hash de URL (vista compartilhada) ---
+  function applyShareHashIfPresent() {
+    if (!location.hash) return;
+    try {
+      const params = new URLSearchParams(location.hash.slice(1));
+      const o = params.get('o'), t = params.get('t'), f = params.get('f');
+      if (o) { const [th, ph, r] = o.split(',').map(Number); viewer.cameraOrbit = `${th}rad ${ph}rad ${r}m`; }
+      if (t) { const [x, y, z] = t.split(',').map(Number); viewer.cameraTarget = `${x}m ${y}m ${z}m`; }
+      if (f) viewer.fieldOfView = `${Number(f)}deg`;
+      viewer.jumpCameraToGoal();
+    } catch (e) { /* hash inválido, ignora */ }
+  }
+  viewer.addEventListener('load', applyShareHashIfPresent);
+
+  await loadModelForProject();
+})();
+
+</script>
+</body>
+</html>

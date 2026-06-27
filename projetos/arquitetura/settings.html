@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Home — Salsi</title>
+<title>Settings — Salsi</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="icon" href="logo.png">
@@ -102,20 +102,41 @@
       
     </div>
     <div class="content">
-      <h1 class="page-title">Bem-vindo de volta</h1>
-      <p class="page-sub">Seu espaço de revisão de projetos, sem depender de internet.</p>
+      <h1 class="page-title">Configurações</h1>
+      <p class="page-sub">Tudo guardado neste aparelho — sem nuvem, sem conta.</p>
 
-      <div class="grid" style="grid-template-columns:repeat(auto-fill,minmax(150px,1fr));margin-bottom:20px">
-        <div class="stat"><div class="num" id="statProjects">0</div><div class="label">Projetos</div></div>
-        <div class="stat"><div class="num" id="statPending">0</div><div class="label">Pendentes</div></div>
-        <div class="stat"><div class="num" id="statPhotos">0</div><div class="label">Fotos</div></div>
-        <div class="stat"><div class="num" id="statNotes">0</div><div class="label">Notas</div></div>
+      <div class="card">
+        <h3>Armazenamento</h3>
+        <p style="color:var(--ink-dim);font-size:13px;margin:0 0 8px" id="storageText">Calculando…</p>
+        <div style="background:var(--paper);border-radius:999px;height:8px;overflow:hidden">
+          <div id="storageBar" style="background:var(--honey);height:100%;width:0%"></div>
+        </div>
       </div>
 
-      <div class="card" id="activeProjectCard"></div>
+      <div class="card">
+        <h3>Backup manual</h3>
+        <p style="color:var(--ink-dim);font-size:13px;margin:0 0 12px">Exporta projetos, notas e marcações pra um arquivo. As fotos e o modelo 3D não entram no backup (são arquivos grandes) — guarde-os separadamente se precisar.</p>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn primary" id="exportBtn"><svg><use href="#i-download"/></svg>Exportar backup (.json)</button>
+          <label class="btn" for="importInput"><svg><use href="#i-upload"/></svg>Importar backup</label>
+          <input type="file" id="importInput" accept="application/json" style="display:none">
+        </div>
+        <p id="importStatus" style="font-size:12.5px;color:var(--ink-dim);margin-top:8px"></p>
+      </div>
 
-      <h3 style="font-size:15px;color:var(--navy);margin:24px 0 10px">Projetos recentes</h3>
-      <div class="grid" id="recentProjects"></div>
+      <div class="card">
+        <h3 style="color:var(--danger)">Zona de risco</h3>
+        <p style="color:var(--ink-dim);font-size:13px;margin:0 0 12px">Apaga todos os projetos, fotos, notas, marcações e modelos guardados neste navegador. Não pode ser desfeito.</p>
+        <button class="btn danger" id="clearAllBtn"><svg><use href="#i-trash"/></svg>Apagar todos os dados locais</button>
+      </div>
+
+      <div class="card">
+        <h3>Sobre</h3>
+        <p style="color:var(--ink-dim);font-size:13px;margin:0">
+          Salsi é um espaço de revisão de projetos 100% local: funciona offline, instala como app, e guarda tudo no seu próprio aparelho.
+          Não existe servidor — "sincronizar" aqui significa apenas "confirmado neste dispositivo".
+        </p>
+      </div>
 
     </div>
   </main>
@@ -124,58 +145,47 @@
 <script src="assets/db.js"></script>
 <script src="assets/shell.js"></script>
 <script>
-SalsiShell.init('home');
+SalsiShell.init('settings');
 (async function () {
-  const projects = await SalsiDB.getProjects();
-  const pending = await SalsiDB.getPendingSyncItems();
-  let photoTotal = 0, noteTotal = 0;
-  for (const p of projects) {
-    photoTotal += (await SalsiDB.getPhotos(p.id)).length;
-    noteTotal += (await SalsiDB.getNotes(p.id)).length;
-  }
-  document.getElementById('statProjects').textContent = projects.length;
-  document.getElementById('statPending').textContent = pending.photos.length + pending.notes.length + pending.markups.length;
-  document.getElementById('statPhotos').textContent = photoTotal;
-  document.getElementById('statNotes').textContent = noteTotal;
+  const est = await SalsiDB.getStorageEstimate();
+  const usageMB = ((est.usage || 0) / (1024 * 1024)).toFixed(1);
+  const quotaMB = ((est.quota || 0) / (1024 * 1024)).toFixed(0);
+  const pct = est.quota ? Math.min(100, (est.usage / est.quota) * 100) : 0;
+  document.getElementById('storageText').textContent = est.quota ? `${usageMB} MB usados de ${quotaMB} MB disponíveis` : 'Não foi possível medir o armazenamento neste navegador.';
+  document.getElementById('storageBar').style.width = pct + '%';
 
-  const activeId = SalsiShell.getActiveProjectId();
-  const active = activeId ? await SalsiDB.getProject(activeId) : null;
-  const activeCard = document.getElementById('activeProjectCard');
-  if (active) {
-    activeCard.innerHTML = `
-      <h3>Projeto ativo</h3>
-      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px">
-        <div><strong style="font-family:'Manrope',sans-serif;color:var(--navy)">${esc(active.name)}</strong>
-        <div style="color:var(--ink-dim);font-size:13px">${esc(active.description || 'Sem descrição')}</div></div>
-        <div style="display:flex;gap:8px">
-          <a class="btn" href="models.html"><svg><use href="#i-cube"/></svg>Modelo</a>
-          <a class="btn" href="photos.html"><svg><use href="#i-camera"/></svg>Fotos</a>
-          <a class="btn" href="notes.html"><svg><use href="#i-notes"/></svg>Notas</a>
-        </div>
-      </div>`;
-  } else {
-    activeCard.innerHTML = `
-      <h3>Nenhum projeto selecionado</h3>
-      <p style="color:var(--ink-dim);font-size:13px;margin:0 0 12px">Crie ou selecione um projeto pra começar a trabalhar.</p>
-      <a class="btn primary" href="projects.html"><svg><use href="#i-plus"/></svg>Ir pra Projetos</a>`;
-  }
+  document.getElementById('exportBtn').addEventListener('click', async () => {
+    const json = await SalsiDB.exportAll();
+    const blob = new Blob([json], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = `salsi-backup-${new Date().toISOString().slice(0, 10)}.json`;
+    document.body.appendChild(a); a.click(); a.remove();
+    URL.revokeObjectURL(url);
+  });
 
-  const recentEl = document.getElementById('recentProjects');
-  if (projects.length === 0) {
-    recentEl.innerHTML = `<div class="empty" style="grid-column:1/-1"><img src="logo.png" alt=""><strong>Nenhum projeto ainda</strong><span>Crie o primeiro em "Projects".</span></div>`;
-  } else {
-    recentEl.innerHTML = projects.slice(0, 6).map(p => `
-      <div class="card">
-        <h3>${esc(p.name)}</h3>
-        <p style="color:var(--ink-dim);font-size:13px;margin:0 0 10px">${esc(p.description || '—')}</p>
-        <button class="btn" data-open="${p.id}"><svg><use href="#i-cube"/></svg>Abrir</button>
-      </div>`).join('');
-    recentEl.querySelectorAll('[data-open]').forEach(btn => {
-      btn.addEventListener('click', () => { SalsiShell.setActiveProjectId(btn.dataset.open); location.href = 'models.html'; });
-    });
-  }
+  document.getElementById('importInput').addEventListener('change', async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const statusEl = document.getElementById('importStatus');
+    try {
+      const text = await file.text();
+      const result = await SalsiDB.importAll(text);
+      statusEl.textContent = `Importado: ${result.projects} projeto(s), ${result.notes} nota(s), ${result.markups} marcação(ões).`;
+      await SalsiShell.refreshAll();
+    } catch (err) {
+      statusEl.textContent = 'Não foi possível ler esse arquivo de backup.';
+    }
+    e.target.value = '';
+  });
 
-  function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+  document.getElementById('clearAllBtn').addEventListener('click', async () => {
+    if (!confirm('Isso vai apagar TODOS os dados locais (projetos, fotos, notas, marcações, modelos). Tem certeza?')) return;
+    await SalsiDB.clearAllData();
+    localStorage.removeItem('salsi:activeProjectId');
+    await SalsiShell.refreshAll();
+    alert('Dados locais apagados.');
+  });
 })();
 
 </script>

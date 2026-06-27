@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Home — Salsi</title>
+<title>Projects — Salsi</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="icon" href="logo.png">
@@ -102,20 +102,19 @@
       
     </div>
     <div class="content">
-      <h1 class="page-title">Bem-vindo de volta</h1>
-      <p class="page-sub">Seu espaço de revisão de projetos, sem depender de internet.</p>
+      <h1 class="page-title">Projetos</h1>
+      <p class="page-sub">Cada projeto guarda seu próprio modelo 3D, fotos e notas — tudo neste aparelho.</p>
 
-      <div class="grid" style="grid-template-columns:repeat(auto-fill,minmax(150px,1fr));margin-bottom:20px">
-        <div class="stat"><div class="num" id="statProjects">0</div><div class="label">Projetos</div></div>
-        <div class="stat"><div class="num" id="statPending">0</div><div class="label">Pendentes</div></div>
-        <div class="stat"><div class="num" id="statPhotos">0</div><div class="label">Fotos</div></div>
-        <div class="stat"><div class="num" id="statNotes">0</div><div class="label">Notas</div></div>
+      <div class="card">
+        <h3>Novo projeto</h3>
+        <div style="display:grid;gap:10px;grid-template-columns:1fr 1fr;align-items:end">
+          <div><label class="field-label">Nome</label><input type="text" id="newProjName" placeholder="Ex.: Casa Jardins"></div>
+          <div><label class="field-label">Descrição (opcional)</label><input type="text" id="newProjDesc" placeholder="Ex.: Reforma da fachada"></div>
+        </div>
+        <button class="btn primary" id="createProjBtn" style="margin-top:12px"><svg><use href="#i-plus"/></svg>Criar projeto</button>
       </div>
 
-      <div class="card" id="activeProjectCard"></div>
-
-      <h3 style="font-size:15px;color:var(--navy);margin:24px 0 10px">Projetos recentes</h3>
-      <div class="grid" id="recentProjects"></div>
+      <div class="grid" id="projectsList"></div>
 
     </div>
   </main>
@@ -124,58 +123,55 @@
 <script src="assets/db.js"></script>
 <script src="assets/shell.js"></script>
 <script>
-SalsiShell.init('home');
+SalsiShell.init('projects');
 (async function () {
-  const projects = await SalsiDB.getProjects();
-  const pending = await SalsiDB.getPendingSyncItems();
-  let photoTotal = 0, noteTotal = 0;
-  for (const p of projects) {
-    photoTotal += (await SalsiDB.getPhotos(p.id)).length;
-    noteTotal += (await SalsiDB.getNotes(p.id)).length;
-  }
-  document.getElementById('statProjects').textContent = projects.length;
-  document.getElementById('statPending').textContent = pending.photos.length + pending.notes.length + pending.markups.length;
-  document.getElementById('statPhotos').textContent = photoTotal;
-  document.getElementById('statNotes').textContent = noteTotal;
-
-  const activeId = SalsiShell.getActiveProjectId();
-  const active = activeId ? await SalsiDB.getProject(activeId) : null;
-  const activeCard = document.getElementById('activeProjectCard');
-  if (active) {
-    activeCard.innerHTML = `
-      <h3>Projeto ativo</h3>
-      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px">
-        <div><strong style="font-family:'Manrope',sans-serif;color:var(--navy)">${esc(active.name)}</strong>
-        <div style="color:var(--ink-dim);font-size:13px">${esc(active.description || 'Sem descrição')}</div></div>
-        <div style="display:flex;gap:8px">
-          <a class="btn" href="models.html"><svg><use href="#i-cube"/></svg>Modelo</a>
-          <a class="btn" href="photos.html"><svg><use href="#i-camera"/></svg>Fotos</a>
-          <a class="btn" href="notes.html"><svg><use href="#i-notes"/></svg>Notas</a>
-        </div>
-      </div>`;
-  } else {
-    activeCard.innerHTML = `
-      <h3>Nenhum projeto selecionado</h3>
-      <p style="color:var(--ink-dim);font-size:13px;margin:0 0 12px">Crie ou selecione um projeto pra começar a trabalhar.</p>
-      <a class="btn primary" href="projects.html"><svg><use href="#i-plus"/></svg>Ir pra Projetos</a>`;
-  }
-
-  const recentEl = document.getElementById('recentProjects');
-  if (projects.length === 0) {
-    recentEl.innerHTML = `<div class="empty" style="grid-column:1/-1"><img src="logo.png" alt=""><strong>Nenhum projeto ainda</strong><span>Crie o primeiro em "Projects".</span></div>`;
-  } else {
-    recentEl.innerHTML = projects.slice(0, 6).map(p => `
-      <div class="card">
-        <h3>${esc(p.name)}</h3>
-        <p style="color:var(--ink-dim);font-size:13px;margin:0 0 10px">${esc(p.description || '—')}</p>
-        <button class="btn" data-open="${p.id}"><svg><use href="#i-cube"/></svg>Abrir</button>
-      </div>`).join('');
-    recentEl.querySelectorAll('[data-open]').forEach(btn => {
-      btn.addEventListener('click', () => { SalsiShell.setActiveProjectId(btn.dataset.open); location.href = 'models.html'; });
-    });
-  }
-
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+
+  async function renderList() {
+    const projects = await SalsiDB.getProjects();
+    const activeId = SalsiShell.getActiveProjectId();
+    const el = document.getElementById('projectsList');
+    if (projects.length === 0) {
+      el.innerHTML = `<div class="empty" style="grid-column:1/-1"><img src="logo.png" alt=""><strong>Nenhum projeto ainda</strong><span>Crie o primeiro ali em cima.</span></div>`;
+      return;
+    }
+    el.innerHTML = projects.map(p => `
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:start;gap:8px">
+          <h3>${esc(p.name)}</h3>
+          ${p.id === activeId ? '<span class="badge-pill synced">Ativo</span>' : ''}
+        </div>
+        <p style="color:var(--ink-dim);font-size:13px;margin:0 0 14px">${esc(p.description || 'Sem descrição')}</p>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn primary" data-activate="${p.id}"><svg><use href="#i-cube"/></svg>Abrir modelo</button>
+          <button class="btn danger" data-delete="${p.id}"><svg><use href="#i-trash"/></svg></button>
+        </div>
+      </div>`).join('');
+
+    el.querySelectorAll('[data-activate]').forEach(btn => btn.addEventListener('click', () => {
+      SalsiShell.setActiveProjectId(btn.dataset.activate);
+      location.href = 'models.html';
+    }));
+    el.querySelectorAll('[data-delete]').forEach(btn => btn.addEventListener('click', async () => {
+      if (!confirm('Excluir este projeto e todos os dados ligados a ele (fotos, notas, modelo, marcações)? Essa ação não pode ser desfeita.')) return;
+      await SalsiDB.deleteProject(btn.dataset.delete);
+      if (SalsiShell.getActiveProjectId() === btn.dataset.delete) localStorage.removeItem('salsi:activeProjectId');
+      await renderList();
+      await SalsiShell.refreshAll();
+    }));
+  }
+
+  document.getElementById('createProjBtn').addEventListener('click', async () => {
+    const nameEl = document.getElementById('newProjName');
+    const descEl = document.getElementById('newProjDesc');
+    if (!nameEl.value.trim()) { nameEl.focus(); return; }
+    const project = await SalsiDB.addProject({ name: nameEl.value.trim(), description: descEl.value.trim() });
+    nameEl.value = ''; descEl.value = '';
+    SalsiShell.setActiveProjectId(project.id);
+    await renderList();
+  });
+
+  await renderList();
 })();
 
 </script>
