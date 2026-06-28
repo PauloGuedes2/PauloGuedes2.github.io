@@ -134,14 +134,17 @@
     },
 
     // ---------- marcações do modelo 3D ----------
-    async addMarkup({ projectId, position, normal, note, number }) {
-      const markup = { id: uid(), projectId, position, normal, note: note || '', number, createdAt: Date.now(), synced: !!(typeof navigator !== 'undefined' && navigator.onLine) };
-      await tx('markups', 'readwrite', (store) => reqToPromise(store.add(markup)));
+    async addMarkup({ id, projectId, position, normal, note, number }) {
+      const markup = { id: id || uid(), projectId, position, normal, note: note || '', number, createdAt: Date.now(), synced: !!(typeof navigator !== 'undefined' && navigator.onLine) };
+      await tx('markups', 'readwrite', (store) => reqToPromise(store.put(markup)));
       return markup;
     },
     async getMarkups(projectId) {
       const list = await tx('markups', 'readonly', (store) => reqToPromise(store.index('byProject').getAll(projectId)));
       return list.sort((a, b) => a.number - b.number);
+    },
+    async deleteMarkup(id) {
+      await tx('markups', 'readwrite', (store) => reqToPromise(store.delete(id)));
     },
     async clearMarkups(projectId) {
       await tx('markups', 'readwrite', async (store) => {

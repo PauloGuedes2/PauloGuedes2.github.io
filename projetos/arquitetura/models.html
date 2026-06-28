@@ -3,191 +3,264 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Models — Salsi</title>
+<title>Modelos 3D — Salsi</title>
+<meta name="description" content="Visualize, meça e anote modelos 3D de projetos arquitetônicos offline com o Salsi.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="icon" href="logo.png">
 <link rel="apple-touch-icon" href="logo.png">
 <link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#2B3D52">
+<meta name="theme-color" content="#0a0e14">
 <link rel="stylesheet" href="assets/app.css">
 <script type="module" src="https://cdnjs.cloudflare.com/ajax/libs/model-viewer/4.1.0/model-viewer.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <style>
-  .meta-row{ display:flex; flex-wrap:wrap; gap:8px; margin-bottom:14px; }
-  .chip{ font-size:12px; font-weight:600; color:var(--ink-dim); background:var(--white); border:1px solid var(--line); border-radius:999px; padding:6px 13px; display:flex; gap:6px; align-items:center; }
-  .chip b{ color:var(--navy); }
-  .vstage{ position:relative; border-radius:22px; overflow:hidden; background:linear-gradient(160deg,var(--navy),var(--navy-deep)); box-shadow:0 24px 60px rgba(31,43,56,.25); }
-  model-viewer{ width:100%; height:54vh; min-height:340px; display:block; --poster-color:transparent; }
-  .float-toolbar{ position:absolute; top:14px; right:14px; display:flex; gap:4px; background:rgba(255,255,255,.95); border-radius:999px; padding:5px; box-shadow:0 8px 24px rgba(0,0,0,.25); z-index:3; }
-  .float-toolbar button{ width:34px; height:34px; border-radius:50%; border:none; background:transparent; color:var(--navy); display:flex; align-items:center; justify-content:center; cursor:pointer; }
-  .float-toolbar button svg{ width:17px; height:17px; }
-  .float-toolbar button.active{ background:var(--honey); color:#fff; }
-  .float-stack{ position:absolute; top:64px; right:14px; display:flex; flex-direction:column; gap:8px; z-index:3; }
-  .float-stack button{ width:34px; height:34px; border-radius:50%; border:none; background:rgba(255,255,255,.95); color:var(--navy); display:flex; align-items:center; justify-content:center; cursor:pointer; box-shadow:0 6px 16px rgba(0,0,0,.2); }
-  .float-stack button svg{ width:16px; height:16px; }
-  .progress-wrap{ position:absolute; top:12px; left:12px; right:64px; height:4px; border-radius:999px; background:rgba(255,255,255,.15); overflow:hidden; z-index:3; }
-  .progress-wrap.hidden{ display:none; }
-  .progress-bar{ height:100%; width:0%; background:var(--honey); transition:width .15s linear; }
-  .empty-state{ position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:32px; gap:12px; color:#fff; }
-  .empty-state.hidden{ display:none; }
-  .empty-state img{ width:64px; height:64px; border-radius:50%; }
-  .empty-state strong{ font-family:'Manrope',sans-serif; font-size:16px; }
-  .empty-state span{ font-size:13px; color:rgba(255,255,255,.7); max-width:340px; }
-  .hotspot-pin{ width:24px; height:24px; border-radius:50%; background:var(--honey); color:#fff; border:2px solid #fff; font-size:11px; font-weight:700; display:flex; align-items:center; justify-content:center; box-shadow:0 2px 8px rgba(0,0,0,.4); }
-  .viewbtn.active{ background:var(--honey); border-color:transparent; color:#fff; }
-  .overlay{
-  display:flex;
-  position:fixed;
-  inset:0;
-  align-items:center;
-  justify-content:center;
-}
+  /* Page-specific overrides — dark theme aligned */
+  .meta-row { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:14px; }
+  .chip { font-size:12px; font-weight:600; color:var(--text-secondary); background:rgba(255,255,255,0.03); border:1px solid var(--border); border-radius:999px; padding:6px 13px; display:flex; gap:6px; align-items:center; }
+  .chip b { color:var(--accent); }
 
-.overlay.hidden{
-  display:none !important;
-}
+  /* Viewer stage */
+  .vstage { position:relative; border-radius:22px; overflow:hidden; background:linear-gradient(160deg,#121a26,#0a0e14); box-shadow:0 24px 60px rgba(0,0,0,.45); }
+  model-viewer { width:100%; height:54vh; min-height:340px; display:block; --poster-color:transparent; }
+
+  /* Floating toolbar (top-right of viewer) */
+  .float-toolbar { position:absolute; top:14px; right:14px; display:flex; gap:4px; background:rgba(18,26,38,0.92); backdrop-filter:blur(16px); border:1px solid rgba(255,255,255,0.08); border-radius:999px; padding:5px; box-shadow:0 8px 24px rgba(0,0,0,.4); z-index:3; }
+  .float-toolbar button { width:34px; height:34px; border-radius:50%; border:none; background:transparent; color:var(--text-secondary); display:flex; align-items:center; justify-content:center; cursor:pointer; transition:all .2s; }
+  .float-toolbar button svg { width:17px; height:17px; }
+  .float-toolbar button:hover { color:var(--text-primary); background:rgba(255,255,255,0.07); }
+  .float-toolbar button.active { background:var(--accent); color:#0a0e14; box-shadow:0 0 12px rgba(220,161,83,.4); }
+
+  /* Floating stack (right side of viewer) */
+  .float-stack { position:absolute; top:64px; right:14px; display:flex; flex-direction:column; gap:8px; z-index:3; }
+  .float-stack button { width:34px; height:34px; border-radius:50%; border:1px solid rgba(255,255,255,0.1); background:rgba(18,26,38,0.92); backdrop-filter:blur(12px); color:var(--text-secondary); display:flex; align-items:center; justify-content:center; cursor:pointer; box-shadow:0 4px 12px rgba(0,0,0,.3); transition:all .2s; }
+  .float-stack button svg { width:16px; height:16px; }
+  .float-stack button:hover { color:var(--text-primary); border-color:var(--accent); }
+
+  /* Progress bar */
+  .progress-wrap { position:absolute; top:12px; left:12px; right:64px; height:4px; border-radius:999px; background:rgba(255,255,255,.1); overflow:hidden; z-index:3; }
+  .progress-wrap.hidden { display:none; }
+  .progress-bar { height:100%; width:0%; background:var(--accent); transition:width .15s linear; }
+
+  /* Empty state */
+  .empty-state { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:32px; gap:12px; color:#fff; }
+  .empty-state.hidden { display:none; }
+  .empty-state img { width:64px; height:64px; border-radius:50%; opacity:.7; }
+  .empty-state strong { font-family:'Manrope',sans-serif; font-size:16px; color:#fff; }
+  .empty-state span { font-size:13px; color:rgba(255,255,255,.6); max-width:340px; line-height:1.5; }
+
+  /* Hotspot pins on the 3D model */
+  .hotspot-pin { width:24px; height:24px; border-radius:50%; background:var(--accent); color:#0a0e14; border:2px solid #fff; font-size:11px; font-weight:700; display:flex; align-items:center; justify-content:center; box-shadow:0 2px 10px rgba(0,0,0,.5); cursor:pointer; }
+
+  /* View buttons active state */
+  .viewbtn.active { background:var(--accent) !important; border-color:transparent !important; color:#0a0e14 !important; }
+
+  /* Note input in side panel */
+  .panel-note-input { width:100%; background:rgba(255,255,255,0.04); border:1px solid var(--border); border-radius:10px; color:var(--text-primary); font-family:inherit; }
+  .panel-note-input:focus { outline:none; border-color:var(--accent); }
+  .panel-note-input:disabled { opacity:.4; cursor:not-allowed; }
+
+  /* Shortcuts overlay */
+  .overlay { display:flex; position:fixed; inset:0; align-items:center; justify-content:center; background:rgba(0,0,0,.6); backdrop-filter:blur(4px); z-index:50; }
+  .overlay.hidden { display:none !important; }
+  .shortcuts-box { background:#121a26; border:1px solid var(--border); border-radius:18px; padding:24px; max-width:340px; width:100%; }
+  .shortcuts-box strong { font-family:'Manrope',sans-serif; color:var(--text-primary); }
+  .shortcuts-box .sc-row { display:flex; justify-content:space-between; font-size:13px; color:var(--text-secondary); padding:5px 0; border-bottom:1px solid rgba(255,255,255,.04); }
+  .shortcuts-box .sc-row:last-child { border-bottom:none; }
+
+  /* Responsive grid */
+  @media (max-width:768px) {
+    .viewer-grid { grid-template-columns:1fr !important; }
+    .side-panel { height:320px !important; min-height:320px !important; }
+  }
 </style>
-
 </head>
 <body>
+
+<!-- ── SVG Icon Sprite ───────────────────────────────── -->
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
 <defs>
-<symbol id="i-home" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-  <path d="M4 11l8-7 8 7"/><path d="M6 10v9a1 1 0 0 0 1 1h3v-6h4v6h3a1 1 0 0 0 1-1v-9"/>
-</symbol>
-<symbol id="i-building" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-  <rect x="6" y="3" width="12" height="18" rx="1"/>
-  <rect x="9" y="6.5" width="2" height="2" fill="currentColor" stroke="none"/><rect x="13" y="6.5" width="2" height="2" fill="currentColor" stroke="none"/>
-  <rect x="9" y="11" width="2" height="2" fill="currentColor" stroke="none"/><rect x="13" y="11" width="2" height="2" fill="currentColor" stroke="none"/>
-  <rect x="9" y="15.5" width="2" height="2" fill="currentColor" stroke="none"/><rect x="13" y="15.5" width="2" height="2" fill="currentColor" stroke="none"/>
-</symbol>
-<symbol id="i-camera" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-  <rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7l1.5-2.5h5L16 7"/><circle cx="12" cy="13.5" r="3.5"/>
-</symbol>
-<symbol id="i-notes" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-  <rect x="4" y="3" width="16" height="18" rx="2"/><line x1="8" y1="8" x2="16" y2="8"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="8" y1="16" x2="13" y2="16"/>
-</symbol>
-<symbol id="i-cube" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-  <path d="M12 2L20 6.5V17.5L12 22L4 17.5V6.5L12 2Z"/><path d="M12 12V22"/><path d="M12 12L20 6.5"/><path d="M12 12L4 6.5"/>
-</symbol>
-<symbol id="i-report" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-  <path d="M7 3h7l4 4v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/><path d="M14 3v4h4"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="16" x2="15" y2="16"/>
-</symbol>
-<symbol id="i-settings" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-  <circle cx="12" cy="12" r="3.2"/><path d="M12 2.5v3M12 18.5v3M3.5 12h3M17.5 12h3M5.8 5.8l2.1 2.1M16.1 16.1l2.1 2.1M18.2 5.8l-2.1 2.1M7.9 16.1l-2.1 2.1"/>
-</symbol>
-<symbol id="i-sync" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-  <path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/><path d="M3 21v-5h5"/>
-</symbol>
-<symbol id="i-close" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round">
-  <line x1="6" y1="6" x2="18" y2="18"/><line x1="18" y1="6" x2="6" y2="18"/>
-</symbol>
-<symbol id="i-plus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round">
-  <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
-</symbol>
-<symbol id="i-trash" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-  <path d="M5 7h14"/><path d="M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/><path d="M7 7l1 13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1l1-13"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/>
-</symbol>
-<symbol id="i-download" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-  <path d="M12 3v12"/><path d="M7 10l5 5 5-5"/><path d="M4 19h16"/>
-</symbol>
-<symbol id="i-upload" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-  <path d="M12 16V4"/><path d="M7 9l5-5 5 5"/><path d="M4 18v2a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-2"/>
-</symbol>
-<symbol id="i-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-  <path d="M5 13l4 4L19 7"/>
-</symbol>
-<symbol id="i-pin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-  <path d="M12 21s7-7.5 7-12a7 7 0 1 0-14 0c0 4.5 7 12 7 12z"/><circle cx="12" cy="9" r="2.3"/>
-</symbol>
-<symbol id="i-orbit" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
-  <ellipse cx="12" cy="12" rx="9" ry="5"/><circle cx="12" cy="12" r="1.6" fill="currentColor" stroke="none"/>
-</symbol>
-<symbol id="i-move" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-  <path d="M12 2v20M2 12h20M12 2l-2.5 2.5M12 2l2.5 2.5M12 22l-2.5-2.5M12 22l2.5-2.5M2 12l2.5-2.5M2 12l2.5 2.5M22 12l-2.5-2.5M22 12l-2.5 2.5"/>
-</symbol>
-<symbol id="i-zoom-in" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
-  <circle cx="10" cy="10" r="6"/><line x1="14.5" y1="14.5" x2="20" y2="20"/><line x1="10" y1="7" x2="10" y2="13"/><line x1="7" y1="10" x2="13" y2="10"/>
-</symbol>
-<symbol id="i-zoom-out" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
-  <circle cx="10" cy="10" r="6"/><line x1="14.5" y1="14.5" x2="20" y2="20"/><line x1="7" y1="10" x2="13" y2="10"/>
-</symbol>
-<symbol id="i-fullscreen" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-  <path d="M4 9V4h5"/><path d="M15 4h5v5"/><path d="M20 15v5h-5"/><path d="M9 20H4v-5"/>
-</symbol>
-<symbol id="i-link" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-  <path d="M9 15l6-6"/><path d="M13 5h4a4 4 0 0 1 0 8h-2"/><path d="M11 19H7a4 4 0 0 1 0-8h2"/>
-</symbol>
-<symbol id="i-target" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
-  <circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="1.4" fill="currentColor" stroke="none"/><line x1="12" y1="2" x2="12" y2="5"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="2" y1="12" x2="5" y2="12"/><line x1="19" y1="12" x2="22" y2="12"/>
-</symbol>
-<symbol id="i-play" viewBox="0 0 24 24"><path d="M7 5l12 7-12 7V5z" fill="currentColor"/></symbol>
-<symbol id="i-pause" viewBox="0 0 24 24"><rect x="6" y="5" width="4" height="14" rx="1" fill="currentColor"/><rect x="14" y="5" width="4" height="14" rx="1" fill="currentColor"/></symbol>
-<symbol id="i-warning" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-  <path d="M12 3l9 16H3z"/><line x1="12" y1="9" x2="12" y2="14"/><circle cx="12" cy="17" r="0.6" fill="currentColor" stroke="none"/>
-</symbol>
+  <symbol id="i-home" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M4 11l8-7 8 7"/><path d="M6 10v9a1 1 0 0 0 1 1h3v-6h4v6h3a1 1 0 0 0 1-1v-9"/>
+  </symbol>
+  <symbol id="i-building" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="6" y="3" width="12" height="18" rx="1"/>
+    <rect x="9" y="6.5" width="2" height="2" fill="currentColor" stroke="none"/><rect x="13" y="6.5" width="2" height="2" fill="currentColor" stroke="none"/>
+    <rect x="9" y="11" width="2" height="2" fill="currentColor" stroke="none"/><rect x="13" y="11" width="2" height="2" fill="currentColor" stroke="none"/>
+    <rect x="9" y="15.5" width="2" height="2" fill="currentColor" stroke="none"/><rect x="13" y="15.5" width="2" height="2" fill="currentColor" stroke="none"/>
+  </symbol>
+  <symbol id="i-camera" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7l1.5-2.5h5L16 7"/><circle cx="12" cy="13.5" r="3.5"/>
+  </symbol>
+  <symbol id="i-cube" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M12 2L20 6.5V17.5L12 22L4 17.5V6.5L12 2Z"/><path d="M12 12V22"/><path d="M12 12L20 6.5"/><path d="M12 12L4 6.5"/>
+  </symbol>
+  <symbol id="i-report" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M7 3h7l4 4v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/><path d="M14 3v4h4"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="16" x2="15" y2="16"/>
+  </symbol>
+  <symbol id="i-settings" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="12" cy="12" r="3.2"/><path d="M12 2.5v3M12 18.5v3M3.5 12h3M17.5 12h3M5.8 5.8l2.1 2.1M16.1 16.1l2.1 2.1M18.2 5.8l-2.1 2.1M7.9 16.1l-2.1 2.1"/>
+  </symbol>
+  <symbol id="i-sync" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/><path d="M3 21v-5h5"/>
+  </symbol>
+  <symbol id="i-close" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round">
+    <line x1="6" y1="6" x2="18" y2="18"/><line x1="18" y1="6" x2="6" y2="18"/>
+  </symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round">
+    <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+  </symbol>
+  <symbol id="i-trash" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M5 7h14"/><path d="M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/><path d="M7 7l1 13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1l1-13"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/>
+  </symbol>
+  <symbol id="i-upload" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M12 16V4"/><path d="M7 9l5-5 5 5"/><path d="M4 18v2a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-2"/>
+  </symbol>
+  <symbol id="i-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M5 13l4 4L19 7"/>
+  </symbol>
+  <symbol id="i-pin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M12 21s7-7.5 7-12a7 7 0 1 0-14 0c0 4.5 7 12 7 12z"/><circle cx="12" cy="9" r="2.3"/>
+  </symbol>
+  <symbol id="i-orbit" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+    <ellipse cx="12" cy="12" rx="9" ry="5"/><circle cx="12" cy="12" r="1.6" fill="currentColor" stroke="none"/>
+  </symbol>
+  <symbol id="i-zoom-in" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+    <circle cx="10" cy="10" r="6"/><line x1="14.5" y1="14.5" x2="20" y2="20"/><line x1="10" y1="7" x2="10" y2="13"/><line x1="7" y1="10" x2="13" y2="10"/>
+  </symbol>
+  <symbol id="i-zoom-out" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+    <circle cx="10" cy="10" r="6"/><line x1="14.5" y1="14.5" x2="20" y2="20"/><line x1="7" y1="10" x2="13" y2="10"/>
+  </symbol>
+  <symbol id="i-fullscreen" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M4 9V4h5"/><path d="M15 4h5v5"/><path d="M20 15v5h-5"/><path d="M9 20H4v-5"/>
+  </symbol>
+  <symbol id="i-link" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M9 15l6-6"/><path d="M13 5h4a4 4 0 0 1 0 8h-2"/><path d="M11 19H7a4 4 0 0 1 0-8h2"/>
+  </symbol>
+  <symbol id="i-target" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+    <circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="1.4" fill="currentColor" stroke="none"/><line x1="12" y1="2" x2="12" y2="5"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="2" y1="12" x2="5" y2="12"/><line x1="19" y1="12" x2="22" y2="12"/>
+  </symbol>
+  <symbol id="i-play" viewBox="0 0 24 24"><path d="M7 5l12 7-12 7V5z" fill="currentColor"/></symbol>
+  <symbol id="i-pause" viewBox="0 0 24 24"><rect x="6" y="5" width="4" height="14" rx="1" fill="currentColor"/><rect x="14" y="5" width="4" height="14" rx="1" fill="currentColor"/></symbol>
+  <symbol id="i-warning" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M12 3l9 16H3z"/><line x1="12" y1="9" x2="12" y2="14"/><circle cx="12" cy="17" r="0.6" fill="currentColor" stroke="none"/>
+  </symbol>
+  <symbol id="i-ruler" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M4 6h16v12H4z"/><line x1="8" y1="6" x2="8" y2="10"/><line x1="12" y1="6" x2="12" y2="12"/><line x1="16" y1="6" x2="16" y2="10"/>
+  </symbol>
 </defs>
 </svg>
 
+<!-- ── App Shell ─────────────────────────────────────── -->
 <div id="offline-banner-root"></div>
 <div class="shell">
   <div id="sidebar-root"></div>
   <main class="main">
     <div class="topbar">
       <div class="brand-mark"><img src="logo.png" alt="Salsi"><span class="display">Salsi</span></div>
-            <a class="project-pill" href="projects.html" id="activeProjectPill"><svg><use href="#i-building"/></svg><span>Carregando…</span></a>
-
+      <a class="project-pill" href="projects.html" id="activeProjectPill">
+        <svg><use href="#i-building"/></svg><span>Carregando…</span>
+      </a>
     </div>
+
     <div class="content">
       <h1 class="page-title" style="margin-bottom:4px">Modelo 3D</h1>
       <p class="page-sub">Vistas, medição e marcações — tudo salvo neste projeto, mesmo offline.</p>
 
+      <!-- No project selected state -->
       <div id="noProjectState" class="empty" style="display:none">
-        <img src="logo.png" alt=""><strong>Nenhum projeto selecionado</strong>
+        <img src="logo.png" alt="">
+        <strong>Nenhum projeto selecionado</strong>
         <span>Escolha ou crie um projeto antes de carregar um modelo.</span>
-        <div style="margin-top:14px"><a class="btn primary" href="projects.html"><svg><use href="#i-building"/></svg>Ir pra Projects</a></div>
+        <div style="margin-top:14px">
+          <a class="btn primary" href="projects.html"><svg><use href="#i-building"/></svg>Ir para Projects</a>
+        </div>
       </div>
 
+      <!-- Main model area -->
       <div id="modelArea" style="display:none">
+
+        <!-- Meta chips -->
         <div class="meta-row">
           <span class="chip">Arquivo: <b id="filename">—</b></span>
           <span class="chip">Dimensões: <b id="dims">—</b></span>
           <span class="chip">Medida: <b id="lastMeasure">—</b></span>
         </div>
 
-        <div class="vstage">
-          <div class="progress-wrap hidden" id="progressWrap"><div class="progress-bar" id="progressBar"></div></div>
+        <!-- Viewer + Side Panel grid -->
+        <div class="viewer-grid" style="display:grid; grid-template-columns:2fr 1fr; gap:20px; align-items:start;">
 
-          <div class="float-toolbar">
-            <button id="toggleRotate" title="Girar automaticamente"><svg><use href="#i-orbit"/></svg></button>
-            <button id="annotateBtn" title="Marcar / medir"><svg><use href="#i-pin"/></svg></button>
-            <button id="captureBtn" title="Capturar imagem"><svg><use href="#i-camera"/></svg></button>
-            <button id="shareBtn" title="Compartilhar vista"><svg><use href="#i-link"/></svg></button>
+          <!-- 3D Viewer Stage -->
+          <div class="vstage" style="margin-bottom:0;">
+            <div class="progress-wrap hidden" id="progressWrap">
+              <div class="progress-bar" id="progressBar"></div>
+            </div>
+
+            <!-- Floating Toolbar (top-right) -->
+            <div class="float-toolbar">
+              <button id="toggleRotate" title="Girar automaticamente (Espaço)"><svg><use href="#i-orbit"/></svg></button>
+              <button id="annotateBtn" title="Fita métrica — clique no 1º ponto, arraste, clique no 2º (A)"><svg><use href="#i-ruler"/></svg></button>
+              <button id="captureBtn" title="Capturar imagem (C)"><svg><use href="#i-camera"/></svg></button>
+              <button id="shareBtn" title="Compartilhar vista"><svg><use href="#i-link"/></svg></button>
+            </div>
+
+            <!-- Floating Stack (right-side buttons) -->
+            <div class="float-stack">
+              <button id="zoomInBtn" title="Zoom +"><svg><use href="#i-zoom-in"/></svg></button>
+              <button id="zoomOutBtn" title="Zoom −"><svg><use href="#i-zoom-out"/></svg></button>
+              <button id="fullscreenBtn" title="Tela cheia (F)"><svg><use href="#i-fullscreen"/></svg></button>
+              <button id="clearAnnotationsBtn" title="Limpar todas as marcações"><svg><use href="#i-trash"/></svg></button>
+            </div>
+
+            <!-- The 3D viewer -->
+            <model-viewer
+              id="viewer"
+              alt="Modelo 3D do projeto"
+              camera-controls
+              touch-action="pan-y"
+              shadow-intensity="1"
+              exposure="1"
+              environment-image="neutral"
+              min-camera-orbit="auto 0deg auto"
+              max-camera-orbit="auto 180deg auto"
+              ar
+              ar-modes="scene-viewer webxr quick-look">
+            </model-viewer>
+
+            <!-- Empty state overlay -->
+            <div class="empty-state" id="emptyState">
+              <img src="logo.png" alt="">
+              <strong>Nenhum modelo neste projeto</strong>
+              <span>Carregue um arquivo .glb ou .gltf exportado do SketchUp.</span>
+              <label class="btn primary" for="fileInput" style="margin-top:6px; cursor:pointer;">
+                <svg><use href="#i-upload"/></svg>Carregar modelo
+              </label>
+            </div>
           </div>
-          <div class="float-stack">
-            <button id="zoomInBtn" title="Zoom +"><svg><use href="#i-zoom-in"/></svg></button>
-            <button id="zoomOutBtn" title="Zoom −"><svg><use href="#i-zoom-out"/></svg></button>
-            <button id="fullscreenBtn" title="Tela cheia"><svg><use href="#i-fullscreen"/></svg></button>
-            <button id="clearAnnotationsBtn" title="Limpar marcações"><svg><use href="#i-trash"/></svg></button>
-          </div>
 
-          <model-viewer id="viewer" alt="Modelo 3D" camera-controls touch-action="pan-y" shadow-intensity="1" exposure="1"
-            environment-image="neutral" min-camera-orbit="auto 0deg auto" max-camera-orbit="auto 180deg auto"
-            ar ar-modes="scene-viewer webxr quick-look"></model-viewer>
-
-          <div class="empty-state" id="emptyState">
-            <img src="logo.png" alt="">
-            <strong>Nenhum modelo neste projeto</strong>
-            <span>Carregue um arquivo .glb ou .gltf exportado do SketchUp.</span>
-            <label class="btn primary" for="fileInput" style="margin-top:6px;color:var(--navy)"><svg><use href="#i-upload"/></svg>Carregar modelo</label>
+          <!-- Side Panel: Measurements & Notes -->
+          <div class="card side-panel" style="margin-bottom:0; height:58vh; min-height:400px; display:flex; flex-direction:column;">
+            <h3 style="margin-bottom:12px; display:flex; align-items:center; gap:8px;">
+              <svg style="width:16px;height:16px;color:var(--accent)"><use href="#i-ruler"/></svg>
+              Painel de Medições e Notas
+            </h3>
+            <div id="measurementsList" style="flex:1; overflow-y:auto; display:flex; flex-direction:column; gap:10px; padding-right:4px; margin-bottom:12px;">
+              <!-- Populated by JS -->
+            </div>
+            <button class="btn danger" id="clearAnnotationsBtnSide" style="width:100%">
+              <svg><use href="#i-trash"/></svg>Limpar Todas
+            </button>
           </div>
         </div>
 
+        <!-- Hidden file input -->
         <input type="file" id="fileInput" accept=".glb,.gltf" style="display:none">
 
+        <!-- Views & Tools -->
         <div class="card" style="margin-top:16px">
-          <h3>Vistas &amp; ferramentas</h3>
-          <div style="display:flex;flex-wrap:wrap;gap:8px">
+          <h3>Vistas &amp; Ferramentas</h3>
+          <div style="display:flex; flex-wrap:wrap; gap:8px;">
             <button class="btn viewbtn" data-orbit="0deg 90deg auto">Frente</button>
             <button class="btn viewbtn" data-orbit="180deg 90deg auto">Trás</button>
             <button class="btn viewbtn" data-orbit="90deg 90deg auto">Direita</button>
@@ -197,65 +270,212 @@
             <button class="btn viewbtn" data-orbit="45deg 55deg auto"><svg><use href="#i-cube"/></svg>Isométrica</button>
             <button class="btn" id="resetViewBtn"><svg><use href="#i-target"/></svg>Recentrar</button>
             <button class="btn hidden" id="animBtn"><svg><use href="#i-play"/></svg>Animação</button>
-            <label class="btn" for="fileInput"><svg><use href="#i-upload"/></svg>Substituir modelo</label>
+            <label class="btn" for="fileInput" style="cursor:pointer;"><svg><use href="#i-upload"/></svg>Substituir modelo</label>
+            <button class="btn" id="pdfReportBtn"><svg><use href="#i-report"/></svg>Relatório PDF</button>
             <button class="btn" id="helpBtn">Atalhos&nbsp;<kbd style="font-size:11px">?</kbd></button>
           </div>
         </div>
-      </div>
 
-     <div class="overlay hidden" id="shortcutsOverlay" style="background:rgba(31,43,56,.5);padding:20px;z-index:50">
-        <div style="background:var(--white);border-radius:18px;padding:20px;max-width:340px;width:100%">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
-            <strong style="font-family:'Manrope',sans-serif;color:var(--navy)">Atalhos de teclado</strong>
-            <span id="closeShortcuts" style="cursor:pointer"><svg width="18" height="18"><use href="#i-close"/></svg></span>
+        <!-- Technical Studies -->
+        <div class="card" style="margin-top:16px">
+          <h3>Estudos Técnicos (Luz &amp; Cortes)</h3>
+          <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:16px; margin-bottom:16px">
+            <div>
+              <label class="field-label" for="sunAngle">Estudo Solar — Direção do sol: <b id="sunAngleVal" style="color:var(--accent)">0°</b></label>
+              <input type="range" id="sunAngle" min="0" max="360" step="1" value="0" style="width:100%">
+            </div>
+            <div id="variantContainer" style="display:none">
+              <label class="field-label" for="variantSelect">Variante de Acabamento:</label>
+              <select id="variantSelect" style="width:100%"></select>
+            </div>
           </div>
-          <div style="font-size:13px;display:flex;flex-direction:column;gap:7px;color:var(--ink)">
-            <div style="display:flex;justify-content:space-between">Vistas (frente…iso) <kbd>1–7</kbd></div>
-            <div style="display:flex;justify-content:space-between">Recentrar <kbd>R</kbd></div>
-            <div style="display:flex;justify-content:space-between">Girar automaticamente <kbd>Espaço</kbd></div>
-            <div style="display:flex;justify-content:space-between">Marcar / medir <kbd>A</kbd></div>
-            <div style="display:flex;justify-content:space-between">Capturar imagem <kbd>C</kbd></div>
-            <div style="display:flex;justify-content:space-between">Tela cheia <kbd>F</kbd></div>
+          <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:16px">
+            <div>
+              <label class="field-label" for="clipY">Corte Horizontal Y (Altura): <b id="clipYVal" style="color:var(--accent)">Desativado</b></label>
+              <input type="range" id="clipY" min="-2" max="15" step="0.05" value="15" style="width:100%">
+            </div>
+            <div>
+              <label class="field-label" for="clipZ">Corte Vertical Z (Profundidade): <b id="clipZVal" style="color:var(--accent)">Desativado</b></label>
+              <input type="range" id="clipZ" min="-15" max="15" step="0.05" value="15" style="width:100%">
+            </div>
           </div>
         </div>
-      </div>
 
-    </div>
+      </div><!-- /#modelArea -->
+    </div><!-- /.content -->
   </main>
-</div>
+</div><!-- /.shell -->
+
 <div id="sync-card-root"></div>
+
+<!-- Keyboard Shortcuts Overlay -->
+<div class="overlay hidden" id="shortcutsOverlay">
+  <div class="shortcuts-box">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+      <strong>Atalhos de teclado</strong>
+      <button id="closeShortcuts" style="background:none;border:none;cursor:pointer;color:var(--text-secondary);display:flex;align-items:center;">
+        <svg style="width:18px;height:18px;"><use href="#i-close"/></svg>
+      </button>
+    </div>
+    <div style="display:flex; flex-direction:column; gap:4px;">
+      <div class="sc-row"><span>Vistas (frente…iso)</span><kbd>1 – 7</kbd></div>
+      <div class="sc-row"><span>Recentrar</span><kbd>R</kbd></div>
+      <div class="sc-row"><span>Girar automaticamente</span><kbd>Espaço</kbd></div>
+      <div class="sc-row"><span>Fita métrica / medir</span><kbd>A</kbd></div>
+      <div class="sc-row"><span>Capturar imagem</span><kbd>C</kbd></div>
+      <div class="sc-row"><span>Tela cheia</span><kbd>F</kbd></div>
+      <div class="sc-row"><span>Atalhos</span><kbd>?</kbd></div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Scripts ───────────────────────────────────────── -->
 <script src="assets/db.js"></script>
 <script src="assets/shell.js"></script>
 <script>
-SalsiShell.init('models');
 (async function () {
+  'use strict';
+
+  // ── Init Shell ──────────────────────────────────────
+  SalsiShell.init('models');
+
   const activeId = SalsiShell.getActiveProjectId();
-  if (!activeId) { document.getElementById('noProjectState').style.display = ''; return; }
+  if (!activeId) {
+    document.getElementById('noProjectState').style.display = '';
+    return;
+  }
   document.getElementById('modelArea').style.display = '';
 
   const project = await SalsiDB.getProject(activeId);
-  const pillEl = document.getElementById('activeProjectPill');
+  const pillEl  = document.getElementById('activeProjectPill');
   if (pillEl) pillEl.querySelector('span').textContent = project ? project.name : 'Projeto';
 
-  const viewer = document.getElementById('viewer');
-  const emptyState = document.getElementById('emptyState');
-  const filenameEl = document.getElementById('filename');
-  const dimsEl = document.getElementById('dims');
+  // ── DOM refs ────────────────────────────────────────
+  const viewer        = document.getElementById('viewer');
+  const emptyState    = document.getElementById('emptyState');
+  const filenameEl    = document.getElementById('filename');
+  const dimsEl        = document.getElementById('dims');
   const lastMeasureEl = document.getElementById('lastMeasure');
-  const progressWrap = document.getElementById('progressWrap');
-  const progressBar = document.getElementById('progressBar');
-  const animBtn = document.getElementById('animBtn');
+  const progressWrap  = document.getElementById('progressWrap');
+  const progressBar   = document.getElementById('progressBar');
+  const animBtn       = document.getElementById('animBtn');
 
-  let hotspotCount = 0;
-  let annotateMode = false;
-  let downPoint = null;
-  let pendingPoint = null;
+  // ── State ───────────────────────────────────────────
+  let hotspotCount    = 0;
+  let annotateMode    = false;
+  let downPoint       = null;
+  let pendingPoint    = null;   // { pos:{x,y,z}, index:Number }
 
+  // Live tape measure (Three.js line that follows the mouse)
+  let activeLine         = null;
+  let activeLineGeometry = null;
+  let liveLabel          = null;  // floating DOM label
+  let permanentLines     = [];
+
+  // Three.js clipping planes
+  let localClipPlaneY = null;
+  let localClipPlaneZ = null;
+
+  // ── Helpers ─────────────────────────────────────────
+  function esc(s) {
+    return String(s == null ? '' : s)
+      .replace(/[&<>"]/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;' }[c]));
+  }
+
+  function forceRender() {
+    try {
+      const sym = Symbol.for('3DViewer');
+      if (viewer[sym] && viewer[sym].renderer) {
+        viewer[sym].renderer.queueRender();
+      }
+    } catch (_) {}
+  }
+
+  // ── Three.js Clipping ────────────────────────────────
+  function initClipping() {
+    if (typeof THREE === 'undefined') return;
+    try {
+      const sym = Symbol.for('3DViewer');
+      if (viewer[sym] && viewer[sym].renderer && viewer[sym].renderer.threeRenderer) {
+        viewer[sym].renderer.threeRenderer.localClippingEnabled = true;
+      }
+      localClipPlaneY = new THREE.Plane(new THREE.Vector3(0, -1, 0), 999);
+      localClipPlaneZ = new THREE.Plane(new THREE.Vector3(0,  0,-1), 999);
+    } catch (e) { console.warn('Clipping init failed', e); }
+  }
+
+  function applyClippingToScene() {
+    if (typeof THREE === 'undefined' || !viewer.model || !viewer.model.scene) return;
+    viewer.model.scene.traverse(child => {
+      if (child.isMesh && child.material) {
+        const mats = Array.isArray(child.material) ? child.material : [child.material];
+        mats.forEach(mat => {
+          mat.clippingPlanes = [];
+          if (localClipPlaneY) mat.clippingPlanes.push(localClipPlaneY);
+          if (localClipPlaneZ) mat.clippingPlanes.push(localClipPlaneZ);
+          mat.clipShadows = true;
+          mat.needsUpdate = true;
+        });
+      }
+    });
+  }
+
+  // ── Vertex Snapping ──────────────────────────────────
+  function getSnappedPoint(hitPos) {
+    let closest = { x: hitPos.x, y: hitPos.y, z: hitPos.z };
+    let minDist = Infinity;
+    if (!viewer.model || !viewer.model.scene) return closest;
+
+    viewer.model.scene.traverse(child => {
+      if (!child.isMesh || !child.geometry) return;
+      const posAttr = child.geometry.attributes.position;
+      if (!posAttr) return;
+      const m    = child.matrixWorld.elements;
+      const step = posAttr.count > 5000 ? Math.ceil(posAttr.count / 5000) : 1;
+      for (let i = 0; i < posAttr.count; i += step) {
+        const vx = posAttr.getX(i), vy = posAttr.getY(i), vz = posAttr.getZ(i);
+        const wx = m[0]*vx + m[4]*vy + m[8]*vz  + m[12];
+        const wy = m[1]*vx + m[5]*vy + m[9]*vz  + m[13];
+        const wz = m[2]*vx + m[6]*vy + m[10]*vz + m[14];
+        const d  = Math.sqrt((wx-hitPos.x)**2 + (wy-hitPos.y)**2 + (wz-hitPos.z)**2);
+        if (d < minDist) { minDist = d; closest = { x:wx, y:wy, z:wz }; }
+      }
+    });
+    return minDist < 0.15 ? closest : hitPos;
+  }
+
+  // ── Permanent 3D Lines ───────────────────────────────
+  function clearPermanentLines() {
+    if (typeof THREE === 'undefined' || !viewer.model || !viewer.model.scene) return;
+    permanentLines.forEach(l => viewer.model.scene.remove(l));
+    permanentLines = [];
+  }
+
+  function drawPermanentLine(posStr1, posStr2) {
+    if (typeof THREE === 'undefined' || !viewer.model || !viewer.model.scene) return;
+    try {
+      const p1 = posStr1.split(' ').map(Number);
+      const p2 = posStr2.split(' ').map(Number);
+      const pts  = [new THREE.Vector3(...p1), new THREE.Vector3(...p2)];
+      const geom = new THREE.BufferGeometry().setFromPoints(pts);
+      const mat  = new THREE.LineBasicMaterial({ color: 0xdca153, linewidth: 3, depthTest: false });
+      const line = new THREE.Line(geom, mat);
+      line.renderOrder = 999;
+      viewer.model.scene.add(line);
+      permanentLines.push(line);
+    } catch (e) { console.warn('drawPermanentLine error', e); }
+  }
+
+  // ── Hotspot / Markup Management ──────────────────────
   function clearHotspotsVisual() {
     viewer.querySelectorAll('.hotspot-pin').forEach(el => el.remove());
-    hotspotCount = 0;
-    pendingPoint = null;
+    if (liveLabel) { liveLabel.remove(); liveLabel = null; }
+    if (activeLine && viewer.model && viewer.model.scene) viewer.model.scene.remove(activeLine);
+    activeLine = null; activeLineGeometry = null;
+    hotspotCount  = 0;
+    pendingPoint  = null;
     lastMeasureEl.textContent = '—';
+    clearPermanentLines();
   }
 
   async function clearHotspots() {
@@ -266,19 +486,82 @@ SalsiShell.init('models');
   async function hydrateMarkupsFromDB() {
     clearHotspotsVisual();
     const markups = await SalsiDB.getMarkups(activeId);
+
     for (const m of markups) {
       hotspotCount = Math.max(hotspotCount, m.number);
       const pin = document.createElement('button');
-      pin.slot = `hotspot-${m.number}`;
-      pin.className = 'hotspot-pin';
+      pin.slot          = `hotspot-${m.number}`;
+      pin.className     = 'hotspot-pin';
       pin.dataset.position = m.position;
-      pin.dataset.normal = m.normal;
-      pin.textContent = String(m.number);
-      pin.title = m.note || `Ponto ${m.number}`;
+      pin.dataset.normal   = m.normal;
+      pin.textContent   = String(m.number);
+      pin.title         = m.note || `Ponto ${m.number}`;
+      pin.addEventListener('click', async e => {
+        e.stopPropagation();
+        const newNote = prompt(`Nota Técnica — Ponto #${m.number}:`, m.note || '');
+        if (newNote !== null) {
+          m.note = newNote; pin.title = `Ponto ${m.number} — ${newNote}`;
+          await SalsiDB.addMarkup(m);
+          await hydrateMarkupsFromDB();
+        }
+      });
       viewer.appendChild(pin);
     }
+
+    // Draw saved measurement lines
+    for (const m of markups) {
+      if (m.note && m.note.includes(' m do ponto ')) {
+        const startNum = parseInt(m.note.split(' do ponto ')[1]);
+        const startM   = markups.find(x => x.number === startNum);
+        if (startM) drawPermanentLine(startM.position, m.position);
+      }
+    }
+
+    renderMeasurementsPanel(markups);
+    forceRender();
   }
 
+  function renderMeasurementsPanel(markups) {
+    const listEl = document.getElementById('measurementsList');
+    if (!listEl) return;
+    if (markups.length === 0) {
+      listEl.innerHTML = `
+        <div style="text-align:center;color:var(--text-secondary);margin-top:40px;font-size:13px;padding:10px;line-height:1.6;">
+          <svg style="width:32px;height:32px;margin-bottom:8px;opacity:.4"><use href="#i-ruler"/></svg>
+          <p>Nenhuma medição criada.</p>
+          <p style="font-size:12px;margin-top:4px;">Ative a <b>Fita Métrica</b> no topo e clique em dois pontos do modelo.</p>
+        </div>`;
+      return;
+    }
+    listEl.innerHTML = markups.map(m => {
+      const isPending = m.note === 'toque em outro ponto para medir a distância';
+      let descText = 'Anotação';
+      if (isPending) descText = '📍 Ponto Inicial — aguardando 2º clique';
+      else if (m.note.includes(' m do ponto ')) {
+        const parts = m.note.split(' m do ponto ');
+        descText = `📏 ${parts[0]} m → Ponto ${parts[1]}`;
+      }
+      return `
+        <div style="background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:8px;">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
+            <div style="display:flex;align-items:center;gap:8px;min-width:0;">
+              <span class="hotspot-pin" style="position:static;display:inline-flex;width:22px;height:22px;min-width:22px;font-size:10px;border-width:1.5px;box-shadow:none;">${m.number}</span>
+              <span style="font-size:11px;color:var(--accent);font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${esc(descText)}">${descText}</span>
+            </div>
+            <button class="btn danger" style="padding:4px 8px;border-radius:8px;font-size:11px;flex-shrink:0;" data-delete-id="${m.id}" title="Excluir ponto">
+              <svg style="width:12px;height:12px;stroke-width:2.5;"><use href="#i-close"/></svg>
+            </button>
+          </div>
+          <input type="text" class="panel-note-input" data-id="${m.id}"
+            value="${isPending ? '' : esc(m.note)}"
+            placeholder="${isPending ? 'Aguardando 2º ponto...' : 'Escreva observações...'}"
+            ${isPending ? 'disabled' : ''}
+            style="padding:8px 12px;font-size:12px;">
+        </div>`;
+    }).join('');
+  }
+
+  // ── Load Model ───────────────────────────────────────
   async function loadModelForProject() {
     const stored = await SalsiDB.getProjectModel(activeId);
     if (stored && stored.blob) {
@@ -291,8 +574,8 @@ SalsiShell.init('models');
     }
   }
 
-  // --- carregamento do modelo ---
-  viewer.addEventListener('progress', (e) => {
+  // ── Model Viewer Events ──────────────────────────────
+  viewer.addEventListener('progress', e => {
     const pct = Math.round((e.detail.totalProgress || 0) * 100);
     progressWrap.classList.remove('hidden');
     progressBar.style.width = pct + '%';
@@ -308,210 +591,344 @@ SalsiShell.init('models');
   viewer.addEventListener('load', async () => {
     emptyState.classList.add('hidden');
     progressWrap.classList.add('hidden');
+
+    // Dimensions
     try {
       const d = viewer.getDimensions();
       dimsEl.textContent = `${d.x.toFixed(2)} × ${d.y.toFixed(2)} × ${d.z.toFixed(2)} m`;
-    } catch (e) { dimsEl.textContent = '—'; }
-    const hasAnim = !!(viewer.availableAnimations && viewer.availableAnimations.length > 0);
+
+      // Adjust clipping sliders to model size
+      const clipYEl = document.getElementById('clipY');
+      const clipZEl = document.getElementById('clipZ');
+      clipYEl.min = String((-d.y * 0.1).toFixed(2));
+      clipYEl.max = String((d.y * 1.5).toFixed(2));
+      clipYEl.value = clipYEl.max;
+      clipZEl.min = String((-d.z * 1.5).toFixed(2));
+      clipZEl.max = String((d.z * 1.5).toFixed(2));
+      clipZEl.value = clipZEl.max;
+      document.getElementById('clipYVal').textContent = 'Desativado';
+      document.getElementById('clipZVal').textContent = 'Desativado';
+    } catch (_) { dimsEl.textContent = '—'; }
+
+    // Animations
+    const hasAnim = !!(viewer.availableAnimations && viewer.availableAnimations.length);
     animBtn.classList.toggle('hidden', !hasAnim);
+
+    // Clipping init
+    initClipping();
+    applyClippingToScene();
+
+    // Variants
+    const variants        = viewer.availableVariants;
+    const variantContainer = document.getElementById('variantContainer');
+    const variantSelect    = document.getElementById('variantSelect');
+    if (variants && variants.length) {
+      variantContainer.style.display = 'block';
+      variantSelect.innerHTML = '<option value="">(Padrão)</option>'
+        + variants.map(v => `<option value="${esc(v)}">${esc(v)}</option>`).join('');
+      variantSelect.value = viewer.variantName || '';
+    } else {
+      variantContainer.style.display = 'none';
+    }
+
     await hydrateMarkupsFromDB();
+
+    // Apply share hash if present
+    applyShareHashIfPresent();
   });
 
-  // --- vistas ---
+  // ── View Buttons ─────────────────────────────────────
   document.querySelectorAll('.viewbtn').forEach(btn => {
-    btn.addEventListener('click', () => { viewer.cameraOrbit = btn.dataset.orbit; viewer.jumpCameraToGoal(); });
+    btn.addEventListener('click', () => {
+      viewer.cameraOrbit = btn.dataset.orbit;
+      viewer.jumpCameraToGoal();
+    });
   });
+
   document.getElementById('resetViewBtn').addEventListener('click', () => {
-    viewer.cameraOrbit = 'auto auto auto'; viewer.cameraTarget = 'auto auto auto'; viewer.fieldOfView = 'auto';
+    viewer.cameraOrbit = 'auto auto auto';
+    viewer.cameraTarget = 'auto auto auto';
+    viewer.fieldOfView = 'auto';
     viewer.jumpCameraToGoal();
   });
 
-  // --- girar automaticamente ---
-  function toggleRotate() {
+  // ── Auto-Rotate ──────────────────────────────────────
+  const toggleRotateBtn = document.getElementById('toggleRotate');
+  toggleRotateBtn.addEventListener('click', () => {
     const on = viewer.hasAttribute('auto-rotate');
     viewer.toggleAttribute('auto-rotate', !on);
-    document.getElementById('toggleRotate').classList.toggle('active', !on);
-  }
-  document.getElementById('toggleRotate').addEventListener('click', toggleRotate);
+    toggleRotateBtn.classList.toggle('active', !on);
+  });
 
-  // --- zoom ---
+  // ── Zoom ─────────────────────────────────────────────
   document.getElementById('zoomInBtn').addEventListener('click', () => viewer.zoom(1));
   document.getElementById('zoomOutBtn').addEventListener('click', () => viewer.zoom(-1));
 
-  // --- tela cheia ---
+  // ── Fullscreen ───────────────────────────────────────
   function goFullscreen() {
-    if (viewer.requestFullscreen) viewer.requestFullscreen();
-    else if (viewer.webkitRequestFullscreen) viewer.webkitRequestFullscreen();
+    const el = viewer;
+    if (el.requestFullscreen)       el.requestFullscreen();
+    else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
   }
   document.getElementById('fullscreenBtn').addEventListener('click', goFullscreen);
 
-  // --- atalhos / ajuda ---
+  // ── Shortcuts Overlay ────────────────────────────────
   const shortcutsOverlay = document.getElementById('shortcutsOverlay');
-  function toggleShortcuts() { shortcutsOverlay.classList.toggle('hidden'); }
-  document.getElementById('helpBtn').addEventListener('click', toggleShortcuts);
-  document.getElementById('closeShortcuts').addEventListener('click', toggleShortcuts);
+  document.getElementById('helpBtn').addEventListener('click',   () => shortcutsOverlay.classList.toggle('hidden'));
+  document.getElementById('closeShortcuts').addEventListener('click', () => shortcutsOverlay.classList.add('hidden'));
 
-  const viewKeys = {
-    '1': '0deg 90deg auto', '2': '180deg 90deg auto', '3': '90deg 90deg auto',
-    '4': '-90deg 90deg auto', '5': '0deg 0.1deg auto', '6': '0deg 179.9deg auto', '7': '45deg 55deg auto',
-  };
-  window.addEventListener('keydown', (e) => {
-    if (e.ctrlKey || e.metaKey || e.altKey) return;
+  // ── Keyboard Shortcuts ───────────────────────────────
+  const viewKeys = { '1':'0deg 90deg auto','2':'180deg 90deg auto','3':'90deg 90deg auto',
+    '4':'-90deg 90deg auto','5':'0deg 0.1deg auto','6':'0deg 179.9deg auto','7':'45deg 55deg auto' };
+
+  window.addEventListener('keydown', e => {
+    if (e.ctrlKey || e.metaKey || e.altKey || e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
     const k = e.key;
     if (viewKeys[k]) { viewer.cameraOrbit = viewKeys[k]; viewer.jumpCameraToGoal(); return; }
     if (k === 'r' || k === 'R') { document.getElementById('resetViewBtn').click(); return; }
     if (k === 'f' || k === 'F') { goFullscreen(); return; }
     if (k === 'a' || k === 'A') { document.getElementById('annotateBtn').click(); return; }
     if (k === 'c' || k === 'C') { document.getElementById('captureBtn').click(); return; }
-    if (k === ' ') { e.preventDefault(); toggleRotate(); return; }
-    if (k === '?') { toggleShortcuts(); return; }
+    if (k === ' ') { e.preventDefault(); toggleRotateBtn.click(); return; }
+    if (k === '?') { shortcutsOverlay.classList.toggle('hidden'); return; }
   });
 
-  // --- animação ---
+  // ── Animation ────────────────────────────────────────
   animBtn.addEventListener('click', () => {
-    if (viewer.paused) { viewer.play(); animBtn.classList.add('active'); }
-    else { viewer.pause(); animBtn.classList.remove('active'); }
+    if (viewer.paused) { viewer.play();  animBtn.classList.add('active'); }
+    else               { viewer.pause(); animBtn.classList.remove('active'); }
   });
 
-  // --- marcar / medir (com persistência) ---
-  document.getElementById('annotateBtn').addEventListener('click', (e) => {
+  // ── Fita Métrica (Live Tape Measure) ─────────────────
+  const annotateBtn = document.getElementById('annotateBtn');
+  annotateBtn.addEventListener('click', () => {
     annotateMode = !annotateMode;
-    e.currentTarget.classList.toggle('active', annotateMode);
+    annotateBtn.classList.toggle('active', annotateMode);
+    viewer.style.cursor = annotateMode ? 'crosshair' : '';
+
+    if (!annotateMode) {
+      // Cancel any in-progress measurement
+      if (activeLine && viewer.model && viewer.model.scene) viewer.model.scene.remove(activeLine);
+      activeLine = null; activeLineGeometry = null;
+      if (liveLabel) { liveLabel.remove(); liveLabel = null; }
+      pendingPoint = null;
+      lastMeasureEl.textContent = '—';
+      forceRender();
+    }
   });
 
-  viewer.addEventListener('pointerdown', (e) => { downPoint = { x: e.clientX, y: e.clientY }; });
-  viewer.addEventListener('pointerup', async (e) => {
+  // Track pointer-down for drag vs click detection
+  viewer.addEventListener('pointerdown', e => { downPoint = { x: e.clientX, y: e.clientY }; });
+
+  // Live line update on pointer move
+  viewer.addEventListener('pointermove', e => {
+    if (!annotateMode || !pendingPoint) return;
+    const hit = viewer.positionAndNormalFromPoint(e.clientX, e.clientY);
+    if (!hit) return;
+
+    const end = getSnappedPoint(hit.position);
+    const dx = end.x - pendingPoint.pos.x;
+    const dy = end.y - pendingPoint.pos.y;
+    const dz = end.z - pendingPoint.pos.z;
+    const dist = Math.sqrt(dx*dx + dy*dy + dz*dz);
+
+    // Update Three.js live line
+    if (typeof THREE !== 'undefined' && activeLineGeometry) {
+      activeLineGeometry.setFromPoints([
+        new THREE.Vector3(pendingPoint.pos.x, pendingPoint.pos.y, pendingPoint.pos.z),
+        new THREE.Vector3(end.x, end.y, end.z)
+      ]);
+    }
+
+    // Update live floating label
+    if (liveLabel) {
+      liveLabel.dataset.position = `${end.x.toFixed(3)} ${end.y.toFixed(3)} ${end.z.toFixed(3)}`;
+      liveLabel.textContent = `${dist.toFixed(2)} m`;
+    }
+
+    lastMeasureEl.textContent = `#${pendingPoint.index} → Medindo: ${dist.toFixed(2)} m`;
+    forceRender();
+  });
+
+  // Click handler: place start or end point
+  viewer.addEventListener('pointerup', async e => {
     if (!annotateMode || !downPoint) { downPoint = null; return; }
     const dx = e.clientX - downPoint.x, dy = e.clientY - downPoint.y;
     downPoint = null;
-    if (Math.hypot(dx, dy) > 6) return;
+    if (Math.hypot(dx, dy) > 6) return; // was a drag, not a click
+
     const hit = viewer.positionAndNormalFromPoint(e.clientX, e.clientY);
     if (!hit) return;
+
+    const snapped = getSnappedPoint(hit.position);
     hotspotCount++;
-    const posStr = `${hit.position.x.toFixed(3)} ${hit.position.y.toFixed(3)} ${hit.position.z.toFixed(3)}`;
+    const posStr  = `${snapped.x.toFixed(3)} ${snapped.y.toFixed(3)} ${snapped.z.toFixed(3)}`;
     const normStr = `${hit.normal.x.toFixed(3)} ${hit.normal.y.toFixed(3)} ${hit.normal.z.toFixed(3)}`;
-    let note;
 
     if (pendingPoint) {
-      const ddx = hit.position.x - pendingPoint.pos.x, ddy = hit.position.y - pendingPoint.pos.y, ddz = hit.position.z - pendingPoint.pos.z;
-      const dist = Math.sqrt(ddx * ddx + ddy * ddy + ddz * ddz);
-      note = `${dist.toFixed(2)} m do ponto ${pendingPoint.index}`;
+      // ── Second click: finalise measurement ──
+      const ddx  = snapped.x - pendingPoint.pos.x;
+      const ddy  = snapped.y - pendingPoint.pos.y;
+      const ddz  = snapped.z - pendingPoint.pos.z;
+      const dist = Math.sqrt(ddx*ddx + ddy*ddy + ddz*ddz);
+      const note = `${dist.toFixed(2)} m do ponto ${pendingPoint.index}`;
       lastMeasureEl.textContent = `#${pendingPoint.index} → #${hotspotCount}: ${dist.toFixed(2)} m`;
+
+      // Remove live elements
+      if (activeLine && viewer.model && viewer.model.scene) viewer.model.scene.remove(activeLine);
+      activeLine = null; activeLineGeometry = null;
+      if (liveLabel) { liveLabel.remove(); liveLabel = null; }
       pendingPoint = null;
+
+      await SalsiDB.addMarkup({ projectId: activeId, position: posStr, normal: normStr, number: hotspotCount, note });
+
     } else {
-      note = 'toque em outro ponto para medir a distância';
-      pendingPoint = { pos: hit.position, index: hotspotCount };
+      // ── First click: start measurement ──
+      pendingPoint = { pos: snapped, index: hotspotCount };
+      const note = 'toque em outro ponto para medir a distância';
+
+      // Create Three.js live line
+      if (typeof THREE !== 'undefined' && viewer.model && viewer.model.scene) {
+        const pts  = [new THREE.Vector3(snapped.x, snapped.y, snapped.z),
+                      new THREE.Vector3(snapped.x, snapped.y, snapped.z)];
+        activeLineGeometry = new THREE.BufferGeometry().setFromPoints(pts);
+        const mat  = new THREE.LineBasicMaterial({ color: 0xdca153, linewidth: 4, depthTest: false });
+        activeLine = new THREE.Line(activeLineGeometry, mat);
+        activeLine.renderOrder = 999;
+        viewer.model.scene.add(activeLine);
+      }
+
+      // Create floating live label
+      liveLabel = document.createElement('div');
+      liveLabel.slot = 'hotspot-live';
+      Object.assign(liveLabel.style, {
+        background: '#dca153', color: '#0a0e14', fontSize: '12px',
+        fontWeight: '700', padding: '4px 10px', borderRadius: '10px',
+        border: '2px solid #fff', whiteSpace: 'nowrap', boxShadow: '0 2px 8px rgba(0,0,0,.4)'
+      });
+      liveLabel.textContent = '0.00 m';
+      liveLabel.dataset.position = posStr;
+      viewer.appendChild(liveLabel);
+
+      await SalsiDB.addMarkup({ projectId: activeId, position: posStr, normal: normStr, number: hotspotCount, note });
     }
 
-    const pin = document.createElement('button');
-    pin.slot = `hotspot-${hotspotCount}`;
-    pin.className = 'hotspot-pin';
-    pin.dataset.position = posStr;
-    pin.dataset.normal = normStr;
-    pin.textContent = String(hotspotCount);
-    pin.title = `Ponto ${hotspotCount} — ${note}`;
-    viewer.appendChild(pin);
-
-    await SalsiDB.addMarkup({ projectId: activeId, position: posStr, normal: normStr, number: hotspotCount, note });
+    await hydrateMarkupsFromDB();
     await SalsiShell.refreshAll();
   });
 
-  document.getElementById('clearAnnotationsBtn').addEventListener('click', async () => {
+  // ── Clear Annotations ────────────────────────────────
+  async function clearAllAnnotations() {
+    if (!confirm('Apagar todas as marcações deste projeto?')) return;
     await clearHotspots();
     await SalsiShell.refreshAll();
+  }
+  document.getElementById('clearAnnotationsBtn').addEventListener('click', clearAllAnnotations);
+  document.getElementById('clearAnnotationsBtnSide').addEventListener('click', clearAllAnnotations);
+
+  // ── Side Panel: note edits & deletes ─────────────────
+  const listEl = document.getElementById('measurementsList');
+
+  listEl.addEventListener('change', async e => {
+    if (!e.target.classList.contains('panel-note-input')) return;
+    const id   = e.target.dataset.id;
+    const note = e.target.value;
+    const markups = await SalsiDB.getMarkups(activeId);
+    const m = markups.find(x => x.id === id);
+    if (m) {
+      m.note = note;
+      await SalsiDB.addMarkup(m);
+      const pin = viewer.querySelector(`button[slot="hotspot-${m.number}"]`);
+      if (pin) pin.title = `Ponto ${m.number} — ${note}`;
+      await hydrateMarkupsFromDB();
+    }
   });
 
-  // --- capturar imagem (com marcações desenhadas + compartilhamento nativo) ---
+  listEl.addEventListener('click', async e => {
+    const btn = e.target.closest('[data-delete-id]');
+    if (!btn) return;
+    e.stopPropagation();
+    await SalsiDB.deleteMarkup(btn.dataset.deleteId);
+    await hydrateMarkupsFromDB();
+    await SalsiShell.refreshAll();
+  });
+
+  // ── Capture Screenshot ───────────────────────────────
   async function buildCompositeBlob() {
     const pins = Array.from(viewer.querySelectorAll('.hotspot-pin'));
-    const hasPins = pins.length > 0;
     const viewerRect = viewer.getBoundingClientRect();
-    const blob = await viewer.toBlob({ mimeType: 'image/png', idealAspect: !hasPins });
+    const blob   = await viewer.toBlob({ mimeType: 'image/png', idealAspect: pins.length === 0 });
     const imgUrl = URL.createObjectURL(blob);
-    const img = await new Promise((resolve, reject) => {
-      const im = new Image();
-      im.onload = () => resolve(im);
-      im.onerror = reject;
-      im.src = imgUrl;
-    });
+    const img    = await new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = rej; i.src = imgUrl; });
     URL.revokeObjectURL(imgUrl);
 
     const canvas = document.createElement('canvas');
-    canvas.width = img.naturalWidth || img.width;
+    canvas.width  = img.naturalWidth  || img.width;
     canvas.height = img.naturalHeight || img.height;
     const ctx = canvas.getContext('2d');
     ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
 
-    pins.forEach((pin) => {
-      const r = pin.getBoundingClientRect();
-      const relX = (r.left + r.width / 2 - viewerRect.left) / viewerRect.width;
-      const relY = (r.top + r.height / 2 - viewerRect.top) / viewerRect.height;
+    pins.forEach(pin => {
+      const r    = pin.getBoundingClientRect();
+      const relX = (r.left + r.width/2  - viewerRect.left) / viewerRect.width;
+      const relY = (r.top  + r.height/2 - viewerRect.top)  / viewerRect.height;
       const x = relX * canvas.width, y = relY * canvas.height;
       const radius = canvas.width * 0.018;
-      ctx.beginPath();
-      ctx.arc(x, y, radius, 0, Math.PI * 2);
-      ctx.fillStyle = '#D99A4E';
-      ctx.fill();
-      ctx.lineWidth = Math.max(2, radius * 0.18);
-      ctx.strokeStyle = '#fff';
-      ctx.stroke();
+      ctx.beginPath(); ctx.arc(x, y, radius, 0, Math.PI*2);
+      ctx.fillStyle = '#dca153'; ctx.fill();
+      ctx.lineWidth = Math.max(2, radius*0.18); ctx.strokeStyle = '#fff'; ctx.stroke();
       ctx.fillStyle = '#fff';
-      ctx.font = `${Math.round(radius * 1.1)}px sans-serif`;
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
+      ctx.font = `bold ${Math.round(radius*1.1)}px sans-serif`;
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
       ctx.fillText(pin.textContent, x, y + 1);
     });
-
-    return await new Promise((resolve) => canvas.toBlob(resolve, 'image/png'));
+    return new Promise(res => canvas.toBlob(res, 'image/png'));
   }
 
   document.getElementById('captureBtn').addEventListener('click', async () => {
     try {
-      const blob = await buildCompositeBlob();
-      const filename = (filenameEl.textContent.replace(/\.[^.]+$/, '') || 'modelo') + '-captura.png';
-      const file = new File([blob], filename, { type: 'image/png' });
-
+      const blob     = await buildCompositeBlob();
+      const basename = (filenameEl.textContent.replace(/\.[^.]+$/, '') || 'modelo');
+      const filename = `${basename}-captura.png`;
+      const file     = new File([blob], filename, { type: 'image/png' });
       if (navigator.canShare && navigator.canShare({ files: [file] })) {
         try { await navigator.share({ files: [file], title: 'Captura do modelo 3D' }); return; }
         catch (e) { if (e && e.name === 'AbortError') return; }
       }
-
       const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url; a.download = filename;
-      document.body.appendChild(a); a.click(); a.remove();
-      URL.revokeObjectURL(url);
-    } catch (err) { alert('Não foi possível capturar a imagem.'); }
+      const a   = Object.assign(document.createElement('a'), { href: url, download: filename });
+      document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+    } catch (_) { alert('Não foi possível capturar a imagem.'); }
   });
 
-  // --- compartilhar vista ---
+  // ── Share View ───────────────────────────────────────
   document.getElementById('shareBtn').addEventListener('click', async () => {
     try {
       const o = viewer.getCameraOrbit(), t = viewer.getCameraTarget(), f = viewer.getFieldOfView();
       const params = new URLSearchParams({
         o: `${o.theta.toFixed(4)},${o.phi.toFixed(4)},${o.radius.toFixed(4)}`,
         t: `${t.x.toFixed(4)},${t.y.toFixed(4)},${t.z.toFixed(4)}`,
-        f: f.toFixed(2),
+        f: f.toFixed(2)
       });
-      const shareUrl = `${location.origin}${location.pathname}#${params.toString()}`;
+      const url = `${location.origin}${location.pathname}#${params}`;
       if (navigator.share) {
-        try { await navigator.share({ title: 'Vista do modelo 3D', text: 'Confira esta vista:', url: shareUrl }); return; }
+        try { await navigator.share({ title: 'Vista 3D', url }); return; }
         catch (e) { if (e && e.name === 'AbortError') return; }
       }
-      try { await navigator.clipboard.writeText(shareUrl); }
-      catch (e) {
-        const tmp = document.createElement('input');
-        tmp.value = shareUrl; document.body.appendChild(tmp); tmp.select();
-        document.execCommand('copy'); tmp.remove();
+      try { await navigator.clipboard.writeText(url); alert('Link copiado!'); }
+      catch (_) {
+        const tmp = Object.assign(document.createElement('input'), { value: url });
+        document.body.appendChild(tmp); tmp.select(); document.execCommand('copy'); tmp.remove();
+        alert('Link copiado!');
       }
-    } catch (err) { alert('Não foi possível compartilhar a vista.'); }
+    } catch (_) { alert('Não foi possível compartilhar a vista.'); }
   });
 
-  // --- carregar / substituir modelo (salva no projeto) ---
-  document.getElementById('fileInput').addEventListener('change', async (e) => {
+  // ── Replace Model File ───────────────────────────────
+  document.getElementById('fileInput').addEventListener('change', async e => {
     const file = e.target.files[0];
     if (!file) return;
-    if (hotspotCount > 0 && !confirm('Substituir o modelo vai apagar as marcações atuais deste projeto. Continuar?')) {
+    if (hotspotCount > 0 && !confirm('Substituir o modelo apagará as marcações atuais. Continuar?')) {
       e.target.value = ''; return;
     }
     await SalsiDB.setProjectModel(activeId, file, file.name);
@@ -522,23 +939,135 @@ SalsiShell.init('models');
     e.target.value = '';
   });
 
-  // --- hash de URL (vista compartilhada) ---
+  // ── Share Hash Restore ───────────────────────────────
   function applyShareHashIfPresent() {
     if (!location.hash) return;
     try {
-      const params = new URLSearchParams(location.hash.slice(1));
-      const o = params.get('o'), t = params.get('t'), f = params.get('f');
-      if (o) { const [th, ph, r] = o.split(',').map(Number); viewer.cameraOrbit = `${th}rad ${ph}rad ${r}m`; }
-      if (t) { const [x, y, z] = t.split(',').map(Number); viewer.cameraTarget = `${x}m ${y}m ${z}m`; }
+      const p = new URLSearchParams(location.hash.slice(1));
+      const o = p.get('o'), t = p.get('t'), f = p.get('f');
+      if (o) { const [th,ph,r] = o.split(',').map(Number); viewer.cameraOrbit  = `${th}rad ${ph}rad ${r}m`; }
+      if (t) { const [x,y,z]   = t.split(',').map(Number); viewer.cameraTarget = `${x}m ${y}m ${z}m`; }
       if (f) viewer.fieldOfView = `${Number(f)}deg`;
       viewer.jumpCameraToGoal();
-    } catch (e) { /* hash inválido, ignora */ }
+    } catch (_) {}
   }
-  viewer.addEventListener('load', applyShareHashIfPresent);
 
+  // ── Solar Study Slider ───────────────────────────────
+  const sunAngleSlider = document.getElementById('sunAngle');
+  const sunAngleVal    = document.getElementById('sunAngleVal');
+  sunAngleSlider.addEventListener('input', e => {
+    const deg = parseInt(e.target.value);
+    sunAngleVal.textContent = `${deg}°`;
+    viewer.skyboxRotation = `0rad ${(deg * Math.PI / 180).toFixed(4)}rad 0rad`;
+    forceRender();
+  });
+
+  // ── Variant Select ───────────────────────────────────
+  document.getElementById('variantSelect').addEventListener('change', e => {
+    viewer.variantName = e.target.value || null;
+    forceRender();
+  });
+
+  // ── Clipping — Horizontal Y ──────────────────────────
+  const clipYSlider = document.getElementById('clipY');
+  const clipYVal    = document.getElementById('clipYVal');
+  clipYSlider.addEventListener('input', e => {
+    const val    = parseFloat(e.target.value);
+    const maxVal = parseFloat(clipYSlider.max);
+    if (val >= maxVal - 0.01) {
+      clipYVal.textContent = 'Desativado';
+      if (localClipPlaneY) localClipPlaneY.constant = 999;
+    } else {
+      clipYVal.textContent = `${val.toFixed(2)} m`;
+      if (localClipPlaneY) localClipPlaneY.constant = val;
+    }
+    forceRender();
+  });
+
+  // ── Clipping — Vertical Z ────────────────────────────
+  const clipZSlider = document.getElementById('clipZ');
+  const clipZVal    = document.getElementById('clipZVal');
+  clipZSlider.addEventListener('input', e => {
+    const val    = parseFloat(e.target.value);
+    const maxVal = parseFloat(clipZSlider.max);
+    if (val >= maxVal - 0.01) {
+      clipZVal.textContent = 'Desativado';
+      if (localClipPlaneZ) localClipPlaneZ.constant = 999;
+    } else {
+      clipZVal.textContent = `${val.toFixed(2)} m`;
+      if (localClipPlaneZ) localClipPlaneZ.constant = val;
+    }
+    forceRender();
+  });
+
+  // ── PDF Report ───────────────────────────────────────
+  document.getElementById('pdfReportBtn').addEventListener('click', async () => {
+    if (typeof window.jspdf === 'undefined') {
+      alert('A biblioteca PDF não carregou (necessita de internet na primeira vez). Tente novamente com conexão.'); return;
+    }
+    try {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+
+      doc.setFont('helvetica','bold'); doc.setFontSize(22); doc.setTextColor(220,161,83);
+      doc.text('Relatório Técnico de Visita', 20, 22);
+      doc.setFont('helvetica','normal'); doc.setFontSize(9); doc.setTextColor(130,130,130);
+      doc.text(`Gerado em: ${new Date().toLocaleString('pt-BR')} | Salsi Offline BIM`, 20, 29);
+
+      doc.setFontSize(11); doc.setFont('helvetica','bold'); doc.setTextColor(40,40,40);
+      doc.text(`PROJETO: ${project ? project.name : 'Sem nome'}`, 20, 40);
+      doc.setFont('helvetica','normal');
+      doc.text(`Descrição: ${project ? (project.description || 'Nenhuma') : 'Nenhuma'}`, 20, 46);
+      doc.text(`Modelo: ${filenameEl.textContent}  |  Dimensões: ${dimsEl.textContent}`, 20, 52);
+
+      doc.setDrawColor(220,161,83); doc.setLineWidth(0.5); doc.line(20,56,190,56);
+
+      let yPos = 62;
+      try {
+        const blob    = await buildCompositeBlob();
+        const b64     = await new Promise(res => { const r = new FileReader(); r.onloadend = () => res(r.result); r.readAsDataURL(blob); });
+        doc.addImage(b64, 'PNG', 20, yPos, 170, 85); yPos += 92;
+      } catch (_) {
+        doc.setTextColor(200,80,60); doc.text('[Captura indisponível]', 20, yPos);
+        doc.setTextColor(40,40,40); yPos += 12;
+      }
+
+      doc.line(20,yPos,190,yPos); yPos += 8;
+      doc.setFont('helvetica','bold'); doc.setFontSize(13); doc.setTextColor(43,61,82);
+      doc.text('Pontos de Medição e Notas Técnicas:', 20, yPos); yPos += 8;
+
+      const markups = await SalsiDB.getMarkups(activeId);
+      doc.setFontSize(10); doc.setFont('helvetica','normal'); doc.setTextColor(50,50,50);
+
+      if (!markups.length) {
+        doc.text('Nenhuma marcação técnica registrada.', 20, yPos);
+      } else {
+        for (const m of markups) {
+          if (yPos > 270) { doc.addPage(); yPos = 20; }
+          doc.setFont('helvetica','bold'); doc.setTextColor(220,161,83);
+          doc.text(`PONTO #${m.number}:`, 20, yPos);
+          doc.setFont('helvetica','normal'); doc.setTextColor(50,50,50);
+          const lines = doc.splitTextToSize(m.note || 'Sem descrição', 130);
+          doc.text(lines, 45, yPos);
+          doc.setFontSize(7.5); doc.setTextColor(160,160,160);
+          doc.text(`Coord: [${m.position}]`, 45, yPos + lines.length*4 + 1);
+          doc.setFontSize(10); doc.setTextColor(50,50,50);
+          yPos += Math.max(12, lines.length*4 + 6);
+        }
+      }
+
+      const pdfName = `Relatorio_${project ? project.name.replace(/\s+/g,'_') : 'Projeto'}.pdf`;
+      doc.save(pdfName);
+    } catch (err) {
+      console.error(err);
+      alert('Erro ao gerar o relatório em PDF.');
+    }
+  });
+
+  // ── Kick off ─────────────────────────────────────────
   await loadModelForProject();
-})();
 
+})();
 </script>
 </body>
 </html>
