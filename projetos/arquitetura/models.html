@@ -6,11 +6,11 @@
 <title>Modelos 3D — Salsi</title>
 <meta name="description" content="Visualize, meça e anote modelos 3D de projetos arquitetônicos offline com o Salsi.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
 <link rel="icon" href="logo.png">
 <link rel="apple-touch-icon" href="logo.png">
 <link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#0a0e14">
+<meta name="theme-color" content="#faf7f2">
 <link rel="stylesheet" href="assets/app.css">
 <script type="module" src="https://cdnjs.cloudflare.com/ajax/libs/model-viewer/4.1.0/model-viewer.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -21,8 +21,155 @@
   .chip { font-size:12px; font-weight:600; color:var(--text-secondary); background:rgba(255,255,255,0.03); border:1px solid var(--border); border-radius:999px; padding:6px 13px; display:flex; gap:6px; align-items:center; }
   .chip b { color:var(--accent); }
 
+  /* New Two-Column Layout Grid */
+  .viewer-layout-grid {
+    display: grid;
+    grid-template-columns: 1fr 360px;
+    gap: 20px;
+    align-items: start;
+    margin-top: 16px;
+  }
+  .viewer-side {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+  }
+  .control-sidebar {
+    background: rgba(18, 26, 38, 0.8);
+    backdrop-filter: blur(16px);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 20px;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    max-height: 70vh;
+    overflow-y: auto;
+  }
+
+  /* Tab System */
+  .tab-header {
+    display: flex;
+    border-bottom: 1.5px solid var(--border);
+    margin-bottom: 16px;
+    gap: 4px;
+  }
+  .tab-btn {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    font-family: 'Manrope', sans-serif;
+    font-size: 12px;
+    font-weight: 800;
+    padding: 10px 4px;
+    cursor: pointer;
+    text-align: center;
+    border-bottom: 3px solid transparent;
+    transition: all 0.2s ease;
+    min-height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+  }
+  .tab-btn:hover {
+    color: var(--text-primary);
+  }
+  .tab-btn.active {
+    color: var(--accent);
+    border-bottom-color: var(--accent);
+  }
+  .tab-pane {
+    display: none;
+    animation: fadeIn 0.2s ease-out;
+  }
+  .tab-pane.active {
+    display: block;
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(4px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Adjustments for responsive viewports */
+  @media (max-width: 992px) {
+    .viewer-layout-grid {
+      grid-template-columns: 1fr;
+    }
+    .control-sidebar {
+      max-height: none;
+    }
+  }
+
+  /* Live measurement overlay — fixed on screen, follows cursor */
+  #rulerOverlay {
+    position: fixed;
+    pointer-events: none;
+    z-index: 9999;
+    display: none;
+    background: rgba(10,14,20,0.92);
+    color: #dca153;
+    font-family: 'Manrope', sans-serif;
+    font-size: 15px;
+    font-weight: 800;
+    padding: 7px 16px;
+    border-radius: 12px;
+    border: 1.5px solid #dca153;
+    white-space: nowrap;
+    box-shadow: 0 4px 20px rgba(0,0,0,.6);
+    transform: translate(16px, -50%);
+  }
+
+  /* Measurement history strip below viewer */
+  #measStrip {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+    min-height: 36px;
+    margin-top: 12px;
+  }
+  #measStrip:empty::before {
+    content: 'Nenhuma medição — ative a régua e clique em dois pontos no modelo';
+    font-size: 12px;
+    color: var(--text-secondary);
+    font-style: italic;
+  }
+  .meas-chip {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(220,161,83,0.12);
+    border: 1.5px solid #dca153;
+    border-radius: 999px;
+    padding: 5px 8px 5px 14px;
+    font-size: 13px;
+    font-weight: 700;
+    color: #dca153;
+    font-family: 'Manrope', sans-serif;
+    animation: chipIn .2s ease;
+  }
+  @keyframes chipIn { from { opacity:0; transform:scale(.85); } to { opacity:1; transform:scale(1); } }
+  .meas-chip-remove {
+    width: 20px; height: 20px;
+    border-radius: 50%;
+    border: none;
+    background: rgba(255,255,255,0.1);
+    color: rgba(255,255,255,0.7);
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 1;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: background .15s, color .15s;
+    flex-shrink: 0;
+  }
+  .meas-chip-remove:hover { background: rgba(220,80,60,.8); color: #fff; }
+
   /* Viewer stage */
-  .vstage { position:relative; border-radius:22px; overflow:hidden; background:linear-gradient(160deg,#121a26,#0a0e14); box-shadow:0 24px 60px rgba(0,0,0,.45); }
+  .vstage { position:relative; border-radius:22px; overflow:hidden; background: #ece9e6; box-shadow:0 24px 60px rgba(0,0,0,.15); border: 1px solid var(--border); }
   model-viewer { width:100%; height:54vh; min-height:340px; display:block; --poster-color:transparent; }
 
   /* Floating toolbar (top-right of viewer) */
@@ -69,6 +216,53 @@
   .shortcuts-box .sc-row { display:flex; justify-content:space-between; font-size:13px; color:var(--text-secondary); padding:5px 0; border-bottom:1px solid rgba(255,255,255,.04); }
   .shortcuts-box .sc-row:last-child { border-bottom:none; }
 
+  /* Bússola Salsicha (Dachshund Compass) */
+  #compassContainer {
+    position: absolute;
+    bottom: 16px;
+    left: 16px;
+    width: 68px;
+    height: 68px;
+    background: rgba(18, 26, 38, 0.88);
+    backdrop-filter: blur(12px);
+    border: 1.5px solid var(--accent);
+    border-radius: 50%;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+    z-index: 3;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    user-select: none;
+    pointer-events: none;
+    transition: transform 0.25s ease;
+  }
+  #compassDial {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .cardinal {
+    position: absolute;
+    font-family: 'Manrope', sans-serif;
+    font-size: 9px;
+    font-weight: 900;
+    color: var(--text-secondary);
+    line-height: 1;
+  }
+  .cardinal.n { top: 4px; color: var(--accent); }
+  .cardinal.s { bottom: 4px; }
+  .cardinal.l { right: 5px; }
+  .cardinal.o { left: 5px; }
+  #dachshundPointer {
+    width: 32px;
+    height: 32px;
+    transform-origin: center center;
+    transition: transform 0.1s ease-out;
+  }
+
   /* Responsive grid */
   @media (max-width:768px) {
     .viewer-grid { grid-template-columns:1fr !important; }
@@ -77,6 +271,8 @@
 </style>
 </head>
 <body>
+  <!-- Live ruler distance overlay (fixed CSS, follows mouse) -->
+  <div id="rulerOverlay"></div>
 
 <!-- ── SVG Icon Sprite ───────────────────────────────── -->
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
@@ -92,6 +288,9 @@
   </symbol>
   <symbol id="i-camera" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
     <rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7l1.5-2.5h5L16 7"/><circle cx="12" cy="13.5" r="3.5"/>
+  </symbol>
+  <symbol id="i-notes" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="4" y="3" width="16" height="18" rx="2"/><line x1="8" y1="8" x2="16" y2="8"/><line x1="8" y1="12" x2="16" y2="12"/>
   </symbol>
   <symbol id="i-cube" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
     <path d="M12 2L20 6.5V17.5L12 22L4 17.5V6.5L12 2Z"/><path d="M12 12V22"/><path d="M12 12L20 6.5"/><path d="M12 12L4 6.5"/>
@@ -149,6 +348,9 @@
   <symbol id="i-ruler" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
     <path d="M4 6h16v12H4z"/><line x1="8" y1="6" x2="8" y2="10"/><line x1="12" y1="6" x2="12" y2="12"/><line x1="16" y1="6" x2="16" y2="10"/>
   </symbol>
+  <symbol id="i-walk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M17 21v-4M14 17h4M12 21V10M12 10H8M12 10l5-4M8 10V5a2 2 0 1 1 4 0v5"/>
+  </symbol>
 </defs>
 </svg>
 
@@ -164,7 +366,7 @@
       </a>
     </div>
 
-    <div class="content">
+    <div class="content full-width-layout">
       <h1 class="page-title" style="margin-bottom:4px">Modelo 3D</h1>
       <p class="page-sub">Vistas, medição e marcações — tudo salvo neste projeto, mesmo offline.</p>
 
@@ -181,126 +383,193 @@
       <!-- Main model area -->
       <div id="modelArea" style="display:none">
 
-        <!-- Meta chips -->
-        <div class="meta-row">
+        <!-- Meta chips above the grid -->
+        <div class="meta-row" style="margin-bottom: 20px;">
           <span class="chip">Arquivo: <b id="filename">—</b></span>
           <span class="chip">Dimensões: <b id="dims">—</b></span>
           <span class="chip">Medida: <b id="lastMeasure">—</b></span>
         </div>
 
-        <!-- Viewer + Side Panel grid -->
-        <div class="viewer-grid" style="display:grid; grid-template-columns:2fr 1fr; gap:20px; align-items:start;">
+        <!-- Grid de Duas Colunas (UX 500 Arquitetos) -->
+        <div class="viewer-layout-grid">
+          
+          <!-- Coluna Esquerda: O Visualizador 3D -->
+          <div class="viewer-side">
 
-          <!-- 3D Viewer Stage -->
-          <div class="vstage" style="margin-bottom:0;">
-            <div class="progress-wrap hidden" id="progressWrap">
-              <div class="progress-bar" id="progressBar"></div>
-            </div>
+            <!-- 3D Viewer Stage -->
+            <div class="vstage">
+              <div class="progress-wrap hidden" id="progressWrap">
+                <div class="progress-bar" id="progressBar"></div>
+              </div>
 
-            <!-- Floating Toolbar (top-right) -->
-            <div class="float-toolbar">
-              <button id="toggleRotate" title="Girar automaticamente (Espaço)"><svg><use href="#i-orbit"/></svg></button>
-              <button id="annotateBtn" title="Fita métrica — clique no 1º ponto, arraste, clique no 2º (A)"><svg><use href="#i-ruler"/></svg></button>
-              <button id="captureBtn" title="Capturar imagem (C)"><svg><use href="#i-camera"/></svg></button>
-              <button id="shareBtn" title="Compartilhar vista"><svg><use href="#i-link"/></svg></button>
-            </div>
+              <!-- Floating Toolbar (top-right) -->
+              <div class="float-toolbar">
+                <button id="toggleRotate" title="Girar automaticamente (Espaço)"><svg><use href="#i-orbit"/></svg></button>
+                <button id="walkBtn" title="Visão Interna (Primeira Pessoa)"><svg><use href="#i-walk"/></svg></button>
+                <button id="annotateBtn" title="Régua — clique no 1º ponto, depois no 2º (A)"><svg><use href="#i-ruler"/></svg></button>
+                <button id="captureBtn" title="Capturar imagem (C)"><svg><use href="#i-camera"/></svg></button>
+                <button id="shareBtn" title="Compartilhar vista"><svg><use href="#i-link"/></svg></button>
+              </div>
 
-            <!-- Floating Stack (right-side buttons) -->
-            <div class="float-stack">
-              <button id="zoomInBtn" title="Zoom +"><svg><use href="#i-zoom-in"/></svg></button>
-              <button id="zoomOutBtn" title="Zoom −"><svg><use href="#i-zoom-out"/></svg></button>
-              <button id="fullscreenBtn" title="Tela cheia (F)"><svg><use href="#i-fullscreen"/></svg></button>
-              <button id="clearAnnotationsBtn" title="Limpar todas as marcações"><svg><use href="#i-trash"/></svg></button>
-            </div>
+              <!-- Floating Stack (right-side buttons) -->
+              <div class="float-stack">
+                <button id="zoomInBtn" title="Zoom +"><svg><use href="#i-zoom-in"/></svg></button>
+                <button id="zoomOutBtn" title="Zoom −"><svg><use href="#i-zoom-out"/></svg></button>
+                <button id="fullscreenBtn" title="Tela cheia (F)"><svg><use href="#i-fullscreen"/></svg></button>
+                <button id="clearAnnotationsBtn" title="Limpar medida"><svg><use href="#i-trash"/></svg></button>
+              </div>
 
-            <!-- The 3D viewer -->
-            <model-viewer
-              id="viewer"
-              alt="Modelo 3D do projeto"
-              camera-controls
-              touch-action="pan-y"
-              shadow-intensity="1"
-              exposure="1"
-              environment-image="neutral"
-              min-camera-orbit="auto 0deg auto"
-              max-camera-orbit="auto 180deg auto"
-              ar
-              ar-modes="scene-viewer webxr quick-look">
-            </model-viewer>
+              <!-- The 3D viewer -->
+              <model-viewer
+                id="viewer"
+                alt="Modelo 3D do projeto"
+                camera-controls
+                touch-action="pan-y"
+                shadow-intensity="1"
+                exposure="1"
+                environment-image="neutral"
+                min-camera-orbit="auto 0deg auto"
+                max-camera-orbit="auto 180deg auto"
+                ar
+                ar-modes="scene-viewer webxr quick-look">
+              </model-viewer>
 
-            <!-- Empty state overlay -->
-            <div class="empty-state" id="emptyState">
-              <img src="logo.png" alt="">
-              <strong>Nenhum modelo neste projeto</strong>
-              <span>Carregue um arquivo .glb ou .gltf exportado do SketchUp.</span>
-              <label class="btn primary" for="fileInput" style="margin-top:6px; cursor:pointer;">
-                <svg><use href="#i-upload"/></svg>Carregar modelo
-              </label>
+              <!-- Bússola Salsicha (Dachshund Compass) -->
+              <div id="compassContainer" title="Orientação do projeto">
+                <div id="compassDial">
+                  <span class="cardinal n">N</span>
+                  <span class="cardinal s">S</span>
+                  <span class="cardinal l">L</span>
+                  <span class="cardinal o">O</span>
+                  <svg id="dachshundPointer" viewBox="0 0 100 100">
+                    <path d="M 50 15 
+                             C 47 18, 46 22, 46 26 
+                             C 46 30, 48 34, 47 38 
+                             C 46 41, 44 43, 44 46 
+                             L 43 55 
+                             C 41 57, 40 60, 40 64 
+                             L 41 78 
+                             C 42 81, 45 83, 48 83 
+                             C 52 83, 55 81, 56 78 
+                             L 57 64 
+                             C 57 60, 56 57, 54 55 
+                             L 53 46 
+                             C 53 43, 51 41, 50 38 
+                             C 49 34, 51 30, 51 26 
+                             C 51 22, 50 18, 50 15 Z" fill="var(--accent)"/>
+                    <ellipse cx="50" cy="28" rx="8" ry="4" fill="#fff" opacity="0.15"/>
+                  </svg>
+                </div>
+              </div>
+
+              <!-- Empty state overlay -->
+              <div class="empty-state" id="emptyState">
+                <img src="logo.png" alt="">
+                <strong>Nenhum modelo neste projeto</strong>
+                <span>Carregue um arquivo .glb ou .gltf exportado do SketchUp.</span>
+                <label class="btn primary" for="fileInput" style="margin-top:6px; cursor:pointer;">
+                  <svg><use href="#i-upload"/></svg>Carregar modelo
+                </label>
+              </div>
             </div>
           </div>
 
-          <!-- Side Panel: Measurements & Notes -->
-          <div class="card side-panel" style="margin-bottom:0; height:58vh; min-height:400px; display:flex; flex-direction:column;">
-            <h3 style="margin-bottom:12px; display:flex; align-items:center; gap:8px;">
-              <svg style="width:16px;height:16px;color:var(--accent)"><use href="#i-ruler"/></svg>
-              Painel de Medições e Notas
-            </h3>
-            <div id="measurementsList" style="flex:1; overflow-y:auto; display:flex; flex-direction:column; gap:10px; padding-right:4px; margin-bottom:12px;">
-              <!-- Populated by JS -->
+          <!-- Coluna Direita: O Painel de Operações Unificado (Sidebar) -->
+          <div class="control-sidebar side-panel">
+            
+            <!-- Sistema de Abas -->
+            <div class="tab-header">
+              <button class="tab-btn active" data-tab="tab-project">Geral</button>
+              <button class="tab-btn" data-tab="tab-sketchup">SketchUp</button>
+              <button class="tab-btn" data-tab="tab-measures">Medidas</button>
             </div>
-            <button class="btn danger" id="clearAnnotationsBtnSide" style="width:100%">
-              <svg><use href="#i-trash"/></svg>Limpar Todas
-            </button>
+            
+            <div class="side-panel-content">
+            <!-- Aba 1: Projeto & Vistas -->
+            <div class="tab-pane active" id="tab-project">
+              <h4 style="margin:0 0 12px; color:var(--text-primary); font-size:14px;">Vistas Clássicas</h4>
+              <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:16px;">
+                <button class="btn viewbtn" data-orbit="0deg 90deg auto" style="min-height:38px; font-size:12px;">Frente</button>
+                <button class="btn viewbtn" data-orbit="180deg 90deg auto" style="min-height:38px; font-size:12px;">Trás</button>
+                <button class="btn viewbtn" data-orbit="90deg 90deg auto" style="min-height:38px; font-size:12px;">Direita</button>
+                <button class="btn viewbtn" data-orbit="-90deg 90deg auto" style="min-height:38px; font-size:12px;">Esquerda</button>
+                <button class="btn viewbtn" data-orbit="0deg 0.1deg auto" style="min-height:38px; font-size:12px;">Topo</button>
+                <button class="btn viewbtn" data-orbit="0deg 179.9deg auto" style="min-height:38px; font-size:12px;">Base</button>
+                <button class="btn viewbtn" data-orbit="45deg 55deg auto" style="grid-column: span 2; min-height:38px; font-size:12px;"><svg style="width:14px;height:14px;margin-right:6px;"><use href="#i-cube"/></svg>Isométrica</button>
+              </div>
+
+              <div style="display:flex; flex-direction:column; gap:8px;">
+                <button class="btn" id="resetViewBtn" style="min-height:40px;"><svg style="width:16px;height:16px;margin-right:6px;"><use href="#i-target"/></svg>Recentrar Modelo</button>
+                <button class="btn hidden" id="animBtn" style="min-height:40px;"><svg style="width:16px;height:16px;margin-right:6px;"><use href="#i-play"/></svg>Animação</button>
+                <label class="btn" for="fileInput" style="cursor:pointer; min-height:40px; display:flex; align-items:center; justify-content:center; gap:6px; margin:0;"><svg style="width:16px;height:16px;"><use href="#i-upload"/></svg>Substituir Modelo</label>
+                <button class="btn" id="pdfReportBtn" style="min-height:40px; background:rgba(220,161,83,0.08); border:1px solid var(--accent); color:var(--accent);"><svg style="width:16px;height:16px;margin-right:6px;"><use href="#i-report"/></svg>Gerar Relatório PDF</button>
+                <button class="btn" id="helpBtn" style="min-height:40px;">Atalhos e Ajuda</button>
+              </div>
+            </div>
+
+            <!-- Aba 2: Estilos & Cortes (SketchUp) -->
+            <div class="tab-pane" id="tab-sketchup">
+              <!-- Projeção -->
+              <div style="margin-bottom:18px;">
+                <label class="field-label" style="margin-bottom:6px;">Projeção da Câmera</label>
+                <div style="display:flex; gap:8px;">
+                  <button class="btn primary" id="projPerspBtn" style="flex:1; min-height:38px; font-size:12px;">Perspectiva</button>
+                  <button class="btn" id="projParallelBtn" style="flex:1; min-height:38px; font-size:12px;">Paralela</button>
+                </div>
+              </div>
+
+              <!-- Estilos de Face -->
+              <div style="margin-bottom:18px;">
+                <label class="field-label" style="margin-bottom:6px;">Estilo de Visualização</label>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px;">
+                  <button class="btn primary" id="styleShadedBtn" style="font-size:11.5px; min-height:36px; padding:6px 2px;">Texturizado</button>
+                  <button class="btn" id="styleXrayBtn" style="font-size:11.5px; min-height:36px; padding:6px 2px;">Raio-X</button>
+                  <button class="btn" id="styleMonoBtn" style="font-size:11.5px; min-height:36px; padding:6px 2px;">Monocromo</button>
+                  <button class="btn" id="styleWireBtn" style="font-size:11.5px; min-height:36px; padding:6px 2px;">Aramado</button>
+                </div>
+              </div>
+
+              <!-- Estudo Solar & Variante -->
+              <div style="margin-bottom:18px; display:flex; flex-direction:column; gap:12px;">
+                <div>
+                  <label class="field-label" for="sunAngle">Direção do Sol: <b id="sunAngleVal" style="color:var(--accent)">0°</b></label>
+                  <input type="range" id="sunAngle" min="0" max="360" step="1" value="0" style="width:100%">
+                </div>
+                <div id="variantContainer" style="display:none">
+                  <label class="field-label" for="variantSelect">Acabamento (Variante):</label>
+                  <select id="variantSelect" style="width:100%"></select>
+                </div>
+              </div>
+
+              <!-- Planos de Corte -->
+              <div style="border-top:1px solid var(--border); padding-top:16px;">
+                <label class="field-label" style="margin-bottom:8px;">Planos de Seção (Corte)</label>
+                <div style="display:flex; flex-direction:column; gap:10px;">
+                  <div>
+                    <label class="field-label" for="clipY" style="font-size:11px; margin-bottom:4px;">Corte Y (Altura): <b id="clipYVal" style="color:var(--accent)">Desativado</b></label>
+                    <input type="range" id="clipY" min="-2" max="15" step="0.05" value="15" style="width:100%">
+                  </div>
+                  <div>
+                    <label class="field-label" for="clipZ" style="font-size:11px; margin-bottom:4px;">Corte Z (Profundidade): <b id="clipZVal" style="color:var(--accent)">Desativado</b></label>
+                    <input type="range" id="clipZ" min="-15" max="15" step="0.05" value="15" style="width:100%">
+                  </div>
+                  <button class="btn" id="invertCutBtn" style="min-height:38px; display:inline-flex; align-items:center; justify-content:center; gap:6px;"><svg style="width:14px;height:14px;"><use href="#i-sync"/></svg>Inverter Corte</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Aba 3: Medições -->
+            <div class="tab-pane" id="tab-measures">
+              <h4 style="margin:0 0 12px; color:var(--text-primary); font-size:14px;">Histórico de Medidas</h4>
+              <div id="measStrip" style="flex-direction:column; align-items:stretch; gap:8px;"></div>
+            </div>
+
+            </div><!-- /.side-panel-content -->
           </div>
         </div>
 
         <!-- Hidden file input -->
         <input type="file" id="fileInput" accept=".glb,.gltf" style="display:none">
-
-        <!-- Views & Tools -->
-        <div class="card" style="margin-top:16px">
-          <h3>Vistas &amp; Ferramentas</h3>
-          <div style="display:flex; flex-wrap:wrap; gap:8px;">
-            <button class="btn viewbtn" data-orbit="0deg 90deg auto">Frente</button>
-            <button class="btn viewbtn" data-orbit="180deg 90deg auto">Trás</button>
-            <button class="btn viewbtn" data-orbit="90deg 90deg auto">Direita</button>
-            <button class="btn viewbtn" data-orbit="-90deg 90deg auto">Esquerda</button>
-            <button class="btn viewbtn" data-orbit="0deg 0.1deg auto">Topo</button>
-            <button class="btn viewbtn" data-orbit="0deg 179.9deg auto">Base</button>
-            <button class="btn viewbtn" data-orbit="45deg 55deg auto"><svg><use href="#i-cube"/></svg>Isométrica</button>
-            <button class="btn" id="resetViewBtn"><svg><use href="#i-target"/></svg>Recentrar</button>
-            <button class="btn hidden" id="animBtn"><svg><use href="#i-play"/></svg>Animação</button>
-            <label class="btn" for="fileInput" style="cursor:pointer;"><svg><use href="#i-upload"/></svg>Substituir modelo</label>
-            <button class="btn" id="pdfReportBtn"><svg><use href="#i-report"/></svg>Relatório PDF</button>
-            <button class="btn" id="helpBtn">Atalhos&nbsp;<kbd style="font-size:11px">?</kbd></button>
-          </div>
-        </div>
-
-        <!-- Technical Studies -->
-        <div class="card" style="margin-top:16px">
-          <h3>Estudos Técnicos (Luz &amp; Cortes)</h3>
-          <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:16px; margin-bottom:16px">
-            <div>
-              <label class="field-label" for="sunAngle">Estudo Solar — Direção do sol: <b id="sunAngleVal" style="color:var(--accent)">0°</b></label>
-              <input type="range" id="sunAngle" min="0" max="360" step="1" value="0" style="width:100%">
-            </div>
-            <div id="variantContainer" style="display:none">
-              <label class="field-label" for="variantSelect">Variante de Acabamento:</label>
-              <select id="variantSelect" style="width:100%"></select>
-            </div>
-          </div>
-          <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:16px">
-            <div>
-              <label class="field-label" for="clipY">Corte Horizontal Y (Altura): <b id="clipYVal" style="color:var(--accent)">Desativado</b></label>
-              <input type="range" id="clipY" min="-2" max="15" step="0.05" value="15" style="width:100%">
-            </div>
-            <div>
-              <label class="field-label" for="clipZ">Corte Vertical Z (Profundidade): <b id="clipZVal" style="color:var(--accent)">Desativado</b></label>
-              <input type="range" id="clipZ" min="-15" max="15" step="0.05" value="15" style="width:100%">
-            </div>
-          </div>
-        </div>
-
       </div><!-- /#modelArea -->
     </div><!-- /.content -->
   </main>
@@ -317,14 +586,21 @@
         <svg style="width:18px;height:18px;"><use href="#i-close"/></svg>
       </button>
     </div>
-    <div style="display:flex; flex-direction:column; gap:4px;">
-      <div class="sc-row"><span>Vistas (frente…iso)</span><kbd>1 – 7</kbd></div>
-      <div class="sc-row"><span>Recentrar</span><kbd>R</kbd></div>
-      <div class="sc-row"><span>Girar automaticamente</span><kbd>Espaço</kbd></div>
-      <div class="sc-row"><span>Fita métrica / medir</span><kbd>A</kbd></div>
-      <div class="sc-row"><span>Capturar imagem</span><kbd>C</kbd></div>
-      <div class="sc-row"><span>Tela cheia</span><kbd>F</kbd></div>
-      <div class="sc-row"><span>Atalhos</span><kbd>?</kbd></div>
+    <div style="display:flex; flex-direction:column; gap:4px; max-height:360px; overflow-y:auto;">
+      <div style="font-size:11px; font-weight:700; color:var(--accent); margin:6px 0 2px;">ATALHOS SKETCHUP</div>
+      <div class="sc-row"><span>Selecionar / Órbita padrão</span><kbd>Espaço</kbd></div>
+      <div class="sc-row"><span>Mão (Pan - Arrastar tela)</span><kbd>H</kbd></div>
+      <div class="sc-row"><span>Orbitar (Girar câmera)</span><kbd>O</kbd></div>
+      <div class="sc-row"><span>Fita Métrica (Medir / Régua)</span><kbd>T</kbd></div>
+      <div class="sc-row"><span>Raio-X (Alternar Translúcido)</span><kbd>K</kbd></div>
+      <div class="sc-row"><span>Zoom Extents (Enquadrar tudo)</span><kbd>Shift + Z</kbd></div>
+      
+      <div style="font-size:11px; font-weight:700; color:var(--accent); margin:12px 0 2px;">ATALHOS SALSI</div>
+      <div class="sc-row"><span>Vistas Rápidas (Frente...Iso)</span><kbd>1 – 7</kbd></div>
+      <div class="sc-row"><span>Recentrar Modelo</span><kbd>R</kbd></div>
+      <div class="sc-row"><span>Capturar Imagem</span><kbd>C</kbd></div>
+      <div class="sc-row"><span>Tela Cheia</span><kbd>F</kbd></div>
+      <div class="sc-row"><span>Mostrar/Ocultar Atalhos</span><kbd>?</kbd></div>
     </div>
   </div>
 </div>
@@ -361,16 +637,15 @@
   const animBtn       = document.getElementById('animBtn');
 
   // ── State ───────────────────────────────────────────
-  let hotspotCount    = 0;
-  let annotateMode    = false;
-  let downPoint       = null;
-  let pendingPoint    = null;   // { pos:{x,y,z}, index:Number }
+  let annotateMode = false;
+  let downPoint    = null;
+  let rulerStart   = null;   // { x, y, z } world coords of first click
+  let measurements = [];     // array of { from, to, dist, note } — session only
 
-  // Live tape measure (Three.js line that follows the mouse)
-  let activeLine         = null;
-  let activeLineGeometry = null;
-  let liveLabel          = null;  // floating DOM label
-  let permanentLines     = [];
+  // Three.js live-line while dragging ruler
+  let rulerLine     = null;
+  let rulerLineGeo  = null;
+  let rulerLabel    = null;  // floating DOM badge
 
   // Three.js clipping planes
   let localClipPlaneY = null;
@@ -444,122 +719,7 @@
     return minDist < 0.15 ? closest : hitPos;
   }
 
-  // ── Permanent 3D Lines ───────────────────────────────
-  function clearPermanentLines() {
-    if (typeof THREE === 'undefined' || !viewer.model || !viewer.model.scene) return;
-    permanentLines.forEach(l => viewer.model.scene.remove(l));
-    permanentLines = [];
-  }
 
-  function drawPermanentLine(posStr1, posStr2) {
-    if (typeof THREE === 'undefined' || !viewer.model || !viewer.model.scene) return;
-    try {
-      const p1 = posStr1.split(' ').map(Number);
-      const p2 = posStr2.split(' ').map(Number);
-      const pts  = [new THREE.Vector3(...p1), new THREE.Vector3(...p2)];
-      const geom = new THREE.BufferGeometry().setFromPoints(pts);
-      const mat  = new THREE.LineBasicMaterial({ color: 0xdca153, linewidth: 3, depthTest: false });
-      const line = new THREE.Line(geom, mat);
-      line.renderOrder = 999;
-      viewer.model.scene.add(line);
-      permanentLines.push(line);
-    } catch (e) { console.warn('drawPermanentLine error', e); }
-  }
-
-  // ── Hotspot / Markup Management ──────────────────────
-  function clearHotspotsVisual() {
-    viewer.querySelectorAll('.hotspot-pin').forEach(el => el.remove());
-    if (liveLabel) { liveLabel.remove(); liveLabel = null; }
-    if (activeLine && viewer.model && viewer.model.scene) viewer.model.scene.remove(activeLine);
-    activeLine = null; activeLineGeometry = null;
-    hotspotCount  = 0;
-    pendingPoint  = null;
-    lastMeasureEl.textContent = '—';
-    clearPermanentLines();
-  }
-
-  async function clearHotspots() {
-    clearHotspotsVisual();
-    await SalsiDB.clearMarkups(activeId);
-  }
-
-  async function hydrateMarkupsFromDB() {
-    clearHotspotsVisual();
-    const markups = await SalsiDB.getMarkups(activeId);
-
-    for (const m of markups) {
-      hotspotCount = Math.max(hotspotCount, m.number);
-      const pin = document.createElement('button');
-      pin.slot          = `hotspot-${m.number}`;
-      pin.className     = 'hotspot-pin';
-      pin.dataset.position = m.position;
-      pin.dataset.normal   = m.normal;
-      pin.textContent   = String(m.number);
-      pin.title         = m.note || `Ponto ${m.number}`;
-      pin.addEventListener('click', async e => {
-        e.stopPropagation();
-        const newNote = prompt(`Nota Técnica — Ponto #${m.number}:`, m.note || '');
-        if (newNote !== null) {
-          m.note = newNote; pin.title = `Ponto ${m.number} — ${newNote}`;
-          await SalsiDB.addMarkup(m);
-          await hydrateMarkupsFromDB();
-        }
-      });
-      viewer.appendChild(pin);
-    }
-
-    // Draw saved measurement lines
-    for (const m of markups) {
-      if (m.note && m.note.includes(' m do ponto ')) {
-        const startNum = parseInt(m.note.split(' do ponto ')[1]);
-        const startM   = markups.find(x => x.number === startNum);
-        if (startM) drawPermanentLine(startM.position, m.position);
-      }
-    }
-
-    renderMeasurementsPanel(markups);
-    forceRender();
-  }
-
-  function renderMeasurementsPanel(markups) {
-    const listEl = document.getElementById('measurementsList');
-    if (!listEl) return;
-    if (markups.length === 0) {
-      listEl.innerHTML = `
-        <div style="text-align:center;color:var(--text-secondary);margin-top:40px;font-size:13px;padding:10px;line-height:1.6;">
-          <svg style="width:32px;height:32px;margin-bottom:8px;opacity:.4"><use href="#i-ruler"/></svg>
-          <p>Nenhuma medição criada.</p>
-          <p style="font-size:12px;margin-top:4px;">Ative a <b>Fita Métrica</b> no topo e clique em dois pontos do modelo.</p>
-        </div>`;
-      return;
-    }
-    listEl.innerHTML = markups.map(m => {
-      const isPending = m.note === 'toque em outro ponto para medir a distância';
-      let descText = 'Anotação';
-      if (isPending) descText = '📍 Ponto Inicial — aguardando 2º clique';
-      else if (m.note.includes(' m do ponto ')) {
-        const parts = m.note.split(' m do ponto ');
-        descText = `📏 ${parts[0]} m → Ponto ${parts[1]}`;
-      }
-      return `
-        <div style="background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:8px;">
-          <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
-            <div style="display:flex;align-items:center;gap:8px;min-width:0;">
-              <span class="hotspot-pin" style="position:static;display:inline-flex;width:22px;height:22px;min-width:22px;font-size:10px;border-width:1.5px;box-shadow:none;">${m.number}</span>
-              <span style="font-size:11px;color:var(--accent);font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${esc(descText)}">${descText}</span>
-            </div>
-            <button class="btn danger" style="padding:4px 8px;border-radius:8px;font-size:11px;flex-shrink:0;" data-delete-id="${m.id}" title="Excluir ponto">
-              <svg style="width:12px;height:12px;stroke-width:2.5;"><use href="#i-close"/></svg>
-            </button>
-          </div>
-          <input type="text" class="panel-note-input" data-id="${m.id}"
-            value="${isPending ? '' : esc(m.note)}"
-            placeholder="${isPending ? 'Aguardando 2º ponto...' : 'Escreva observações...'}"
-            ${isPending ? 'disabled' : ''}
-            style="padding:8px 12px;font-size:12px;">
-        </div>`;
-    }).join('');
-  }
 
   // ── Load Model ───────────────────────────────────────
   async function loadModelForProject() {
@@ -631,10 +791,70 @@
       variantContainer.style.display = 'none';
     }
 
-    await hydrateMarkupsFromDB();
-
     // Apply share hash if present
     applyShareHashIfPresent();
+  });
+
+  // ── Compass Rotation & Walkthrough (Visão Interna) ──
+  const dachshundPointer = document.getElementById('dachshundPointer');
+  const walkBtn          = document.getElementById('walkBtn');
+  let walkMode           = false;
+
+  // Track camera rotation to update Dachshund compass
+  viewer.addEventListener('camera-change', () => {
+    try {
+      const orbit = viewer.getCameraOrbit();
+      // Rotate the Dachshund pointer based on camera yaw (theta)
+      // Convert rad to deg (negated to match compass rotation)
+      const deg = -(orbit.theta * 180 / Math.PI);
+      dachshundPointer.style.transform = `rotate(${deg.toFixed(1)}deg)`;
+    } catch (_) {}
+  });
+
+  // Toggle Walkthrough (First Person Interior view)
+  walkBtn.addEventListener('click', () => {
+    walkMode = !walkMode;
+    walkBtn.classList.toggle('active', walkMode);
+
+    if (walkMode) {
+      // 1. Enter Interior mode: wider FOV to feel inside rooms
+      viewer.fieldOfView = '80deg';
+      
+      // 2. Unlock zoom limits completely to allow passing through walls and close up to furniture
+      viewer.minCameraOrbit = 'auto 0deg 0m';
+      viewer.maxCameraOrbit = 'auto 180deg auto';
+      
+      // 3. Move target closer to floor/center of the model
+      try {
+        const d = viewer.getDimensions();
+        // Place target at waist height inside the building
+        viewer.cameraTarget = `0m ${(d.y * 0.3).toFixed(2)}m 0m`;
+        // Move camera closer
+        viewer.cameraOrbit = `0rad 1.2rad ${(d.z * 0.4).toFixed(2)}m`;
+      } catch (_) {}
+
+      // Inform user about walkthrough controls
+      const helpToast = document.createElement('div');
+      Object.assign(helpToast.style, {
+        position: 'absolute', bottom: '16px', right: '16px',
+        background: 'rgba(10,14,20,0.92)', color: 'var(--accent)',
+        fontSize: '12px', fontWeight: '700', padding: '10px 16px',
+        borderRadius: '12px', border: '1.5px solid var(--accent)',
+        boxShadow: '0 4px 16px rgba(0,0,0,.5)', zIndex: '10',
+        fontFamily: 'Manrope, sans-serif', animation: 'chipIn 0.2s ease'
+      });
+      helpToast.innerHTML = '🚶 <b>Modo Interno Ativo:</b> Use zoom/scroll para caminhar para dentro e o botão direito/dois dedos para mover a câmera.';
+      viewer.appendChild(helpToast);
+      setTimeout(() => helpToast.remove(), 6000);
+
+    } else {
+      // Restore default exterior orbit settings
+      viewer.fieldOfView = 'auto';
+      viewer.minCameraOrbit = 'auto 0deg auto';
+      viewer.maxCameraOrbit = 'auto 180deg auto';
+      viewer.cameraTarget = 'auto auto auto';
+      viewer.cameraOrbit = 'auto auto auto';
+    }
   });
 
   // ── View Buttons ─────────────────────────────────────
@@ -677,181 +897,426 @@
   document.getElementById('helpBtn').addEventListener('click',   () => shortcutsOverlay.classList.toggle('hidden'));
   document.getElementById('closeShortcuts').addEventListener('click', () => shortcutsOverlay.classList.add('hidden'));
 
-  // ── Keyboard Shortcuts ───────────────────────────────
-  const viewKeys = { '1':'0deg 90deg auto','2':'180deg 90deg auto','3':'90deg 90deg auto',
-    '4':'-90deg 90deg auto','5':'0deg 0.1deg auto','6':'0deg 179.9deg auto','7':'45deg 55deg auto' };
-
-  window.addEventListener('keydown', e => {
-    if (e.ctrlKey || e.metaKey || e.altKey || e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
-    const k = e.key;
-    if (viewKeys[k]) { viewer.cameraOrbit = viewKeys[k]; viewer.jumpCameraToGoal(); return; }
-    if (k === 'r' || k === 'R') { document.getElementById('resetViewBtn').click(); return; }
-    if (k === 'f' || k === 'F') { goFullscreen(); return; }
-    if (k === 'a' || k === 'A') { document.getElementById('annotateBtn').click(); return; }
-    if (k === 'c' || k === 'C') { document.getElementById('captureBtn').click(); return; }
-    if (k === ' ') { e.preventDefault(); toggleRotateBtn.click(); return; }
-    if (k === '?') { shortcutsOverlay.classList.toggle('hidden'); return; }
-  });
-
   // ── Animation ────────────────────────────────────────
   animBtn.addEventListener('click', () => {
     if (viewer.paused) { viewer.play();  animBtn.classList.add('active'); }
     else               { viewer.pause(); animBtn.classList.remove('active'); }
   });
 
-  // ── Fita Métrica (Live Tape Measure) ─────────────────
+  // ═══════════════════════════════════════════════════════════════════════════
+  //  NAVEGAÇÃO ESTILO SKETCHUP (Orbit, Pan, Zoom Extents, Atalhos)
+  // ═══════════════════════════════════════════════════════════════════════════
+  let activeTool  = 'select'; // 'select' (default orbit), 'pan' (hand tool), 'orbit'
+  let isPanning   = false;
+  let panStartDoc = null;
+  let panStartTgt = null;
+
+  function setTool(tool) {
+    activeTool = tool;
+    if (tool === 'pan') {
+      viewer.style.cursor = 'grab';
+      // Temporarily disable viewer's default left-click orbit by customizing touch-action if needed,
+      // but we will override mouse movement manually.
+    } else if (tool === 'orbit') {
+      viewer.style.cursor = 'all-scroll';
+    } else {
+      viewer.style.cursor = '';
+    }
+    
+    // Toast notification for tool change
+    const tToast = document.createElement('div');
+    Object.assign(tToast.style, {
+      position: 'absolute', top: '16px', left: '50%', transform: 'translateX(-50%)',
+      background: 'var(--bg-surface-solid)', color: 'var(--accent)',
+      fontSize: '12px', fontWeight: '800', padding: '8px 16px',
+      borderRadius: '12px', border: '1.5px solid var(--accent)',
+      boxShadow: '0 4px 16px rgba(0,0,0,.15)', zIndex: '10',
+      fontFamily: 'Manrope, sans-serif', animation: 'chipIn 0.15s ease'
+    });
+    const toolNames = { 'select': 'Seleção (Padrão)', 'pan': 'Mão (Pan - Arrastar)', 'orbit': 'Orbitar (Girar)' };
+    tToast.innerHTML = `Ferramenta: <b>${toolNames[tool]}</b>`;
+    viewer.appendChild(tToast);
+    setTimeout(() => tToast.remove(), 2000);
+  }
+
+  // Mouse drag overrides for Pan tool
+  viewer.addEventListener('pointerdown', e => {
+    if (activeTool !== 'pan' || e.button !== 0) return; // Only left click in Pan mode
+    isPanning = true;
+    viewer.style.cursor = 'grabbing';
+    panStartDoc = { x: e.clientX, y: e.clientY };
+    
+    // Get current camera target
+    try {
+      const tgt = viewer.getCameraTarget();
+      panStartTgt = { x: tgt.x, y: tgt.y, z: tgt.z };
+    } catch (_) {
+      panStartTgt = { x: 0, y: 0, z: 0 };
+    }
+  });
+
+  viewer.addEventListener('pointermove', e => {
+    if (!isPanning || !panStartDoc || !panStartTgt) return;
+    
+    const dx = e.clientX - panStartDoc.x;
+    const dy = e.clientY - panStartDoc.y;
+    
+    // Calculate panning factor based on camera distance
+    try {
+      const orbit = viewer.getCameraOrbit();
+      const dist = orbit.radius || 5;
+      // Scale factor: how much target moves per pixel dragged
+      const factor = dist * 0.0015;
+      
+      // Move target horizontally/vertically relative to camera view angle (approximate)
+      const theta = orbit.theta;
+      const cosT = Math.cos(theta);
+      const sinT = Math.sin(theta);
+      
+      const mx = -dx * factor;
+      const my = dy * factor;
+      
+      const newX = panStartTgt.x + (mx * cosT);
+      const newY = panStartTgt.y + my;
+      const newZ = panStartTgt.z - (mx * sinT);
+      
+      viewer.cameraTarget = `${newX.toFixed(4)}m ${newY.toFixed(4)}m ${newZ.toFixed(4)}m`;
+      forceRender();
+    } catch (_) {}
+  });
+
+  window.addEventListener('pointerup', () => {
+    if (isPanning) {
+      isPanning = false;
+      if (activeTool === 'pan') viewer.style.cursor = 'grab';
+    }
+  });
+
+  // Zoom Extents (Fita métrica / Enquadramento completo)
+  function zoomExtents() {
+    viewer.cameraOrbit = 'auto auto auto';
+    viewer.cameraTarget = 'auto auto auto';
+    viewer.fieldOfView = 'auto';
+    viewer.jumpCameraToGoal();
+    
+    const zToast = document.createElement('div');
+    Object.assign(zToast.style, {
+      position: 'absolute', top: '16px', left: '50%', transform: 'translateX(-50%)',
+      background: 'var(--bg-surface-solid)', color: 'var(--accent)',
+      fontSize: '12px', fontWeight: '800', padding: '8px 16px',
+      borderRadius: '12px', border: '1.5px solid var(--accent)',
+      boxShadow: '0 4px 16px rgba(0,0,0,.15)', zIndex: '10',
+      fontFamily: 'Manrope, sans-serif'
+    });
+    zToast.innerHTML = '<b>Zoom Total (Extents)</b>';
+    viewer.appendChild(zToast);
+    setTimeout(() => zToast.remove(), 1500);
+  }
+
+  // ── Keyboard Shortcuts (Salsi + SketchUp) ────────────
+  const viewKeys = { '1':'0deg 90deg auto','2':'180deg 90deg auto','3':'90deg 90deg auto',
+    '4':'-90deg 90deg auto','5':'0deg 0.1deg auto','6':'0deg 179.9deg auto','7':'45deg 55deg auto' };
+
+  let xrayToggle = false;
+
+  window.addEventListener('keydown', e => {
+    if (e.ctrlKey || e.metaKey || e.altKey || e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+    const k = e.key.toLowerCase();
+    
+    // View presets (1-7)
+    if (viewKeys[e.key]) {
+      viewer.cameraOrbit = viewKeys[e.key];
+      viewer.jumpCameraToGoal();
+      return;
+    }
+    
+    // Salsi Shortcuts
+    if (k === 'r') { document.getElementById('resetViewBtn').click(); return; }
+    if (k === 'f') { goFullscreen(); return; }
+    if (k === 'c') { document.getElementById('captureBtn').click(); return; }
+    if (k === '?') { shortcutsOverlay.classList.toggle('hidden'); return; }
+    
+    // SketchUp Tools
+    if (k === 'h') { e.preventDefault(); setTool('pan'); }
+    else if (k === 'o') { e.preventDefault(); setTool('orbit'); }
+    else if (k === ' ') { e.preventDefault(); setTool('select'); }
+    else if (k === 't') { e.preventDefault(); document.getElementById('annotateBtn').click(); } // T = Tape Measure
+    else if (k === 'k') { // K = Back Edges / X-Ray style toggle
+      e.preventDefault();
+      xrayToggle = !xrayToggle;
+      applyFaceStyle(xrayToggle ? 'xray' : 'shaded');
+      toggleGroupActive(xrayToggle ? styleXrayBtn : styleShadedBtn, '#styleShadedBtn, #styleXrayBtn, #styleMonoBtn, #styleWireBtn');
+    }
+    else if (k === 'z') {
+      e.preventDefault();
+      if (e.shiftKey) {
+        // Shift + Z = Zoom Extents
+        zoomExtents();
+      } else {
+        // Z alone = Zoom (trigger recenter or zoom focus)
+        viewer.zoom(1);
+      }
+    }
+  });
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  //  RÉGUA — múltiplas medições, remoção individual, unidades inteligentes
+  // ═══════════════════════════════════════════════════════════════════════════
+  //
+  //  UX (como um arquiteto sênior descreveria):
+  //  1. Ativa régua → cursor vira crosshair
+  //  2. Clica ponto A → ponto laranja pequeno aparece NO modelo
+  //  3. Move o mouse → linha elástica Three.js + OVERLAY CSS na tela
+  //     mostrando a distância em tempo real (não flutuando no espaço 3D)
+  //  4. Clica ponto B → linha permanente, ponto azul no modelo
+  //  5. Medição aparece como chip na faixa ABAIXO do viewer
+  //     → chip tem número, distância e botão × confiável
+  //  6. Clicar × no chip remove linha + pontos daquela medição
+  // ═══════════════════════════════════════════════════════════════════════════
+
+  const measStrip    = document.getElementById('measStrip');
+  const rulerOverlay = document.getElementById('rulerOverlay');
+
+  // Saved measurements: { id, dot1, dot2, line, chip }
+  const savedMeas = [];
+  let   measCounter = 0;
+
+  // In-progress
+  let pinA_el = null; // small dot on model for point A
+
+  // ── Smart unit formatter ────────────────────────────────────────────────────
+  function fmtDist(meters) {
+    if (meters < 0.01)  return `${(meters * 1000).toFixed(0)} mm`;
+    if (meters < 1)     return `${(meters * 100).toFixed(1)} cm`;
+    return `${meters.toFixed(3)} m`;
+  }
+
+  // ── Small dot marker (hotspot) on model surface ─────────────────────────────
+  function makeDot(slotName, posStr, normStr, color, text) {
+    const el = document.createElement('div');
+    el.className        = 'hotspot-pin';
+    el.slot             = slotName;
+    el.dataset.position = posStr;
+    el.dataset.normal   = normStr;
+    Object.assign(el.style, {
+      width: '22px', height: '22px', borderRadius: '50%',
+      background: color, color: '#0a0e14',
+      border: '2px solid #fff',
+      boxShadow: `0 0 0 2px ${color}, 0 2px 8px rgba(0,0,0,.6)`,
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      fontSize: '10px', fontWeight: '900',
+      fontFamily: 'Manrope, sans-serif',
+      userSelect: 'none',
+      pointerEvents: 'none',
+      position: 'absolute',
+      transform: 'translate(-50%, -50%)'
+    });
+    el.textContent = text || '';
+    viewer.appendChild(el);
+    return el;
+  }
+
+  // ── Measurement chip in the strip below viewer ──────────────────────────────
+  function makeChip(id, dist) {
+    const chip = document.createElement('div');
+    chip.className    = 'meas-chip';
+    chip.dataset.id   = id;
+
+    const label = document.createElement('span');
+    label.textContent = `Medição #${id}  (${fmtDist(dist)})`;
+
+    const btn = document.createElement('button');
+    btn.className   = 'meas-chip-remove';
+    btn.textContent = '×';
+    btn.title       = 'Remover medição';
+    btn.addEventListener('click', () => removeMeas(id));
+
+    chip.appendChild(label);
+    chip.appendChild(btn);
+    measStrip.appendChild(chip);
+    return chip;
+  }
+
+  // ── Remove one measurement completely ──────────────────────────────────────
+  function removeMeas(id) {
+    const idx = savedMeas.findIndex(m => m.id === id);
+    if (idx === -1) return;
+    const m = savedMeas.splice(idx, 1)[0];
+    if (m.dot1) m.dot1.remove();
+    if (m.dot2) m.dot2.remove();
+    if (m.line && viewer.model && viewer.model.scene) viewer.model.scene.remove(m.line);
+    if (m.chip) m.chip.remove();
+    // Update top chip
+    if (savedMeas.length === 0) lastMeasureEl.textContent = '—';
+    else lastMeasureEl.textContent = fmtDist(savedMeas[savedMeas.length - 1].dist);
+    forceRender();
+  }
+
+  // ── Clear all ───────────────────────────────────────────────────────────────
+  function clearAllMeas() {
+    // Cancel any in-progress
+    rulerStart = null;
+    if (rulerLine && viewer.model && viewer.model.scene) viewer.model.scene.remove(rulerLine);
+    rulerLine = null; rulerLineGeo = null;
+    if (rulerLabel) { rulerLabel.remove(); rulerLabel = null; }
+    if (pinA_el)    { pinA_el.remove();    pinA_el    = null; }
+    rulerOverlay.style.display = 'none';
+    // Remove all saved
+    [...savedMeas].forEach(m => removeMeas(m.id));
+    lastMeasureEl.textContent = '—';
+    forceRender();
+  }
+
+  // ── Ruler button ────────────────────────────────────────────────────────────
   const annotateBtn = document.getElementById('annotateBtn');
   annotateBtn.addEventListener('click', () => {
     annotateMode = !annotateMode;
     annotateBtn.classList.toggle('active', annotateMode);
-    viewer.style.cursor = annotateMode ? 'crosshair' : '';
-
     if (!annotateMode) {
-      // Cancel any in-progress measurement
-      if (activeLine && viewer.model && viewer.model.scene) viewer.model.scene.remove(activeLine);
-      activeLine = null; activeLineGeometry = null;
-      if (liveLabel) { liveLabel.remove(); liveLabel = null; }
-      pendingPoint = null;
-      lastMeasureEl.textContent = '—';
+      // Cancel in-progress only
+      rulerStart = null;
+      if (rulerLine && viewer.model && viewer.model.scene) viewer.model.scene.remove(rulerLine);
+      rulerLine = null; rulerLineGeo = null;
+      if (rulerLabel) { rulerLabel.remove(); rulerLabel = null; }
+      if (pinA_el)    { pinA_el.remove();    pinA_el    = null; }
+      rulerOverlay.style.display = 'none';
+      viewer.style.cursor = '';
+      lastMeasureEl.textContent = savedMeas.length ? fmtDist(savedMeas[savedMeas.length-1].dist) : '—';
       forceRender();
+    } else {
+      viewer.style.cursor = 'crosshair';
     }
   });
 
-  // Track pointer-down for drag vs click detection
+  // ── Track pointer-down (drag vs click) ─────────────────────────────────────
   viewer.addEventListener('pointerdown', e => { downPoint = { x: e.clientX, y: e.clientY }; });
 
-  // Live line update on pointer move
+  // ── Pointer-move: rubber band + screen overlay ──────────────────────────────
   viewer.addEventListener('pointermove', e => {
-    if (!annotateMode || !pendingPoint) return;
+    if (!annotateMode || !rulerStart) return;
     const hit = viewer.positionAndNormalFromPoint(e.clientX, e.clientY);
-    if (!hit) return;
 
-    const end = getSnappedPoint(hit.position);
-    const dx = end.x - pendingPoint.pos.x;
-    const dy = end.y - pendingPoint.pos.y;
-    const dz = end.z - pendingPoint.pos.z;
-    const dist = Math.sqrt(dx*dx + dy*dy + dz*dz);
-
-    // Update Three.js live line
-    if (typeof THREE !== 'undefined' && activeLineGeometry) {
-      activeLineGeometry.setFromPoints([
-        new THREE.Vector3(pendingPoint.pos.x, pendingPoint.pos.y, pendingPoint.pos.z),
-        new THREE.Vector3(end.x, end.y, end.z)
-      ]);
+    // Update rubber-band line if cursor is over the model
+    if (hit && rulerLineGeo) {
+      const end = getSnappedPoint(hit.position);
+      const dist = Math.sqrt(
+        (end.x - rulerStart.x)**2 +
+        (end.y - rulerStart.y)**2 +
+        (end.z - rulerStart.z)**2
+      );
+      if (typeof THREE !== 'undefined') {
+        rulerLineGeo.setFromPoints([
+          new THREE.Vector3(rulerStart.x, rulerStart.y, rulerStart.z),
+          new THREE.Vector3(end.x, end.y, end.z)
+        ]);
+      }
+      // Overlay on screen (CSS position, not 3D space)
+      rulerOverlay.style.display = 'block';
+      rulerOverlay.style.left    = e.clientX + 'px';
+      rulerOverlay.style.top     = e.clientY + 'px';
+      rulerOverlay.textContent   = `📏 ${fmtDist(dist)}`;
+      lastMeasureEl.textContent  = fmtDist(dist);
+      forceRender();
+    } else {
+      // Cursor left model surface
+      rulerOverlay.style.display = 'none';
     }
-
-    // Update live floating label
-    if (liveLabel) {
-      liveLabel.dataset.position = `${end.x.toFixed(3)} ${end.y.toFixed(3)} ${end.z.toFixed(3)}`;
-      liveLabel.textContent = `${dist.toFixed(2)} m`;
-    }
-
-    lastMeasureEl.textContent = `#${pendingPoint.index} → Medindo: ${dist.toFixed(2)} m`;
-    forceRender();
   });
 
-  // Click handler: place start or end point
-  viewer.addEventListener('pointerup', async e => {
+  // ── Pointer-up: place A then B ──────────────────────────────────────────────
+  viewer.addEventListener('pointerup', e => {
     if (!annotateMode || !downPoint) { downPoint = null; return; }
-    const dx = e.clientX - downPoint.x, dy = e.clientY - downPoint.y;
+    const mdx = e.clientX - downPoint.x;
+    const mdy = e.clientY - downPoint.y;
     downPoint = null;
-    if (Math.hypot(dx, dy) > 6) return; // was a drag, not a click
+    if (Math.hypot(mdx, mdy) > 6) return; // drag — ignore
 
     const hit = viewer.positionAndNormalFromPoint(e.clientX, e.clientY);
     if (!hit) return;
+    const pt      = getSnappedPoint(hit.position);
+    const posStr  = `${pt.x.toFixed(4)} ${pt.y.toFixed(4)} ${pt.z.toFixed(4)}`;
+    const normStr = `${hit.normal.x.toFixed(4)} ${hit.normal.y.toFixed(4)} ${hit.normal.z.toFixed(4)}`;
 
-    const snapped = getSnappedPoint(hit.position);
-    hotspotCount++;
-    const posStr  = `${snapped.x.toFixed(3)} ${snapped.y.toFixed(3)} ${snapped.z.toFixed(3)}`;
-    const normStr = `${hit.normal.x.toFixed(3)} ${hit.normal.y.toFixed(3)} ${hit.normal.z.toFixed(3)}`;
+    if (!rulerStart) {
+      // ── PONTO A ────────────────────────────────────────────────────────────
+      rulerStart = pt;
 
-    if (pendingPoint) {
-      // ── Second click: finalise measurement ──
-      const ddx  = snapped.x - pendingPoint.pos.x;
-      const ddy  = snapped.y - pendingPoint.pos.y;
-      const ddz  = snapped.z - pendingPoint.pos.z;
-      const dist = Math.sqrt(ddx*ddx + ddy*ddy + ddz*ddz);
-      const note = `${dist.toFixed(2)} m do ponto ${pendingPoint.index}`;
-      lastMeasureEl.textContent = `#${pendingPoint.index} → #${hotspotCount}: ${dist.toFixed(2)} m`;
+      // Small orange dot on model (starts with label 'A')
+      pinA_el = makeDot('hotspot-dotA-live', posStr, normStr, '#dca153', 'A');
 
-      // Remove live elements
-      if (activeLine && viewer.model && viewer.model.scene) viewer.model.scene.remove(activeLine);
-      activeLine = null; activeLineGeometry = null;
-      if (liveLabel) { liveLabel.remove(); liveLabel = null; }
-      pendingPoint = null;
-
-      await SalsiDB.addMarkup({ projectId: activeId, position: posStr, normal: normStr, number: hotspotCount, note });
-
-    } else {
-      // ── First click: start measurement ──
-      pendingPoint = { pos: snapped, index: hotspotCount };
-      const note = 'toque em outro ponto para medir a distância';
-
-      // Create Three.js live line
+      // Three.js rubber-band line (zero length, will grow on mousemove)
       if (typeof THREE !== 'undefined' && viewer.model && viewer.model.scene) {
-        const pts  = [new THREE.Vector3(snapped.x, snapped.y, snapped.z),
-                      new THREE.Vector3(snapped.x, snapped.y, snapped.z)];
-        activeLineGeometry = new THREE.BufferGeometry().setFromPoints(pts);
-        const mat  = new THREE.LineBasicMaterial({ color: 0xdca153, linewidth: 4, depthTest: false });
-        activeLine = new THREE.Line(activeLineGeometry, mat);
-        activeLine.renderOrder = 999;
-        viewer.model.scene.add(activeLine);
+        const v = new THREE.Vector3(pt.x, pt.y, pt.z);
+        rulerLineGeo = new THREE.BufferGeometry().setFromPoints([v.clone(), v.clone()]);
+        rulerLine    = new THREE.Line(rulerLineGeo,
+          new THREE.LineBasicMaterial({ color: 0xdca153, linewidth: 3, depthTest: false }));
+        rulerLine.renderOrder = 999;
+        viewer.model.scene.add(rulerLine);
       }
 
-      // Create floating live label
-      liveLabel = document.createElement('div');
-      liveLabel.slot = 'hotspot-live';
-      Object.assign(liveLabel.style, {
-        background: '#dca153', color: '#0a0e14', fontSize: '12px',
-        fontWeight: '700', padding: '4px 10px', borderRadius: '10px',
-        border: '2px solid #fff', whiteSpace: 'nowrap', boxShadow: '0 2px 8px rgba(0,0,0,.4)'
-      });
-      liveLabel.textContent = '0.00 m';
-      liveLabel.dataset.position = posStr;
-      viewer.appendChild(liveLabel);
+      lastMeasureEl.textContent = '📍 Ponto A — clique no Ponto B';
+      rulerOverlay.style.display = 'none';
+      forceRender();
 
-      await SalsiDB.addMarkup({ projectId: activeId, position: posStr, normal: normStr, number: hotspotCount, note });
+    } else {
+      // ── PONTO B ────────────────────────────────────────────────────────────
+      const dx   = pt.x - rulerStart.x;
+      const dy   = pt.y - rulerStart.y;
+      const dz   = pt.z - rulerStart.z;
+      const dist = Math.sqrt(dx*dx + dy*dy + dz*dz);
+      const id   = ++measCounter;
+
+      // Small blue dot on model for B (labeled B + id)
+      const dot2 = makeDot(`hotspot-dotB-${id}`, posStr, normStr, '#64b5f6', `B${id}`);
+
+      // Recreate Point A as a permanent hotspot so model-viewer processes the new slot correctly
+      let permanentDot1 = null;
+      if (pinA_el) {
+        const aPos = pinA_el.dataset.position;
+        const aNorm = pinA_el.dataset.normal;
+        // Remove the temporary live dot
+        pinA_el.remove();
+        // Create the permanent dot A (labeled A + id)
+        permanentDot1 = makeDot(`hotspot-dotA-${id}`, aPos, aNorm, '#dca153', `A${id}`);
+      }
+
+      // Freeze line
+      if (typeof THREE !== 'undefined' && rulerLineGeo) {
+        rulerLineGeo.setFromPoints([
+          new THREE.Vector3(rulerStart.x, rulerStart.y, rulerStart.z),
+          new THREE.Vector3(pt.x, pt.y, pt.z)
+        ]);
+      }
+
+      // Chip in the strip
+      const chip = makeChip(id, dist);
+
+      // Save
+      savedMeas.push({ id, dot1: permanentDot1, dot2, line: rulerLine, chip, dist });
+
+      // Reset in-progress (don't remove 3D objects — owned by savedMeas now)
+      pinA_el      = null;
+      rulerLine    = null;
+      rulerLineGeo = null;
+      rulerStart   = null;
+
+      // Overlay off
+      rulerOverlay.style.display = 'none';
+
+      // Update top chip
+      lastMeasureEl.textContent = fmtDist(dist);
+      forceRender();
+
+      // Stay in ruler mode for next measurement
     }
-
-    await hydrateMarkupsFromDB();
-    await SalsiShell.refreshAll();
   });
 
-  // ── Clear Annotations ────────────────────────────────
-  async function clearAllAnnotations() {
-    if (!confirm('Apagar todas as marcações deste projeto?')) return;
-    await clearHotspots();
-    await SalsiShell.refreshAll();
-  }
-  document.getElementById('clearAnnotationsBtn').addEventListener('click', clearAllAnnotations);
-  document.getElementById('clearAnnotationsBtnSide').addEventListener('click', clearAllAnnotations);
+  // ── Clear All button ─────────────────────────────────────────────────────────
+  document.getElementById('clearAnnotationsBtn').addEventListener('click', clearAllMeas);
 
-  // ── Side Panel: note edits & deletes ─────────────────
-  const listEl = document.getElementById('measurementsList');
 
-  listEl.addEventListener('change', async e => {
-    if (!e.target.classList.contains('panel-note-input')) return;
-    const id   = e.target.dataset.id;
-    const note = e.target.value;
-    const markups = await SalsiDB.getMarkups(activeId);
-    const m = markups.find(x => x.id === id);
-    if (m) {
-      m.note = note;
-      await SalsiDB.addMarkup(m);
-      const pin = viewer.querySelector(`button[slot="hotspot-${m.number}"]`);
-      if (pin) pin.title = `Ponto ${m.number} — ${note}`;
-      await hydrateMarkupsFromDB();
-    }
-  });
 
-  listEl.addEventListener('click', async e => {
-    const btn = e.target.closest('[data-delete-id]');
-    if (!btn) return;
-    e.stopPropagation();
-    await SalsiDB.deleteMarkup(btn.dataset.deleteId);
-    await hydrateMarkupsFromDB();
-    await SalsiShell.refreshAll();
-  });
+
 
   // ── Capture Screenshot ───────────────────────────────
   async function buildCompositeBlob() {
@@ -928,14 +1393,12 @@
   document.getElementById('fileInput').addEventListener('change', async e => {
     const file = e.target.files[0];
     if (!file) return;
-    if (hotspotCount > 0 && !confirm('Substituir o modelo apagará as marcações atuais. Continuar?')) {
-      e.target.value = ''; return;
-    }
+    cancelRulerInProgress();
+    lastMeasureEl.textContent = '—';
     await SalsiDB.setProjectModel(activeId, file, file.name);
-    await SalsiDB.clearMarkups(activeId);
-    clearHotspotsVisual();
     viewer.src = URL.createObjectURL(file);
     filenameEl.textContent = file.name;
+    emptyState.classList.add('hidden');
     e.target.value = '';
   });
 
@@ -1000,6 +1463,143 @@
     forceRender();
   });
 
+  // ═══════════════════════════════════════════════════════════════════════════
+  //  LÓGICA DO PAINEL SKETCHUP (Estilos de Face & Projeção)
+  // ═══════════════════════════════════════════════════════════════════════════
+  const projPerspBtn    = document.getElementById('projPerspBtn');
+  const projParallelBtn = document.getElementById('projParallelBtn');
+  const styleShadedBtn  = document.getElementById('styleShadedBtn');
+  const styleXrayBtn    = document.getElementById('styleXrayBtn');
+  const styleMonoBtn    = document.getElementById('styleMonoBtn');
+  const styleWireBtn    = document.getElementById('styleWireBtn');
+  const invertCutBtn    = document.getElementById('invertCutBtn');
+
+  // Helper to toggle active classes on button groups
+  function toggleGroupActive(activeBtn, groupSelector) {
+    document.querySelectorAll(groupSelector).forEach(btn => btn.classList.remove('primary'));
+    activeBtn.classList.add('primary');
+  }
+
+  // 1. Camera Projection
+  projPerspBtn.addEventListener('click', () => {
+    viewer.fieldOfView = 'auto';
+    toggleGroupActive(projPerspBtn, '#projPerspBtn, #projParallelBtn');
+  });
+
+  projParallelBtn.addEventListener('click', () => {
+    // 1deg field of view simulates a perfect parallel projection in model-viewer
+    viewer.fieldOfView = '1.0deg';
+    toggleGroupActive(projParallelBtn, '#projPerspBtn, #projParallelBtn');
+  });
+
+  // Helper to traverse Three.js scene and apply face styles
+  function applyFaceStyle(mode) {
+    try {
+      const sym = Symbol.for('3DViewer');
+      if (!viewer[sym] || !viewer[sym].model) return;
+      
+      viewer[sym].model.scene.traverse(node => {
+        if (node.isMesh && node.material) {
+          const materials = Array.isArray(node.material) ? node.material : [node.material];
+          
+          materials.forEach(mat => {
+            // Backup original state on first style change
+            if (!mat.userData.originalOpacity) mat.userData.originalOpacity = mat.opacity || 1;
+            if (mat.userData.originalTransparent === undefined) mat.userData.originalTransparent = mat.transparent || false;
+            if (mat.userData.originalWireframe === undefined) mat.userData.originalWireframe = mat.wireframe || false;
+            if (!mat.userData.originalColor) mat.userData.originalColor = mat.color.getHex();
+            if (mat.userData.originalMap === undefined) mat.userData.originalMap = mat.map || null;
+
+            if (mode === 'shaded') {
+              // Restore original
+              mat.opacity = mat.userData.originalOpacity;
+              mat.transparent = mat.userData.originalTransparent;
+              mat.wireframe = mat.userData.originalWireframe;
+              mat.color.setHex(mat.userData.originalColor);
+              mat.map = mat.userData.originalMap;
+            } else if (mode === 'xray') {
+              // Translucent
+              mat.opacity = 0.35;
+              mat.transparent = true;
+              mat.wireframe = false;
+              mat.color.setHex(mat.userData.originalColor);
+              mat.map = mat.userData.originalMap;
+            } else if (mode === 'mono') {
+              // Monochrome white faces, no textures
+              mat.opacity = 1.0;
+              mat.transparent = false;
+              mat.wireframe = false;
+              mat.color.setHex(0xffffff);
+              mat.map = null; // hide texture map
+            } else if (mode === 'wireframe') {
+              // Structural wireframe
+              mat.opacity = 1.0;
+              mat.transparent = false;
+              mat.wireframe = true;
+              mat.color.setHex(0xdca153); // amber wireframe
+            }
+            
+            mat.needsUpdate = true;
+          });
+        }
+      });
+      forceRender();
+    } catch (_) {}
+  }
+
+  styleShadedBtn.addEventListener('click', () => {
+    applyFaceStyle('shaded');
+    toggleGroupActive(styleShadedBtn, '#styleShadedBtn, #styleXrayBtn, #styleMonoBtn, #styleWireBtn');
+  });
+
+  styleXrayBtn.addEventListener('click', () => {
+    applyFaceStyle('xray');
+    toggleGroupActive(styleXrayBtn, '#styleShadedBtn, #styleXrayBtn, #styleMonoBtn, #styleWireBtn');
+  });
+
+  styleMonoBtn.addEventListener('click', () => {
+    applyFaceStyle('mono');
+    toggleGroupActive(styleMonoBtn, '#styleShadedBtn, #styleXrayBtn, #styleMonoBtn, #styleWireBtn');
+  });
+
+  styleWireBtn.addEventListener('click', () => {
+    applyFaceStyle('wireframe');
+    toggleGroupActive(styleWireBtn, '#styleShadedBtn, #styleXrayBtn, #styleMonoBtn, #styleWireBtn');
+  });
+
+  // 3. Section Cut Inversion
+  invertCutBtn.addEventListener('click', () => {
+    try {
+      if (localClipPlaneY) {
+        localClipPlaneY.normal.negate();
+        // Shift slider value to match inverted coordinate space
+        const clipY = document.getElementById('clipY');
+        clipY.value = String(clipY.max - clipY.value);
+      }
+      if (localClipPlaneZ) {
+        localClipPlaneZ.normal.negate();
+        const clipZ = document.getElementById('clipZ');
+        clipZ.value = String(clipZ.max - clipZ.value);
+      }
+      
+      invertCutBtn.classList.toggle('primary');
+      forceRender();
+      
+      const iToast = document.createElement('div');
+      Object.assign(iToast.style, {
+        position: 'absolute', top: '16px', left: '50%', transform: 'translateX(-50%)',
+        background: 'rgba(10,14,20,0.92)', color: 'var(--accent)',
+        fontSize: '12px', fontWeight: '800', padding: '8px 16px',
+        borderRadius: '12px', border: '1.5px solid var(--accent)',
+        boxShadow: '0 4px 16px rgba(0,0,0,.5)', zIndex: '10',
+        fontFamily: 'Manrope, sans-serif'
+      });
+      iToast.innerHTML = '🔄 <b>Sentido do corte invertido</b>';
+      viewer.appendChild(iToast);
+      setTimeout(() => iToast.remove(), 1500);
+    } catch (_) {}
+  });
+
   // ── PDF Report ───────────────────────────────────────
   document.getElementById('pdfReportBtn').addEventListener('click', async () => {
     if (typeof window.jspdf === 'undefined') {
@@ -1034,25 +1634,20 @@
 
       doc.line(20,yPos,190,yPos); yPos += 8;
       doc.setFont('helvetica','bold'); doc.setFontSize(13); doc.setTextColor(43,61,82);
-      doc.text('Pontos de Medição e Notas Técnicas:', 20, yPos); yPos += 8;
+      doc.text('Medições realizadas nesta sessão:', 20, yPos); yPos += 8;
 
-      const markups = await SalsiDB.getMarkups(activeId);
       doc.setFontSize(10); doc.setFont('helvetica','normal'); doc.setTextColor(50,50,50);
 
-      if (!markups.length) {
-        doc.text('Nenhuma marcação técnica registrada.', 20, yPos);
+      if (!savedMeas.length) {
+        doc.text('Nenhuma medição realizada nesta sessão.', 20, yPos);
       } else {
-        for (const m of markups) {
+        for (const m of savedMeas) {
           if (yPos > 270) { doc.addPage(); yPos = 20; }
           doc.setFont('helvetica','bold'); doc.setTextColor(220,161,83);
-          doc.text(`PONTO #${m.number}:`, 20, yPos);
+          doc.text(`MEDIÇÃO #${m.id}:`, 20, yPos);
           doc.setFont('helvetica','normal'); doc.setTextColor(50,50,50);
-          const lines = doc.splitTextToSize(m.note || 'Sem descrição', 130);
-          doc.text(lines, 45, yPos);
-          doc.setFontSize(7.5); doc.setTextColor(160,160,160);
-          doc.text(`Coord: [${m.position}]`, 45, yPos + lines.length*4 + 1);
-          doc.setFontSize(10); doc.setTextColor(50,50,50);
-          yPos += Math.max(12, lines.length*4 + 6);
+          doc.text(fmtDist(m.dist), 55, yPos);
+          yPos += 8;
         }
       }
 
@@ -1062,6 +1657,22 @@
       console.error(err);
       alert('Erro ao gerar o relatório em PDF.');
     }
+  });
+
+  // ── Tab Switching Logic ─────────────────────────────
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const tabId = btn.dataset.tab;
+      
+      // Toggle buttons
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      
+      // Toggle panes
+      document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+      const targetPane = document.getElementById(tabId);
+      if (targetPane) targetPane.classList.add('active');
+    });
   });
 
   // ── Kick off ─────────────────────────────────────────

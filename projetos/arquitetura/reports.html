@@ -3,17 +3,58 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Reports — Salsi</title>
+<title>Salsi — Relatórios</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
 <link rel="icon" href="logo.png">
 <link rel="apple-touch-icon" href="logo.png">
 <link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#2B3D52">
+<meta name="theme-color" content="#fbfaf8">
 <link rel="stylesheet" href="assets/app.css">
-
+<!-- jsPDF library -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </head>
 <body>
+
+<div id="offline-banner-root"></div>
+<div class="shell">
+  <div id="sidebar-root"></div>
+  <main class="main">
+    <div class="topbar">
+      <div class="brand-mark"><img src="logo.png" alt="Salsi"><span class="display">Salsi</span></div>
+      <a class="project-pill" href="projects.html" id="activeProjectPill">
+        <svg><use href="#i-building"/></svg><span>Carregando…</span>
+      </a>
+    </div>
+    <div class="content">
+      
+      <!-- Editorial Page Header -->
+      <div class="page-header-block">
+        <h1 class="page-title">Relatórios Técnicos</h1>
+        <p class="page-sub">Documentações consolidadas em formato PDF para exportação</p>
+      </div>
+
+      <div id="noProjectState" class="empty" style="display:none">
+        <img src="logo.png" alt=""><strong>Nenhum projeto selecionado</strong>
+        <span>Escolha um projeto para gerar o relatório.</span>
+        <div style="margin-top:14px"><a class="btn primary" href="projects.html">Ir para Projetos</a></div>
+      </div>
+
+      <div id="reportArea" style="display:none">
+        <div style="margin-bottom:32px; display:flex; gap:12px; flex-wrap:wrap;">
+          <button class="btn primary" id="generatePdfBtn" style="min-height:42px;">
+            <span>Gerar Relatório PDF</span>
+          </button>
+        </div>
+        <div class="card" id="reportBody" style="border-top:1px solid var(--border); padding-top:32px; margin-top:16px;"></div>
+      </div>
+
+    </div>
+  </main>
+</div>
+<div id="sync-card-root"></div>
+
+<!-- ── SVG Icon Sprite ───────────────────────────────── -->
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
 <defs>
 <symbol id="i-home" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
@@ -26,10 +67,10 @@
   <rect x="9" y="15.5" width="2" height="2" fill="currentColor" stroke="none"/><rect x="13" y="15.5" width="2" height="2" fill="currentColor" stroke="none"/>
 </symbol>
 <symbol id="i-camera" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-  <rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7l1.5-2.5h5L16 7"/><circle cx="12" cy="13.5" r="3.5"/>
+  <rect x="3" y="7" width="18" height="13" rx="2"/><circle cx="12" cy="13.5" r="3.5"/>
 </symbol>
 <symbol id="i-notes" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-  <rect x="4" y="3" width="16" height="18" rx="2"/><line x1="8" y1="8" x2="16" y2="8"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="8" y1="16" x2="13" y2="16"/>
+  <rect x="4" y="3" width="16" height="18" rx="2"/><line x1="8" y1="8" x2="16" y2="8"/><line x1="8" y1="12" x2="16" y2="12"/>
 </symbol>
 <symbol id="i-cube" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
   <path d="M12 2L20 6.5V17.5L12 22L4 17.5V6.5L12 2Z"/><path d="M12 12V22"/><path d="M12 12L20 6.5"/><path d="M12 12L4 6.5"/>
@@ -38,139 +79,185 @@
   <path d="M7 3h7l4 4v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/><path d="M14 3v4h4"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="16" x2="15" y2="16"/>
 </symbol>
 <symbol id="i-settings" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-  <circle cx="12" cy="12" r="3.2"/><path d="M12 2.5v3M12 18.5v3M3.5 12h3M17.5 12h3M5.8 5.8l2.1 2.1M16.1 16.1l2.1 2.1M18.2 5.8l-2.1 2.1M7.9 16.1l-2.1 2.1"/>
-</symbol>
-<symbol id="i-sync" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-  <path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/><path d="M3 21v-5h5"/>
-</symbol>
-<symbol id="i-close" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round">
-  <line x1="6" y1="6" x2="18" y2="18"/><line x1="18" y1="6" x2="6" y2="18"/>
-</symbol>
-<symbol id="i-plus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round">
-  <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
-</symbol>
-<symbol id="i-trash" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-  <path d="M5 7h14"/><path d="M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/><path d="M7 7l1 13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1l1-13"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/>
-</symbol>
-<symbol id="i-download" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-  <path d="M12 3v12"/><path d="M7 10l5 5 5-5"/><path d="M4 19h16"/>
-</symbol>
-<symbol id="i-upload" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-  <path d="M12 16V4"/><path d="M7 9l5-5 5 5"/><path d="M4 18v2a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-2"/>
-</symbol>
-<symbol id="i-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-  <path d="M5 13l4 4L19 7"/>
-</symbol>
-<symbol id="i-pin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-  <path d="M12 21s7-7.5 7-12a7 7 0 1 0-14 0c0 4.5 7 12 7 12z"/><circle cx="12" cy="9" r="2.3"/>
-</symbol>
-<symbol id="i-orbit" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
-  <ellipse cx="12" cy="12" rx="9" ry="5"/><circle cx="12" cy="12" r="1.6" fill="currentColor" stroke="none"/>
-</symbol>
-<symbol id="i-move" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-  <path d="M12 2v20M2 12h20M12 2l-2.5 2.5M12 2l2.5 2.5M12 22l-2.5-2.5M12 22l2.5-2.5M2 12l2.5-2.5M2 12l2.5 2.5M22 12l-2.5-2.5M22 12l-2.5 2.5"/>
-</symbol>
-<symbol id="i-zoom-in" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
-  <circle cx="10" cy="10" r="6"/><line x1="14.5" y1="14.5" x2="20" y2="20"/><line x1="10" y1="7" x2="10" y2="13"/><line x1="7" y1="10" x2="13" y2="10"/>
-</symbol>
-<symbol id="i-zoom-out" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
-  <circle cx="10" cy="10" r="6"/><line x1="14.5" y1="14.5" x2="20" y2="20"/><line x1="7" y1="10" x2="13" y2="10"/>
-</symbol>
-<symbol id="i-fullscreen" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-  <path d="M4 9V4h5"/><path d="M15 4h5v5"/><path d="M20 15v5h-5"/><path d="M9 20H4v-5"/>
-</symbol>
-<symbol id="i-link" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-  <path d="M9 15l6-6"/><path d="M13 5h4a4 4 0 0 1 0 8h-2"/><path d="M11 19H7a4 4 0 0 1 0-8h2"/>
-</symbol>
-<symbol id="i-target" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
-  <circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="1.4" fill="currentColor" stroke="none"/><line x1="12" y1="2" x2="12" y2="5"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="2" y1="12" x2="5" y2="12"/><line x1="19" y1="12" x2="22" y2="12"/>
-</symbol>
-<symbol id="i-play" viewBox="0 0 24 24"><path d="M7 5l12 7-12 7V5z" fill="currentColor"/></symbol>
-<symbol id="i-pause" viewBox="0 0 24 24"><rect x="6" y="5" width="4" height="14" rx="1" fill="currentColor"/><rect x="14" y="5" width="4" height="14" rx="1" fill="currentColor"/></symbol>
-<symbol id="i-warning" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-  <path d="M12 3l9 16H3z"/><line x1="12" y1="9" x2="12" y2="14"/><circle cx="12" cy="17" r="0.6" fill="currentColor" stroke="none"/>
+  <circle cx="12" cy="12" r="3.2"/><path d="M12 2.5v3M12 18.5v3M3.5 12h3M17.5 12h3"/>
 </symbol>
 </defs>
 </svg>
 
-<div id="offline-banner-root"></div>
-<div class="shell">
-  <div id="sidebar-root"></div>
-  <main class="main">
-    <div class="topbar">
-      <div class="brand-mark"><img src="logo.png" alt="Salsi"><span class="display">Salsi</span></div>
-      <a class="project-pill" href="projects.html"><svg><use href="#i-building"/></svg><span>Trocar projeto</span></a>
-    </div>
-    <div class="content">
-      <h1 class="page-title">Relatório do projeto</h1>
-      <p class="page-sub">Um resumo pra imprimir ou exportar como PDF (pelo navegador).</p>
-
-      <div id="noProjectState" class="empty" style="display:none">
-        <img src="logo.png" alt=""><strong>Nenhum projeto selecionado</strong>
-        <span>Escolha um projeto pra gerar o relatório.</span>
-        <div style="margin-top:14px"><a class="btn primary" href="projects.html"><svg><use href="#i-building"/></svg>Ir pra Projects</a></div>
-      </div>
-
-      <div id="reportArea" style="display:none">
-        <div style="margin-bottom:14px"><button class="btn primary" id="printBtn"><svg><use href="#i-report"/></svg>Imprimir / exportar PDF</button></div>
-        <div class="card" id="reportBody"></div>
-      </div>
-
-      <style>
-        @media print {
-          .sidebar, .topbar, .offline-banner, .sync-card, #printBtn { display: none !important; }
-          .main { margin: 0 !important; }
-          body { background: #fff !important; }
-        }
-      </style>
-
-    </div>
-  </main>
-</div>
-<div id="sync-card-root"></div>
 <script src="assets/db.js"></script>
 <script src="assets/shell.js"></script>
 <script>
 SalsiShell.init('reports');
 (async function () {
+  'use strict';
+
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
-  function fmtDate(ts) { return new Date(ts).toLocaleString('pt-BR'); }
+  function fmtDate(ts) { return new Date(ts).toLocaleDateString('pt-BR') + ' ' + new Date(ts).toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'}); }
 
   const activeId = SalsiShell.getActiveProjectId();
-  if (!activeId) { document.getElementById('noProjectState').style.display = ''; return; }
+  const activeProj = activeId ? await SalsiDB.getProject(activeId) : null;
+  const pillEl = document.getElementById('activeProjectPill');
+  if (pillEl) pillEl.querySelector('span').textContent = activeProj ? activeProj.name : 'Nenhum Projeto';
+
+  if (!activeId) {
+    document.getElementById('noProjectState').style.display = '';
+    return;
+  }
   document.getElementById('reportArea').style.display = '';
 
   const project = await SalsiDB.getProject(activeId);
   const [photos, notes, markups] = await Promise.all([
-    SalsiDB.getPhotos(activeId), SalsiDB.getNotes(activeId), SalsiDB.getMarkups(activeId),
+    SalsiDB.getPhotos(activeId),
+    SalsiDB.getNotes(activeId),
+    SalsiDB.getMarkups(activeId),
   ]);
 
+  // Render on-screen preview — Editorial minimal layout
   document.getElementById('reportBody').innerHTML = `
-    <h2 style="font-family:'Manrope',sans-serif;color:var(--navy);margin:0 0 4px">${esc(project ? project.name : 'Projeto')}</h2>
-    <p style="color:var(--ink-dim);margin:0 0 18px">${esc(project ? project.description : '')} — criado em ${project ? fmtDate(project.createdAt) : '—'}</p>
+    <h2 style="font-family:var(--font-serif); font-size:26px; font-weight:400; margin:0 0 8px; color:var(--text-primary);">${esc(project ? project.name : 'Projeto')}</h2>
+    <p style="color:var(--text-secondary); margin:0 0 24px; font-size:13.5px; font-family:var(--font-serif); font-style:italic;">
+      ${project && project.client ? `Cliente: ${esc(project.client)}  |  ` : ''}
+      ${project && project.address ? `Endereço: ${esc(project.address)}  |  ` : ''}
+      Criado em ${project ? fmtDate(project.createdAt) : '—'}
+    </p>
+    ${project && project.description ? `<p style="font-size:14px; color:var(--text-primary); line-height:1.7; margin-bottom:32px; font-family:var(--font-serif); font-style:italic; border-left:2px solid var(--border); padding-left:16px;">${esc(project.description)}</p>` : ''}
 
-    <div class="grid" style="grid-template-columns:repeat(auto-fill,minmax(120px,1fr));margin-bottom:20px">
+    <div class="stat-row" style="margin-bottom:32px;">
       <div class="stat"><div class="num">${photos.length}</div><div class="label">Fotos</div></div>
       <div class="stat"><div class="num">${notes.length}</div><div class="label">Notas</div></div>
-      <div class="stat"><div class="num">${markups.length}</div><div class="label">Marcações</div></div>
+      <div class="stat"><div class="num">${markups.length}</div><div class="label">Medições</div></div>
     </div>
 
-    <h3 style="color:var(--navy)">Notas estruturais</h3>
-    ${notes.length === 0 ? '<p style="color:var(--ink-dim)">Nenhuma nota registrada.</p>' :
-      notes.map(n => `<div style="padding:8px 0;border-bottom:1px solid var(--line)"><strong>${esc(n.title)}</strong>${n.tag ? ' — ' + esc(n.tag) : ''}<br><span style="color:var(--ink-dim);font-size:13px">${esc(n.body || '')}</span></div>`).join('')}
+    <h3 style="color:var(--text-primary); font-family:var(--font-serif); font-weight:500; border-bottom:1px solid var(--border); padding-bottom:8px; margin-top:32px; font-size:18px;">Notas de Campo</h3>
+    ${notes.length === 0 ? '<p style="color:var(--text-secondary); font-size:13.5px; margin-top:12px; font-family:var(--font-serif); font-style:italic;">Nenhuma nota registrada.</p>' :
+      notes.map(n => `
+        <div style="padding:16px 0; border-bottom:1px solid var(--border); display:flex; flex-direction:column; gap:6px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; gap:8px;">
+            <strong style="color:var(--text-primary); font-size:14.5px;">${esc(n.title)}</strong>
+            ${n.tag ? `<span class="badge-pill synced" style="font-size:10px;">${esc(n.tag)}</span>` : ''}
+          </div>
+          <span style="color:var(--text-secondary); font-size:13.5px; line-height:1.6;">${esc(n.body || '')}</span>
+          <span style="color:var(--text-dim); font-size:11px; margin-top:4px;">${fmtDate(n.createdAt)}</span>
+        </div>`).join('')}
 
-    <h3 style="color:var(--navy);margin-top:18px">Marcações do modelo</h3>
-    ${markups.length === 0 ? '<p style="color:var(--ink-dim)">Nenhuma marcação registrada.</p>' :
-      markups.map(m => `<div style="padding:6px 0;border-bottom:1px solid var(--line);font-size:13px">Ponto ${m.number} — ${esc(m.note || '')}</div>`).join('')}
-
-    <h3 style="color:var(--navy);margin-top:18px">Fotos do local (${photos.length})</h3>
-    ${photos.length === 0 ? '<p style="color:var(--ink-dim)">Nenhuma foto registrada.</p>' :
-      `<div class="grid" style="grid-template-columns:repeat(auto-fill,minmax(100px,1fr))">${photos.map(p => `<div><img src="${URL.createObjectURL(p.blob)}" style="width:100%;height:80px;object-fit:cover;border-radius:8px"><div style="font-size:11px;color:var(--ink-dim)">${esc(p.caption || '')}</div></div>`).join('')}</div>`}
+    <h3 style="color:var(--text-primary); font-family:var(--font-serif); font-weight:500; border-bottom:1px solid var(--border); padding-bottom:8px; margin-top:48px; font-size:18px;">Galeria de Imagens</h3>
+    ${photos.length === 0 ? '<p style="color:var(--text-secondary); font-size:13.5px; margin-top:12px; font-family:var(--font-serif); font-style:italic;">Nenhuma imagem registrada.</p>' :
+      `<div style="display:grid; grid-template-columns:repeat(auto-fill,minmax(180px,1fr)); gap:24px; margin-top:16px;">
+        ${photos.map(p => {
+          let url = '';
+          try { url = URL.createObjectURL(p.blob); } catch(_) {}
+          return `
+            <div style="display:flex; flex-direction:column; gap:8px; border-bottom:1px solid var(--border); padding-bottom:12px;">
+              <img src="${url}" style="width:100%; height:120px; object-fit:cover; border:1px solid var(--border);">
+              <div style="font-size:12px; color:var(--text-secondary); line-height:1.4; font-family:var(--font-serif); font-style:italic;">${esc(p.caption || 'Sem legenda')}</div>
+            </div>`;
+        }).join('')}
+      </div>`}
   `;
 
-  document.getElementById('printBtn').addEventListener('click', () => window.print());
-})();
+  // ── jsPDF Report Generation ───────────────────────────
+  const generatePdfBtn = document.getElementById('generatePdfBtn');
+  generatePdfBtn.addEventListener('click', async () => {
+    if (typeof window.jspdf === 'undefined') {
+      alert('A biblioteca PDF não carregou. Verifique sua conexão à internet na primeira execução.');
+      return;
+    }
 
+    generatePdfBtn.disabled = true;
+    const originalText = generatePdfBtn.querySelector('span').textContent;
+    generatePdfBtn.querySelector('span').textContent = 'Gerando PDF...';
+
+    try {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+
+      // Load Profile
+      const prof = await SalsiDB.getProfile();
+
+      // Title
+      doc.setFont('helvetica', 'bold'); doc.setFontSize(22); doc.setTextColor(44, 39, 36);
+      doc.text('Relatório Técnico de Visita', 20, 25);
+      doc.setFont('helvetica', 'normal'); doc.setFontSize(9); doc.setTextColor(140, 130, 122);
+      doc.text(`Gerado em: ${new Date().toLocaleString('pt-BR')} | Salsi`, 20, 32);
+
+      // Profile details
+      if (prof && (prof.name || prof.company || prof.registration)) {
+        doc.setFontSize(10); doc.setFont('helvetica', 'bold'); doc.setTextColor(44, 39, 36);
+        doc.text('Profissional Responsável:', 20, 42);
+        doc.setFont('helvetica', 'normal'); doc.setTextColor(80, 80, 80);
+        let profLine = `${prof.name || ''} ${prof.company ? ` | ${prof.company}` : ''} ${prof.registration ? ` | ${prof.registration}` : ''}`;
+        doc.text(profLine, 20, 48);
+      }
+
+      doc.setDrawColor(200, 177, 149); doc.setLineWidth(0.5); doc.line(20, 52, 190, 52);
+
+      // Project info
+      doc.setFontSize(11); doc.setFont('helvetica', 'bold'); doc.setTextColor(44, 39, 36);
+      doc.text(`PROJETO: ${project ? project.name : 'Projeto Sem Nome'}`, 20, 62);
+      doc.setFont('helvetica', 'normal'); doc.setTextColor(80, 80, 80);
+      doc.text(`Cliente: ${project ? (project.client || 'Não informado') : 'Não informado'}`, 20, 68);
+      doc.text(`Endereço: ${project ? (project.address || 'Não informado') : 'Não informado'}`, 20, 74);
+      doc.text(`Descrição: ${project ? (project.description || 'Nenhuma') : 'Nenhuma'}`, 20, 80);
+
+      doc.line(20, 86, 190, 86);
+
+      let yPos = 96;
+
+      // Notes
+      doc.setFont('helvetica', 'bold'); doc.setFontSize(14); doc.setTextColor(44, 39, 36);
+      doc.text('Notas de Campo:', 20, yPos);
+      yPos += 10;
+
+      doc.setFontSize(10); doc.setFont('helvetica', 'normal'); doc.setTextColor(60, 60, 60);
+      if (notes.length === 0) {
+        doc.text('Nenhuma nota registrada.', 20, yPos);
+        yPos += 10;
+      } else {
+        for (const n of notes) {
+          if (yPos > 270) { doc.addPage(); yPos = 20; }
+          doc.setFont('helvetica', 'bold'); doc.setTextColor(200, 177, 149);
+          doc.text(`${n.title} [${n.tag || 'Geral'}]:`, 20, yPos);
+          doc.setFont('helvetica', 'normal'); doc.setTextColor(60, 60, 60);
+          doc.text(n.body || '', 20, yPos + 6);
+          yPos += 18;
+        }
+      }
+
+      // Photos
+      if (photos.length > 0) {
+        doc.addPage();
+        yPos = 25;
+        doc.setFont('helvetica', 'bold'); doc.setFontSize(14); doc.setTextColor(44, 39, 36);
+        doc.text('Registro Fotográfico:', 20, yPos);
+        yPos += 15;
+
+        for (const p of photos) {
+          if (yPos > 210) { doc.addPage(); yPos = 20; }
+          try {
+            const b64 = await new Promise(res => {
+              const r = new FileReader();
+              r.onloadend = () => res(r.result);
+              r.readAsDataURL(p.blob);
+            });
+            doc.addImage(b64, 'JPEG', 20, yPos, 80, 60);
+            doc.setFont('helvetica', 'normal'); doc.setFontSize(9); doc.setTextColor(100, 100, 100);
+            doc.text(p.caption || 'Sem legenda', 110, yPos + 30);
+            yPos += 70;
+          } catch (_) {}
+        }
+      }
+
+      const pdfName = `Relatorio_${project ? project.name.replace(/\s+/g,'_') : 'Projeto'}.pdf`;
+      doc.save(pdfName);
+    } catch (err) {
+      console.error(err);
+      alert('Erro ao gerar o arquivo PDF.');
+    } finally {
+      generatePdfBtn.disabled = false;
+      generatePdfBtn.querySelector('span').textContent = originalText;
+    }
+  });
+})();
 </script>
 </body>
 </html>

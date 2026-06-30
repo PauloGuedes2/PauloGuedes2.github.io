@@ -1,12 +1,12 @@
-/* ===== Salsi — shell compartilhado (sidebar, faixa offline, fila de sincronização) ===== */
+/* ===== Salsi — shell compartilhado (sidebar de luxo, faixa offline, fila de sincronização) ===== */
 (function () {
   const NAV_ITEMS = [
-    { key: 'home', label: 'Home', href: 'index.html', icon: 'i-home' },
-    { key: 'projects', label: 'Projects', href: 'projects.html', icon: 'i-building' },
-    { key: 'photos', label: 'Photos', href: 'photos.html', icon: 'i-camera', badgeKey: 'photos' },
-    { key: 'notes', label: 'Notes', href: 'notes.html', icon: 'i-notes', badgeKey: 'notes' },
-    { key: 'models', label: 'Models', href: 'models.html', icon: 'i-cube' },
-    { key: 'reports', label: 'Reports', href: 'reports.html', icon: 'i-report' },
+    { key: 'home', label: 'Início', href: 'index.html', icon: 'i-home' },
+    { key: 'projects', label: 'Projetos', href: 'projects.html', icon: 'i-building' },
+    { key: 'photos', label: 'Fotos', href: 'photos.html', icon: 'i-camera', badgeKey: 'photos' },
+    { key: 'notes', label: 'Notas', href: 'notes.html', icon: 'i-notes', badgeKey: 'notes' },
+    { key: 'models', label: 'Modelo 3D', href: 'models.html', icon: 'i-cube' },
+    { key: 'reports', label: 'Relatórios', href: 'reports.html', icon: 'i-report' },
   ];
 
   function svgUse(icon) { return `<svg><use href="#${icon}"/></svg>`; }
@@ -33,12 +33,18 @@
       const showBadge = item.badgeKey && flags[item.badgeKey];
       return `<a class="navitem${isActive ? ' active' : ''}" href="${item.href}">${svgUse(item.icon)}<span>${item.label}</span>${showBadge ? '<span class="badge"></span>' : ''}</a>`;
     }).join('');
+    
     root.outerHTML = `
       <aside class="sidebar" id="sidebar-root">
-        <div class="brand"><img src="logo.png" alt="Salsi"><span>Salsi</span></div>
-        ${items}
+        <div class="brand" title="Salsi — Croqui e Modelo">
+          <img src="logo.png" alt="Salsi">
+          <span>Salsi</span>
+        </div>
+        <div class="sidebar-nav-container">
+          ${items}
+        </div>
         <div class="spacer"></div>
-        <a class="navitem${activeKey === 'settings' ? ' active' : ''}" href="settings.html">${svgUse('i-settings')}<span>Settings</span></a>
+        <a class="navitem${activeKey === 'settings' ? ' active' : ''}" href="settings.html">${svgUse('i-settings')}<span>Ajustes</span></a>
       </aside>`;
   }
 
@@ -47,8 +53,7 @@
     if (!root) return;
     root.outerHTML = `
       <div class="offline-banner" id="offlineBanner">
-        <img src="logo.png" alt="">
-        <span id="offlineBannerText">Working Offline — as alterações vão sincronizar depois</span>
+        <span id="offlineBannerText">Modo local ativo — as alterações serão salvas no dispositivo</span>
       </div>`;
     updateOfflineBanner(false);
     window.addEventListener('online', () => updateOfflineBanner(true));
@@ -61,10 +66,10 @@
     if (!el || !textEl) return;
     if (!navigator.onLine) {
       el.classList.remove('online-flash');
-      textEl.textContent = 'Working Offline — as alterações vão sincronizar depois';
+      textEl.innerHTML = 'Modo local ativo — as alterações serão salvas no dispositivo';
       el.classList.add('show');
     } else if (justCameOnline) {
-      textEl.textContent = 'Conexão de volta — sincronizando...';
+      textEl.innerHTML = 'Conexão restabelecida. Sincronizando dados...';
       el.classList.add('show', 'online-flash');
       SalsiDB.markAllSynced().then(async () => {
         await renderSyncCard();
@@ -94,16 +99,16 @@
     const rows = [
       ...flags.pending.photos.map(p => syncItemRow('i-camera', p.caption || 'Foto do local', p.blob)),
       ...flags.pending.notes.map(n => syncItemRow('i-notes', n.title)),
-      ...flags.pending.markups.map(m => syncItemRow('i-cube', `Marcação de modelo #${m.number}`)),
+      ...flags.pending.markups.map(m => syncItemRow('i-cube', `Medição do modelo #${m.number}`)),
     ].join('');
     root.innerHTML = `
       <div class="sync-card show" id="syncCard">
-        <div class="sc-head">Sync Queue (${flags.total} Pending) <span class="sc-close" id="scClose">${svgUse('i-close')}</span></div>
+        <div class="sc-head">Fila de Sincronização (${flags.total} pendentes) <span class="sc-close" id="scClose">${svgUse('i-close')}</span></div>
         <div class="sc-body">
           <div class="sc-list">${rows}</div>
-          <img class="mascot" src="logo.png" alt="">
+          <img class="mascot" src="logo.png" alt="Salsi" style="width: 36px; height: 36px; border-radius: 50%; border: 1px solid var(--accent); margin-left: 12px;">
         </div>
-        <div class="sc-foot"><button class="btn primary" id="scSyncBtn">${svgUse('i-sync')}Sync Now</button></div>
+        <div class="sc-foot"><button class="btn primary" id="scSyncBtn" style="min-height:38px; width:100%; display:inline-flex; align-items:center; justify-content:center; gap:8px;">Sincronizar Agora</button></div>
       </div>`;
     document.getElementById('scClose').addEventListener('click', () => {
       sessionStorage.setItem('salsi:syncCardDismissed', '1');
