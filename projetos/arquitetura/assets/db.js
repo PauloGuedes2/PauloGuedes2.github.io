@@ -4,7 +4,7 @@
 */
 (function () {
   const DB_NAME = 'salsi-db';
-  const DB_VERSION = 1;
+  const DB_VERSION = 3;
   let dbPromise = null;
 
   function openDB() {
@@ -22,6 +22,9 @@
         if (!db.objectStoreNames.contains('photos')) {
           const s = db.createObjectStore('photos', { keyPath: 'id' });
           s.createIndex('byProject', 'projectId');
+        }
+        if (!db.objectStoreNames.contains('photoFiles')) {
+          db.createObjectStore('photoFiles', { keyPath: 'photoId' });
         }
         if (!db.objectStoreNames.contains('notes')) {
           const s = db.createObjectStore('notes', { keyPath: 'id' });
@@ -68,8 +71,15 @@
 
   const SalsiDB = {
     // ---------- projetos ----------
-    async addProject({ name, description }) {
-      const project = { id: uid(), name: name || 'Projeto sem nome', description: description || '', createdAt: Date.now() };
+    async addProject({ name, description, client, address }) {
+      const project = { 
+        id: uid(), 
+        name: name || 'Projeto sem nome', 
+        description: description || '', 
+        client: client || '', 
+        address: address || '', 
+        createdAt: Date.now() 
+      };
       await tx('projects', 'readwrite', (store) => reqToPromise(store.add(project)));
       return project;
     },
@@ -85,10 +95,20 @@
     },
 
     async deleteProject(id) {
-      await tx(['projects', 'modelFiles', 'photos', 'notes', 'markups'], 'readwrite', async (projects, models, photos, notes, markups) => {
+      await tx(['projects', 'modelFiles', 'photos', 'photoFiles', 'notes', 'markups'], 'readwrite', async (projects, models, photos, photoFiles, notes, markups) => {
         await reqToPromise(projects.delete(id));
         await reqToPromise(models.delete(id));
-        for (const store of [photos, notes, markups]) {
+        
+        // delete photos and photoFiles
+        const photoIdx = photos.index('byProject');
+        const photoList = await reqToPromise(photoIdx.getAll(id));
+        for (const p of photoList) {
+          await reqToPromise(photos.delete(p.id));
+          await reqToPromise(photoFiles.delete(p.id));
+        }
+
+        // delete notes and markups
+        for (const store of [notes, markups]) {
           const idx = store.index('byProject');
           const items = await reqToPromise(idx.getAll(id));
           for (const it of items) await reqToPromise(store.delete(it.id));
@@ -107,16 +127,37 @@
 
     // ---------- fotos ----------
     async addPhoto({ projectId, blob, caption }) {
-      const photo = { id: uid(), projectId, blob, caption: caption || '', createdAt: Date.now(), synced: !!(typeof navigator !== 'undefined' && navigator.onLine) };
-      await tx('photos', 'readwrite', (store) => reqToPromise(store.add(photo)));
+      const id = uid();
+      const photo = { 
+        id, 
+        projectId, 
+        caption: caption || '', 
+        createdAt: Date.now(), 
+        synced: !!(typeof navigator !== 'undefined' && navigator.onLine) 
+      };
+      
+      await tx(['photos', 'photoFiles'], 'readwrite', async (photosStore, photoFilesStore) => {
+        await reqToPromise(photosStore.add(photo));
+        await reqToPromise(photoFilesStore.add({ photoId: id, blob }));
+      });
       return photo;
     },
+
     async getPhotos(projectId) {
       const list = await tx('photos', 'readonly', (store) => reqToPromise(store.index('byProject').getAll(projectId)));
       return list.sort((a, b) => b.createdAt - a.createdAt);
     },
+
+    async getPhotoBlob(photoId) {
+      const row = await tx('photoFiles', 'readonly', (store) => reqToPromise(store.get(photoId)));
+      return row ? row.blob : null;
+    },
+
     async deletePhoto(id) {
-      await tx('photos', 'readwrite', (store) => reqToPromise(store.delete(id)));
+      await tx(['photos', 'photoFiles'], 'readwrite', async (photosStore, photoFilesStore) => {
+        await reqToPromise(photosStore.delete(id));
+        await reqToPromise(photoFilesStore.delete(id));
+      });
     },
 
     // ---------- notas ----------
@@ -187,7 +228,7 @@
       await tx('settings', 'readwrite', (store) => reqToPromise(store.put({ key, value })));
     },
 
-    // ---------- backup manual (já que não existe nuvem) ----------
+    // ---------- backup manual ----------
     async exportAll() {
       const [projects, photos, notes, markups] = await Promise.all([
         tx('projects', 'readonly', (s) => reqToPromise(s.getAll())),
@@ -195,7 +236,6 @@
         tx('notes', 'readonly', (s) => reqToPromise(s.getAll())),
         tx('markups', 'readonly', (s) => reqToPromise(s.getAll())),
       ]);
-      // Blobs (fotos/modelos) não entram no JSON — backup cobre projetos, notas e marcações.
       return JSON.stringify({ exportedAt: Date.now(), projects, notes, markups, photoCount: photos.length }, null, 2);
     },
 
@@ -218,7 +258,7 @@
     },
 
     async clearAllData() {
-      await tx(['projects', 'modelFiles', 'photos', 'notes', 'markups', 'settings'], 'readwrite', async (...stores) => {
+      await tx(['projects', 'modelFiles', 'photos', 'photoFiles', 'notes', 'markups', 'settings'], 'readwrite', async (...stores) => {
         for (const s of stores) await reqToPromise(s.clear());
       });
     },
@@ -249,4 +289,3 @@
     window.SalsiDB = SalsiDB;
   }
 })();
-

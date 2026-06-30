@@ -20,6 +20,10 @@
   <!-- Material Symbols -->
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
 
+  <!-- Core Scripts in Head (for Early Paint) -->
+  <script src="assets/db.js"></script>
+  <script src="assets/shell.js"></script>
+
   <script id="tailwind-config">
     tailwind.config = {
       darkMode: "class",
@@ -139,6 +143,7 @@
   <!-- Dynamic SideNav Root -->
   <div id="offline-banner-root"></div>
   <div id="sidebar-root"></div>
+  <script>SalsiShell.init('photos');</script>
 
   <!-- Mobile TopAppBar -->
   <header class="md:hidden sticky top-0 z-40 w-full h-20 bg-surface/80 backdrop-blur-md flex justify-between items-center px-6 border-b border-outline-variant/20">
@@ -233,12 +238,7 @@
     </div>
   </div>
 
-  <div id="sync-card-root"></div>
-
-  <script src="assets/db.js"></script>
-  <script src="assets/shell.js"></script>
   <script>
-    SalsiShell.init('photos');
     (async function () {
       'use strict';
 
@@ -304,13 +304,16 @@
           return;
         }
 
+        // Render placeholders instantly
         photosGrid.innerHTML = list.map((p, index) => {
-          const url = URL.createObjectURL(p.blob);
-          const delay = (index % 3 + 1) * 100;
           return `
-            <div class="bg-white rounded-2xl overflow-hidden border border-outline-variant/20 shadow-sm hover:shadow-xl hover:-translate-y-1.5 transition-all duration-500 ease-out group cursor-pointer" data-zoom="${url}" data-caption="${esc(p.caption || 'Sem legenda')}">
-              <div class="aspect-[4/3] overflow-hidden relative bg-surface-container-high">
-                <img src="${url}" decoding="async" loading="lazy" class="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105" alt="Foto">
+            <div id="card-${p.id}" class="bg-white rounded-2xl overflow-hidden border border-outline-variant/20 shadow-sm hover:shadow-xl hover:-translate-y-1.5 transition-all duration-500 ease-out group cursor-pointer" data-zoom="logo.png" data-caption="${esc(p.caption || 'Sem legenda')}">
+              <div class="aspect-[4/3] overflow-hidden relative bg-surface-container-high flex items-center justify-center">
+                <!-- Loading placeholder -->
+                <div id="loader-${p.id}" class="absolute inset-0 flex items-center justify-center bg-surface-container">
+                  <span class="material-symbols-outlined text-outline animate-spin text-[24px]">sync</span>
+                </div>
+                <img id="img-${p.id}" src="logo.png" decoding="async" loading="lazy" class="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105 opacity-0" alt="Foto">
                 <div class="absolute inset-0 bg-gradient-to-t from-primary/10 to-transparent"></div>
               </div>
               <div class="p-5 flex justify-between items-center gap-4">
@@ -327,9 +330,36 @@
             </div>`;
         }).join('');
 
-        // Wire zoom
+        // Fetch image blobs asynchronously in the background
+        list.forEach(async p => {
+          try {
+            const blob = await SalsiDB.getPhotoBlob(p.id);
+            if (blob) {
+              const url = URL.createObjectURL(blob);
+              const imgEl = document.getElementById(`img-${p.id}`);
+              const cardEl = document.getElementById(`card-${p.id}`);
+              const loaderEl = document.getElementById(`loader-${p.id}`);
+              
+              if (imgEl) {
+                imgEl.src = url;
+                imgEl.classList.remove('opacity-0');
+              }
+              if (cardEl) {
+                cardEl.dataset.zoom = url;
+              }
+              if (loaderEl) {
+                loaderEl.style.display = 'none';
+              }
+            }
+          } catch (err) {
+            console.error('Erro ao carregar blob da imagem:', err);
+          }
+        });
+
+        // Wire zoom (dynamic delegation)
         photosGrid.querySelectorAll('[data-zoom]').forEach(div => {
           div.addEventListener('click', () => {
+            // Read data-zoom dynamically at click time
             openLightbox(div.dataset.zoom, div.dataset.caption);
           });
         });
