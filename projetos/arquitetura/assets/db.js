@@ -222,6 +222,25 @@
         for (const s of stores) await reqToPromise(s.clear());
       });
     },
+
+    // ---------- wrappers de compatibilidade para perfil e backup ----------
+    async getProfile() {
+      return this.getSetting('profile', null);
+    },
+
+    async saveProfile(profileData) {
+      return this.setSetting('profile', profileData);
+    },
+
+    async exportAllData() {
+      const dataStr = await this.exportAll();
+      return JSON.parse(dataStr);
+    },
+
+    async importAllData(dataObj) {
+      const dataStr = JSON.stringify(dataObj);
+      return this.importAll(dataStr);
+    }
   };
 
   if (typeof module !== 'undefined' && module.exports) {
@@ -230,3 +249,4 @@
     window.SalsiDB = SalsiDB;
   }
 })();
+

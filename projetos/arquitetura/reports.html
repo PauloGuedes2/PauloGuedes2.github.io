@@ -1,263 +1,389 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-br">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Salsi — Relatórios</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
-<link rel="icon" href="logo.png">
-<link rel="apple-touch-icon" href="logo.png">
-<link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#fbfaf8">
-<link rel="stylesheet" href="assets/app.css">
-<!-- jsPDF library -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-</head>
-<body>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <title>Relatórios | Salsi</title>
+  
+  <!-- PWA Manifest & Icons -->
+  <link rel="icon" href="logo.png">
+  <link rel="apple-touch-icon" href="logo.png">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#FDFCE8">
 
-<div id="offline-banner-root"></div>
-<div class="shell">
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  
+  <!-- Google Fonts: EB Garamond & Outfit -->
+  <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:wght@400;500;600;700&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  
+  <!-- Material Symbols -->
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+
+  <!-- jsPDF library -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+  <script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "surface-dim": "#e6d8cb",
+            "on-secondary-fixed-variant": "#474743",
+            "on-primary-container": "#ffd7bb",
+            "on-tertiary-fixed-variant": "#603f2b",
+            "on-tertiary-fixed": "#2e1505",
+            "surface-container": "#faebde",
+            "secondary-fixed-dim": "#c8c6c2",
+            "surface": "#fff8f4",
+            "tertiary": "#64432f",
+            "secondary-fixed": "#e5e2dd",
+            "on-background": "#211a13",
+            "error": "#ba1a1a",
+            "surface-container-high": "#f4e6d9",
+            "tertiary-container": "#7f5a45",
+            "primary-fixed-dim": "#ffb77f",
+            "on-secondary": "#ffffff",
+            "primary-fixed": "#ffdcc3",
+            "tertiary-fixed": "#ffdbc8",
+            "on-tertiary": "#ffffff",
+            "on-secondary-fixed": "#1c1c19",
+            "outline": "#847469",
+            "on-surface-variant": "#52443a",
+            "on-error": "#ffffff",
+            "error-container": "#ffdad6",
+            "outline-variant": "#d7c3b6",
+            "inverse-surface": "#372f26",
+            "secondary-container": "#e5e2dd",
+            "surface-bright": "#fff8f4",
+            "on-primary-fixed": "#2f1500",
+            "on-primary-fixed-variant": "#6c3a0a",
+            "on-primary": "#ffffff",
+            "surface-container-low": "#fff1e6",
+            "inverse-primary": "#ffb77f",
+            "surface-tint": "#885120",
+            "on-secondary-container": "#656461",
+            "inverse-on-surface": "#fdeee1",
+            "on-tertiary-container": "#ffd7c1",
+            "secondary": "#5f5e5b",
+            "surface-container-lowest": "#ffffff",
+            "on-surface": "#211a13",
+            "primary": "#391E10", /* Bistre */
+            "on-error-container": "#93000a",
+            "background": "#FDFCE8", /* Ivory */
+            "surface-container-highest": "#efe0d3",
+            "primary-container": "#734128", /* Kobicha */
+            "tertiary-fixed-dim": "#ecbda2",
+            "surface-variant": "#efe0d3"
+          },
+          "fontFamily": {
+            "headline-xl": ["EB Garamond"],
+            "headline-lg": ["EB Garamond"],
+            "headline-md": ["EB Garamond"],
+            "body-md": ["Outfit"],
+            "body-lg": ["Outfit"],
+            "label-md": ["Outfit"],
+            "label-sm": ["Outfit"]
+          }
+        }
+      }
+    }
+  </script>
+  
+  <style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    }
+    .glass-nav {
+      backdrop-filter: blur(12px);
+      background-color: rgba(255, 248, 244, 0.8);
+    }
+    .linen-texture {
+      background-image: radial-gradient(#e5e2dd 0.5px, transparent 0.5px);
+      background-size: 24px 24px;
+    }
+  </style>
+</head>
+<body class="bg-background text-on-background font-body-md overflow-x-hidden">
+  <!-- Dynamic SideNav Root -->
+  <div id="offline-banner-root"></div>
   <div id="sidebar-root"></div>
-  <main class="main">
-    <div class="topbar">
-      <div class="brand-mark"><img src="logo.png" alt="Salsi"><span class="display">Salsi</span></div>
-      <a class="project-pill" href="projects.html" id="activeProjectPill">
-        <svg><use href="#i-building"/></svg><span>Carregando…</span>
+  <!-- Mobile TopAppBar -->
+  <header class="md:hidden sticky top-0 z-40 w-full h-20 bg-surface/80 backdrop-blur-md flex justify-between items-center px-6 border-b border-outline-variant/20">
+    <div class="flex items-center gap-3">
+      <img alt="Salsi Logo" class="h-8 w-8 rounded-full" src="logo.png"/>
+      <span class="font-headline-md text-headline-md text-primary">Salsi</span>
+    </div>
+    <div class="flex items-center gap-4">
+      <a href="settings.html" class="w-8 h-8 rounded-full overflow-hidden bg-surface-container flex items-center justify-center">
+        <span class="material-symbols-outlined text-primary">settings</span>
       </a>
     </div>
-    <div class="content">
+  </header>
+
+  <!-- Main Content Canvas -->
+  <main class="md:ml-64 transition-all duration-300">
+    
+    <div class="content px-6 md:px-16 py-12 max-w-4xl mx-auto space-y-10">
       
-      <!-- Editorial Page Header -->
-      <div class="page-header-block">
-        <h1 class="page-title">Relatórios Técnicos</h1>
-        <p class="page-sub">Documentações consolidadas em formato PDF para exportação</p>
+      <!-- Page Header -->
+      <header class="border-b border-outline-variant/25 pb-6">
+        <h2 class="font-headline-xl text-headline-xl text-primary">Relatórios Técnicos</h2>
+        <p class="font-body-lg text-on-surface-variant italic mt-1">Consolidação e exportação oficial de relatórios de vistoria em PDF.</p>
+      </header>
+
+      <!-- No project selected state -->
+      <div id="noProjectState" class="p-12 border border-dashed border-outline-variant rounded-2xl flex flex-col items-center justify-center text-center space-y-4 bg-white" style="display:none">
+        <span class="material-symbols-outlined text-[48px] text-outline opacity-40">pets</span>
+        <h4 class="font-headline-md text-headline-md text-primary">Nenhum projeto selecionado</h4>
+        <p class="font-body-md text-on-surface-variant max-w-xs">Escolha ou crie um projeto para compilar relatórios e documentações.</p>
+        <button onclick="location.href='projects.html'" class="px-6 py-2 bg-primary text-white rounded-full font-label-md text-label-md">
+          Ir para Projetos
+        </button>
       </div>
 
-      <div id="noProjectState" class="empty" style="display:none">
-        <img src="logo.png" alt=""><strong>Nenhum projeto selecionado</strong>
-        <span>Escolha um projeto para gerar o relatório.</span>
-        <div style="margin-top:14px"><a class="btn primary" href="projects.html">Ir para Projetos</a></div>
-      </div>
-
-      <div id="reportArea" style="display:none">
-        <div style="margin-bottom:32px; display:flex; gap:12px; flex-wrap:wrap;">
-          <button class="btn primary" id="generatePdfBtn" style="min-height:42px;">
+      <div id="reportArea" class="space-y-8" style="display:none">
+        <!-- Floating Actions -->
+        <div class="flex justify-between items-center">
+          <button id="generatePdfBtn" class="bg-primary text-white px-8 py-3.5 rounded-full hover:bg-primary-container transition-all text-label-sm font-semibold uppercase tracking-wider shadow-md flex items-center gap-2">
+            <span class="material-symbols-outlined text-[18px]">picture_as_pdf</span>
             <span>Gerar Relatório PDF</span>
           </button>
         </div>
-        <div class="card" id="reportBody" style="border-top:1px solid var(--border); padding-top:32px; margin-top:16px;"></div>
+
+        <!-- Document Preview Body -->
+        <div class="bg-white p-8 md:p-12 rounded-2xl border border-outline-variant/30 shadow-md space-y-8" id="reportBody">
+          <!-- Dynamically populated -->
+        </div>
       </div>
 
     </div>
+
+    <!-- Footer -->
+    <footer class="px-6 md:px-16 py-12 bg-surface text-center border-t border-outline-variant/15 mt-16">
+      <div class="max-w-7xl mx-auto flex flex-col items-center">
+        <img alt="Salsi Logo" class="h-10 w-10 mb-4 opacity-80 rounded-full" src="logo.png"/>
+        <p class="font-headline-md text-headline-md text-primary mb-2">Estúdio Salsi</p>
+        <p class="font-label-sm text-label-sm text-on-surface-variant max-w-lg mx-auto">
+          Compilação local offline em conformidade com o padrão CAU/CREA.
+        </p>
+        <p class="font-label-sm text-label-sm text-outline mt-8">© 2026 Salsi.</p>
+      </div>
+    </footer>
   </main>
-</div>
-<div id="sync-card-root"></div>
 
-<!-- ── SVG Icon Sprite ───────────────────────────────── -->
-<svg width="0" height="0" style="position:absolute" aria-hidden="true">
-<defs>
-<symbol id="i-home" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-  <path d="M4 11l8-7 8 7"/><path d="M6 10v9a1 1 0 0 0 1 1h3v-6h4v6h3a1 1 0 0 0 1-1v-9"/>
-</symbol>
-<symbol id="i-building" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-  <rect x="6" y="3" width="12" height="18" rx="1"/>
-  <rect x="9" y="6.5" width="2" height="2" fill="currentColor" stroke="none"/><rect x="13" y="6.5" width="2" height="2" fill="currentColor" stroke="none"/>
-  <rect x="9" y="11" width="2" height="2" fill="currentColor" stroke="none"/><rect x="13" y="11" width="2" height="2" fill="currentColor" stroke="none"/>
-  <rect x="9" y="15.5" width="2" height="2" fill="currentColor" stroke="none"/><rect x="13" y="15.5" width="2" height="2" fill="currentColor" stroke="none"/>
-</symbol>
-<symbol id="i-camera" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-  <rect x="3" y="7" width="18" height="13" rx="2"/><circle cx="12" cy="13.5" r="3.5"/>
-</symbol>
-<symbol id="i-notes" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-  <rect x="4" y="3" width="16" height="18" rx="2"/><line x1="8" y1="8" x2="16" y2="8"/><line x1="8" y1="12" x2="16" y2="12"/>
-</symbol>
-<symbol id="i-cube" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-  <path d="M12 2L20 6.5V17.5L12 22L4 17.5V6.5L12 2Z"/><path d="M12 12V22"/><path d="M12 12L20 6.5"/><path d="M12 12L4 6.5"/>
-</symbol>
-<symbol id="i-report" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-  <path d="M7 3h7l4 4v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/><path d="M14 3v4h4"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="16" x2="15" y2="16"/>
-</symbol>
-<symbol id="i-settings" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-  <circle cx="12" cy="12" r="3.2"/><path d="M12 2.5v3M12 18.5v3M3.5 12h3M17.5 12h3"/>
-</symbol>
-</defs>
-</svg>
+  <div id="sync-card-root"></div>
 
-<script src="assets/db.js"></script>
-<script src="assets/shell.js"></script>
-<script>
-SalsiShell.init('reports');
-(async function () {
-  'use strict';
+  <script src="assets/db.js"></script>
+  <script src="assets/shell.js"></script>
+  <script>
+    SalsiShell.init('reports');
+    (async function () {
+      'use strict';
 
-  function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
-  function fmtDate(ts) { return new Date(ts).toLocaleDateString('pt-BR') + ' ' + new Date(ts).toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'}); }
+      function esc(s) { 
+        return String(s == null ? '' : s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); 
+      }
+      function fmtDate(ts) { 
+        return new Date(ts).toLocaleDateString('pt-BR') + ' às ' + new Date(ts).toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'}); 
+      }
 
-  const activeId = SalsiShell.getActiveProjectId();
-  const activeProj = activeId ? await SalsiDB.getProject(activeId) : null;
-  const pillEl = document.getElementById('activeProjectPill');
-  if (pillEl) pillEl.querySelector('span').textContent = activeProj ? activeProj.name : 'Nenhum Projeto';
+      const activeId = localStorage.getItem('salsi_active_project_id');
+      if (!activeId) {
+        document.getElementById('noProjectState').style.display = 'block';
+        return;
+      }
+      document.getElementById('reportArea').style.display = 'block';
 
-  if (!activeId) {
-    document.getElementById('noProjectState').style.display = '';
-    return;
-  }
-  document.getElementById('reportArea').style.display = '';
+      const project = await SalsiDB.getProject(activeId);
+      const [photos, notes, markups] = await Promise.all([
+        SalsiDB.getPhotos(activeId),
+        SalsiDB.getNotes(activeId),
+        SalsiDB.getMarkups(activeId),
+      ]);
 
-  const project = await SalsiDB.getProject(activeId);
-  const [photos, notes, markups] = await Promise.all([
-    SalsiDB.getPhotos(activeId),
-    SalsiDB.getNotes(activeId),
-    SalsiDB.getMarkups(activeId),
-  ]);
-
-  // Render on-screen preview — Editorial minimal layout
-  document.getElementById('reportBody').innerHTML = `
-    <h2 style="font-family:var(--font-serif); font-size:26px; font-weight:400; margin:0 0 8px; color:var(--text-primary);">${esc(project ? project.name : 'Projeto')}</h2>
-    <p style="color:var(--text-secondary); margin:0 0 24px; font-size:13.5px; font-family:var(--font-serif); font-style:italic;">
-      ${project && project.client ? `Cliente: ${esc(project.client)}  |  ` : ''}
-      ${project && project.address ? `Endereço: ${esc(project.address)}  |  ` : ''}
-      Criado em ${project ? fmtDate(project.createdAt) : '—'}
-    </p>
-    ${project && project.description ? `<p style="font-size:14px; color:var(--text-primary); line-height:1.7; margin-bottom:32px; font-family:var(--font-serif); font-style:italic; border-left:2px solid var(--border); padding-left:16px;">${esc(project.description)}</p>` : ''}
-
-    <div class="stat-row" style="margin-bottom:32px;">
-      <div class="stat"><div class="num">${photos.length}</div><div class="label">Fotos</div></div>
-      <div class="stat"><div class="num">${notes.length}</div><div class="label">Notas</div></div>
-      <div class="stat"><div class="num">${markups.length}</div><div class="label">Medições</div></div>
-    </div>
-
-    <h3 style="color:var(--text-primary); font-family:var(--font-serif); font-weight:500; border-bottom:1px solid var(--border); padding-bottom:8px; margin-top:32px; font-size:18px;">Notas de Campo</h3>
-    ${notes.length === 0 ? '<p style="color:var(--text-secondary); font-size:13.5px; margin-top:12px; font-family:var(--font-serif); font-style:italic;">Nenhuma nota registrada.</p>' :
-      notes.map(n => `
-        <div style="padding:16px 0; border-bottom:1px solid var(--border); display:flex; flex-direction:column; gap:6px;">
-          <div style="display:flex; justify-content:space-between; align-items:center; gap:8px;">
-            <strong style="color:var(--text-primary); font-size:14.5px;">${esc(n.title)}</strong>
-            ${n.tag ? `<span class="badge-pill synced" style="font-size:10px;">${esc(n.tag)}</span>` : ''}
+      // Render on-screen preview
+      document.getElementById('reportBody').innerHTML = `
+        <div class="border-b border-outline-variant/30 pb-6 mb-6">
+          <div class="flex items-center gap-3 mb-4">
+            <img src="logo.png" class="w-12 h-12 rounded-full border border-primary/20" alt="Logo">
+            <div>
+              <h2 class="font-headline-xl text-[28px] text-primary font-semibold leading-tight">${esc(project ? project.name : 'Projeto')}</h2>
+              <p class="text-[12px] text-on-surface-variant/80 font-medium">
+                ${project && project.client ? `Cliente: <b>${esc(project.client)}</b>  |  ` : ''}
+                ${project && project.address ? `Localização: <b>${esc(project.address)}</b>  |  ` : ''}
+                Criado em ${project ? fmtDate(project.createdAt) : '—'}
+              </p>
+            </div>
           </div>
-          <span style="color:var(--text-secondary); font-size:13.5px; line-height:1.6;">${esc(n.body || '')}</span>
-          <span style="color:var(--text-dim); font-size:11px; margin-top:4px;">${fmtDate(n.createdAt)}</span>
-        </div>`).join('')}
+          ${project && project.description ? `
+            <p class="text-[14px] text-on-surface-variant italic border-l-2 border-primary/45 pl-4 py-1 leading-relaxed mt-4">
+              "${esc(project.description)}"
+            </p>` : ''}
+        </div>
 
-    <h3 style="color:var(--text-primary); font-family:var(--font-serif); font-weight:500; border-bottom:1px solid var(--border); padding-bottom:8px; margin-top:48px; font-size:18px;">Galeria de Imagens</h3>
-    ${photos.length === 0 ? '<p style="color:var(--text-secondary); font-size:13.5px; margin-top:12px; font-family:var(--font-serif); font-style:italic;">Nenhuma imagem registrada.</p>' :
-      `<div style="display:grid; grid-template-columns:repeat(auto-fill,minmax(180px,1fr)); gap:24px; margin-top:16px;">
-        ${photos.map(p => {
-          let url = '';
-          try { url = URL.createObjectURL(p.blob); } catch(_) {}
-          return `
-            <div style="display:flex; flex-direction:column; gap:8px; border-bottom:1px solid var(--border); padding-bottom:12px;">
-              <img src="${url}" style="width:100%; height:120px; object-fit:cover; border:1px solid var(--border);">
-              <div style="font-size:12px; color:var(--text-secondary); line-height:1.4; font-family:var(--font-serif); font-style:italic;">${esc(p.caption || 'Sem legenda')}</div>
-            </div>`;
-        }).join('')}
-      </div>`}
-  `;
+        <!-- Stat Tiles -->
+        <div class="grid grid-cols-3 gap-6 mb-8 max-w-xl">
+          <div class="bg-surface p-4 rounded-xl border border-outline-variant/20 flex flex-col items-center">
+            <span class="font-headline-xl text-[28px] text-primary font-bold">${photos.length}</span>
+            <span class="text-[10px] text-outline font-bold uppercase tracking-wider mt-1">Fotos</span>
+          </div>
+          <div class="bg-surface p-4 rounded-xl border border-outline-variant/20 flex flex-col items-center">
+            <span class="font-headline-xl text-[28px] text-primary font-bold">${notes.length}</span>
+            <span class="text-[10px] text-outline font-bold uppercase tracking-wider mt-1">Notas</span>
+          </div>
+          <div class="bg-surface p-4 rounded-xl border border-outline-variant/20 flex flex-col items-center">
+            <span class="font-headline-xl text-[28px] text-primary font-bold">${markups.length}</span>
+            <span class="text-[10px] text-outline font-bold uppercase tracking-wider mt-1">Medições</span>
+          </div>
+        </div>
 
-  // ── jsPDF Report Generation ───────────────────────────
-  const generatePdfBtn = document.getElementById('generatePdfBtn');
-  generatePdfBtn.addEventListener('click', async () => {
-    if (typeof window.jspdf === 'undefined') {
-      alert('A biblioteca PDF não carregou. Verifique sua conexão à internet na primeira execução.');
-      return;
-    }
+        <!-- Notes Section -->
+        <div class="space-y-4">
+          <h3 class="font-headline-md text-[20px] text-primary border-b border-outline-variant/20 pb-2">Notas de Campo</h3>
+          ${notes.length === 0 ? `
+            <p class="text-[13px] text-on-surface-variant italic">Nenhuma observação técnica registrada no projeto.</p>` : `
+            <div class="divide-y divide-outline-variant/15">
+              ${notes.map(n => `
+                <div class="py-4 space-y-1">
+                  <div class="flex justify-between items-center gap-4">
+                    <strong class="text-primary text-[15px] font-semibold">${esc(n.title)}</strong>
+                    ${n.tag ? `<span class="text-[10px] bg-primary/10 text-primary px-2.5 py-0.5 rounded-full font-bold uppercase tracking-wider">${esc(n.tag)}</span>` : ''}
+                  </div>
+                  <p class="text-[14px] text-on-surface-variant leading-relaxed">${esc(n.body || '')}</p>
+                  <span class="text-[11px] text-outline block pt-1">${fmtDate(n.createdAt)}</span>
+                </div>`).join('')}
+            </div>`}
+        </div>
 
-    generatePdfBtn.disabled = true;
-    const originalText = generatePdfBtn.querySelector('span').textContent;
-    generatePdfBtn.querySelector('span').textContent = 'Gerando PDF...';
+        <!-- Photo Gallery Section -->
+        <div class="space-y-4 pt-6">
+          <h3 class="font-headline-md text-[20px] text-primary border-b border-outline-variant/20 pb-2">Galeria do Local</h3>
+          ${photos.length === 0 ? `
+            <p class="text-[13px] text-on-surface-variant italic">Nenhum registro fotográfico anexado ao projeto.</p>` : `
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
+              ${photos.map(p => {
+                let url = '';
+                try { url = URL.createObjectURL(p.blob); } catch(_) {}
+                return `
+                  <div class="border border-outline-variant/25 rounded-xl overflow-hidden bg-surface">
+                    <img src="${url}" class="w-full h-48 object-cover border-b border-outline-variant/20">
+                    <div class="p-3 text-[12px] text-on-surface-variant italic">${esc(p.caption || 'Registro de vistoria')}</div>
+                  </div>`;
+              }).join('')}
+            </div>`}
+        </div>
+      `;
 
-    try {
-      const { jsPDF } = window.jspdf;
-      const doc = new jsPDF();
-
-      // Load Profile
-      const prof = await SalsiDB.getProfile();
-
-      // Title
-      doc.setFont('helvetica', 'bold'); doc.setFontSize(22); doc.setTextColor(44, 39, 36);
-      doc.text('Relatório Técnico de Visita', 20, 25);
-      doc.setFont('helvetica', 'normal'); doc.setFontSize(9); doc.setTextColor(140, 130, 122);
-      doc.text(`Gerado em: ${new Date().toLocaleString('pt-BR')} | Salsi`, 20, 32);
-
-      // Profile details
-      if (prof && (prof.name || prof.company || prof.registration)) {
-        doc.setFontSize(10); doc.setFont('helvetica', 'bold'); doc.setTextColor(44, 39, 36);
-        doc.text('Profissional Responsável:', 20, 42);
-        doc.setFont('helvetica', 'normal'); doc.setTextColor(80, 80, 80);
-        let profLine = `${prof.name || ''} ${prof.company ? ` | ${prof.company}` : ''} ${prof.registration ? ` | ${prof.registration}` : ''}`;
-        doc.text(profLine, 20, 48);
-      }
-
-      doc.setDrawColor(200, 177, 149); doc.setLineWidth(0.5); doc.line(20, 52, 190, 52);
-
-      // Project info
-      doc.setFontSize(11); doc.setFont('helvetica', 'bold'); doc.setTextColor(44, 39, 36);
-      doc.text(`PROJETO: ${project ? project.name : 'Projeto Sem Nome'}`, 20, 62);
-      doc.setFont('helvetica', 'normal'); doc.setTextColor(80, 80, 80);
-      doc.text(`Cliente: ${project ? (project.client || 'Não informado') : 'Não informado'}`, 20, 68);
-      doc.text(`Endereço: ${project ? (project.address || 'Não informado') : 'Não informado'}`, 20, 74);
-      doc.text(`Descrição: ${project ? (project.description || 'Nenhuma') : 'Nenhuma'}`, 20, 80);
-
-      doc.line(20, 86, 190, 86);
-
-      let yPos = 96;
-
-      // Notes
-      doc.setFont('helvetica', 'bold'); doc.setFontSize(14); doc.setTextColor(44, 39, 36);
-      doc.text('Notas de Campo:', 20, yPos);
-      yPos += 10;
-
-      doc.setFontSize(10); doc.setFont('helvetica', 'normal'); doc.setTextColor(60, 60, 60);
-      if (notes.length === 0) {
-        doc.text('Nenhuma nota registrada.', 20, yPos);
-        yPos += 10;
-      } else {
-        for (const n of notes) {
-          if (yPos > 270) { doc.addPage(); yPos = 20; }
-          doc.setFont('helvetica', 'bold'); doc.setTextColor(200, 177, 149);
-          doc.text(`${n.title} [${n.tag || 'Geral'}]:`, 20, yPos);
-          doc.setFont('helvetica', 'normal'); doc.setTextColor(60, 60, 60);
-          doc.text(n.body || '', 20, yPos + 6);
-          yPos += 18;
+      // jsPDF Report Generation
+      const generatePdfBtn = document.getElementById('generatePdfBtn');
+      generatePdfBtn.addEventListener('click', async () => {
+        if (typeof window.jspdf === 'undefined') {
+          alert('Aguarde o carregamento da biblioteca PDF.');
+          return;
         }
-      }
 
-      // Photos
-      if (photos.length > 0) {
-        doc.addPage();
-        yPos = 25;
-        doc.setFont('helvetica', 'bold'); doc.setFontSize(14); doc.setTextColor(44, 39, 36);
-        doc.text('Registro Fotográfico:', 20, yPos);
-        yPos += 15;
+        generatePdfBtn.disabled = true;
+        const originalText = generatePdfBtn.querySelector('span').textContent;
+        generatePdfBtn.querySelector('span').textContent = 'Compilando PDF...';
 
-        for (const p of photos) {
-          if (yPos > 210) { doc.addPage(); yPos = 20; }
-          try {
-            const b64 = await new Promise(res => {
-              const r = new FileReader();
-              r.onloadend = () => res(r.result);
-              r.readAsDataURL(p.blob);
-            });
-            doc.addImage(b64, 'JPEG', 20, yPos, 80, 60);
-            doc.setFont('helvetica', 'normal'); doc.setFontSize(9); doc.setTextColor(100, 100, 100);
-            doc.text(p.caption || 'Sem legenda', 110, yPos + 30);
-            yPos += 70;
-          } catch (_) {}
+        try {
+          const { jsPDF } = window.jspdf;
+          const doc = new jsPDF();
+
+          // Load Profile
+          const prof = await SalsiDB.getProfile();
+
+          // Title
+          doc.setFont('helvetica', 'bold'); doc.setFontSize(22); doc.setTextColor(57, 30, 16); // Bistre
+          doc.text('Relatório Técnico de Visita', 20, 25);
+          doc.setFont('helvetica', 'normal'); doc.setFontSize(9); doc.setTextColor(115, 65, 40); // Kobicha
+          doc.text(`Gerado em: ${new Date().toLocaleString('pt-BR')} | Salsi`, 20, 32);
+
+          // Profile details
+          if (prof && (prof.name || prof.company || prof.registration)) {
+            doc.setFontSize(10); doc.setFont('helvetica', 'bold'); doc.setTextColor(57, 30, 16);
+            doc.text('Profissional Responsável:', 20, 42);
+            doc.setFont('helvetica', 'normal'); doc.setTextColor(80, 80, 80);
+            let profLine = `${prof.name || ''} ${prof.company ? ` | ${prof.company}` : ''} ${prof.registration ? ` | ${prof.registration}` : ''}`;
+            doc.text(profLine, 20, 48);
+          }
+
+          doc.setDrawColor(226, 206, 177); doc.setLineWidth(0.5); doc.line(20, 52, 190, 52); // Dun color
+
+          // Project info
+          doc.setFontSize(11); doc.setFont('helvetica', 'bold'); doc.setTextColor(57, 30, 16);
+          doc.text(`PROJETO: ${project ? project.name : 'Projeto Sem Nome'}`, 20, 62);
+          doc.setFont('helvetica', 'normal'); doc.setTextColor(80, 80, 80);
+          doc.text(`Cliente: ${project ? (project.client || 'Não informado') : 'Não informado'}`, 20, 68);
+          doc.text(`Endereço: ${project ? (project.address || 'Não informado') : 'Não informado'}`, 20, 74);
+          
+          // Wrap description text
+          const descLines = doc.splitTextToSize(`Descrição: ${project ? (project.description || 'Nenhuma') : 'Nenhuma'}`, 170);
+          doc.text(descLines, 20, 80);
+
+          doc.line(20, 80 + (descLines.length * 5), 190, 80 + (descLines.length * 5));
+
+          let yPos = 95 + (descLines.length * 5);
+
+          // Notes
+          doc.setFont('helvetica', 'bold'); doc.setFontSize(14); doc.setTextColor(57, 30, 16);
+          doc.text('Notas de Campo:', 20, yPos);
+          yPos += 10;
+
+          doc.setFontSize(10); doc.setFont('helvetica', 'normal'); doc.setTextColor(60, 60, 60);
+          if (notes.length === 0) {
+            doc.text('Nenhuma nota registrada.', 20, yPos);
+            yPos += 10;
+          } else {
+            for (const n of notes) {
+              if (yPos > 260) { doc.addPage(); yPos = 25; }
+              doc.setFont('helvetica', 'bold'); doc.setTextColor(199, 162, 122); // Lion
+              doc.text(`${n.title} [${n.tag || 'Geral'}]:`, 20, yPos);
+              doc.setFont('helvetica', 'normal'); doc.setTextColor(60, 60, 60);
+              
+              const noteLines = doc.splitTextToSize(n.body || '', 170);
+              doc.text(noteLines, 20, yPos + 6);
+              yPos += 12 + (noteLines.length * 5);
+            }
+          }
+
+          // Photos
+          if (photos.length > 0) {
+            doc.addPage();
+            yPos = 25;
+            doc.setFont('helvetica', 'bold'); doc.setFontSize(14); doc.setTextColor(57, 30, 16);
+            doc.text('Registro Fotográfico:', 20, yPos);
+            yPos += 15;
+
+            for (const p of photos) {
+              if (yPos > 210) { doc.addPage(); yPos = 25; }
+              try {
+                const b64 = await new Promise(res => {
+                  const r = new FileReader();
+                  r.onloadend = () => res(r.result);
+                  r.readAsDataURL(p.blob);
+                });
+                doc.addImage(b64, 'JPEG', 20, yPos, 80, 60);
+                doc.setFont('helvetica', 'normal'); doc.setFontSize(9); doc.setTextColor(100, 100, 100);
+                doc.text(p.caption || 'Sem legenda', 110, yPos + 30);
+                yPos += 70;
+              } catch (_) {}
+            }
+          }
+
+          const pdfName = `Relatorio_${project ? project.name.replace(/\s+/g,'_') : 'Projeto'}.pdf`;
+          doc.save(pdfName);
+        } catch (err) {
+          console.error(err);
+          alert('Erro ao gerar o arquivo PDF.');
+        } finally {
+          generatePdfBtn.disabled = false;
+          generatePdfBtn.querySelector('span').textContent = originalText;
         }
-      }
-
-      const pdfName = `Relatorio_${project ? project.name.replace(/\s+/g,'_') : 'Projeto'}.pdf`;
-      doc.save(pdfName);
-    } catch (err) {
-      console.error(err);
-      alert('Erro ao gerar o arquivo PDF.');
-    } finally {
-      generatePdfBtn.disabled = false;
-      generatePdfBtn.querySelector('span').textContent = originalText;
-    }
-  });
-})();
-</script>
+      });
+    })();
+  </script>
 </body>
 </html>

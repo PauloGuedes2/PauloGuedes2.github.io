@@ -1,285 +1,406 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-br">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Salsi — Ajustes</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
-<link rel="icon" href="logo.png">
-<link rel="apple-touch-icon" href="logo.png">
-<link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#fbfaf8">
-<link rel="stylesheet" href="assets/app.css">
-</head>
-<body>
-<svg width="0" height="0" style="position:absolute" aria-hidden="true">
-<defs>
-<symbol id="i-home" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-  <path d="M4 11l8-7 8 7"/><path d="M6 10v9a1 1 0 0 0 1 1h3v-6h4v6h3a1 1 0 0 0 1-1v-9"/>
-</symbol>
-<symbol id="i-building" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-  <rect x="6" y="3" width="12" height="18" rx="1"/>
-  <rect x="9" y="6.5" width="2" height="2" fill="currentColor" stroke="none"/><rect x="13" y="6.5" width="2" height="2" fill="currentColor" stroke="none"/>
-  <rect x="9" y="11" width="2" height="2" fill="currentColor" stroke="none"/><rect x="13" y="11" width="2" height="2" fill="currentColor" stroke="none"/>
-  <rect x="9" y="15.5" width="2" height="2" fill="currentColor" stroke="none"/><rect x="13" y="15.5" width="2" height="2" fill="currentColor" stroke="none"/>
-</symbol>
-<symbol id="i-camera" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-  <rect x="3" y="7" width="18" height="13" rx="2"/><circle cx="12" cy="13.5" r="3.5"/>
-</symbol>
-<symbol id="i-notes" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-  <rect x="4" y="3" width="16" height="18" rx="2"/><line x1="8" y1="8" x2="16" y2="8"/><line x1="8" y1="12" x2="16" y2="12"/>
-</symbol>
-<symbol id="i-cube" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-  <path d="M12 2L20 6.5V17.5L12 22L4 17.5V6.5L12 2Z"/><path d="M12 12V22"/><path d="M12 12L20 6.5"/><path d="M12 12L4 6.5"/>
-</symbol>
-<symbol id="i-report" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-  <path d="M7 3h7l4 4v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/><path d="M14 3v4h4"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="16" x2="15" y2="16"/>
-</symbol>
-<symbol id="i-settings" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-  <circle cx="12" cy="12" r="3.2"/><path d="M12 2.5v3M12 18.5v3M3.5 12h3M17.5 12h3"/>
-</symbol>
-<symbol id="i-trash" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-  <path d="M5 7h14"/><path d="M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/><path d="M7 7l1 13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1l1-13"/>
-</symbol>
-<symbol id="i-download" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-  <path d="M12 3v12"/><path d="M7 10l5 5 5-5"/><path d="M4 19h16"/>
-</symbol>
-<symbol id="i-upload" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-  <path d="M12 16V4"/><path d="M7 9l5-5 5 5"/><path d="M4 18v2a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-2"/>
-</symbol>
-<symbol id="i-close" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round">
-  <line x1="6" y1="6" x2="18" y2="18"/><line x1="18" y1="6" x2="6" y2="18"/>
-</symbol>
-<symbol id="i-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-  <path d="M5 13l4 4L19 7"/>
-</symbol>
-</defs>
-</svg>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <title>Ajustes | Salsi</title>
+  
+  <!-- PWA Manifest & Icons -->
+  <link rel="icon" href="logo.png">
+  <link rel="apple-touch-icon" href="logo.png">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#FDFCE8">
 
-<div id="offline-banner-root"></div>
-<div class="shell">
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  
+  <!-- Google Fonts: EB Garamond & Outfit -->
+  <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:wght@400;500;600;700&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  
+  <!-- Material Symbols -->
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+
+  <script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "surface-dim": "#e6d8cb",
+            "on-secondary-fixed-variant": "#474743",
+            "on-primary-container": "#ffd7bb",
+            "on-tertiary-fixed-variant": "#603f2b",
+            "on-tertiary-fixed": "#2e1505",
+            "surface-container": "#faebde",
+            "secondary-fixed-dim": "#c8c6c2",
+            "surface": "#fff8f4",
+            "tertiary": "#64432f",
+            "secondary-fixed": "#e5e2dd",
+            "on-background": "#211a13",
+            "error": "#ba1a1a",
+            "surface-container-high": "#f4e6d9",
+            "tertiary-container": "#7f5a45",
+            "primary-fixed-dim": "#ffb77f",
+            "on-secondary": "#ffffff",
+            "primary-fixed": "#ffdcc3",
+            "tertiary-fixed": "#ffdbc8",
+            "on-tertiary": "#ffffff",
+            "on-secondary-fixed": "#1c1c19",
+            "outline": "#847469",
+            "on-surface-variant": "#52443a",
+            "on-error": "#ffffff",
+            "error-container": "#ffdad6",
+            "outline-variant": "#d7c3b6",
+            "inverse-surface": "#372f26",
+            "secondary-container": "#e5e2dd",
+            "surface-bright": "#fff8f4",
+            "on-primary-fixed": "#2f1500",
+            "on-primary-fixed-variant": "#6c3a0a",
+            "on-primary": "#ffffff",
+            "surface-container-low": "#fff1e6",
+            "inverse-primary": "#ffb77f",
+            "surface-tint": "#885120",
+            "on-secondary-container": "#656461",
+            "inverse-on-surface": "#fdeee1",
+            "on-tertiary-container": "#ffd7c1",
+            "secondary": "#5f5e5b",
+            "surface-container-lowest": "#ffffff",
+            "on-surface": "#211a13",
+            "primary": "#391E10", /* Bistre */
+            "on-error-container": "#93000a",
+            "background": "#FDFCE8", /* Ivory */
+            "surface-container-highest": "#efe0d3",
+            "primary-container": "#734128", /* Kobicha */
+            "tertiary-fixed-dim": "#ecbda2",
+            "surface-variant": "#efe0d3"
+          },
+          "fontFamily": {
+            "headline-xl": ["EB Garamond"],
+            "headline-lg": ["EB Garamond"],
+            "headline-md": ["EB Garamond"],
+            "body-md": ["Outfit"],
+            "body-lg": ["Outfit"],
+            "label-md": ["Outfit"],
+            "label-sm": ["Outfit"]
+          }
+        }
+      }
+    }
+  </script>
+  
+  <style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    }
+    .glass-nav {
+      backdrop-filter: blur(12px);
+      background-color: rgba(255, 248, 244, 0.8);
+    }
+    .linen-texture {
+      background-image: radial-gradient(#e5e2dd 0.5px, transparent 0.5px);
+      background-size: 24px 24px;
+    }
+    .fade-slide-up {
+      opacity: 0;
+      transform: translateY(15px);
+      transition: opacity 600ms cubic-bezier(0.16, 1, 0.3, 1), transform 600ms cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .fade-slide-up.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  </style>
+</head>
+<body class="bg-background text-on-background font-body-md overflow-x-hidden">
+
+  <!-- Dynamic SideNav Root -->
+  <div id="offline-banner-root"></div>
   <div id="sidebar-root"></div>
-  <main class="main">
-    <div class="topbar">
-      <div class="brand-mark"><img src="logo.png" alt="Salsi"><span class="display">Salsi</span></div>
-      <a class="project-pill" href="projects.html" id="activeProjectPill">
-        <svg><use href="#i-building"/></svg><span>Carregando…</span>
+
+  <!-- Mobile TopAppBar -->
+  <header class="md:hidden sticky top-0 z-40 w-full h-20 bg-surface/80 backdrop-blur-md flex justify-between items-center px-6 border-b border-outline-variant/20">
+    <div class="flex items-center gap-3">
+      <img alt="Salsi Logo" class="h-8 w-8 rounded-full" src="logo.png"/>
+      <span class="font-headline-md text-headline-md text-primary">Salsi</span>
+    </div>
+    <div class="flex items-center gap-4">
+      <a href="settings.html" class="w-8 h-8 rounded-full overflow-hidden bg-surface-container flex items-center justify-center">
+        <span class="material-symbols-outlined text-primary">settings</span>
       </a>
     </div>
-    <div class="content">
-      
-      <!-- Editorial Page Header -->
-      <div class="page-header-block">
-        <h1 class="page-title">Ajustes do Sistema</h1>
-        <p class="page-sub">Configurações técnicas e perfil profissional local</p>
-      </div>
+  </header>
 
-      <!-- Perfil Profissional Card -->
-      <div class="card" style="border-bottom: 1px solid var(--border); padding-bottom: 48px; margin-bottom: 48px;">
-        <h3 style="font-size: 16px; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 24px;">Perfil Profissional</h3>
-        <p style="color:var(--text-secondary); font-size:13.5px; margin-bottom:24px; font-family:var(--font-serif); font-style:italic;">Estes dados aparecerão no cabeçalho dos relatórios técnicos gerados.</p>
-        <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:24px; margin-bottom:24px;">
-          <div>
-            <label class="field-label" for="userName">Nome do Profissional</label>
-            <input type="text" id="userName" placeholder="Ex: Cláudia Souza" style="width:100%">
-          </div>
-          <div>
-            <label class="field-label" for="companyName">Nome da Empresa/Escritório</label>
-            <input type="text" id="companyName" placeholder="Ex: Cláudia Souza Arquitetura" style="width:100%">
-          </div>
-          <div>
-            <label class="field-label" for="registration">CREA / CAU (Registro)</label>
-            <input type="text" id="registration" placeholder="Ex: CAU A12345-6" style="width:100%">
-          </div>
-        </div>
-        <div style="margin-bottom:32px; display:flex; align-items:center; gap:16px; flex-wrap:wrap;">
-          <div>
-            <label class="field-label">Logo do Escritório (Preview circular)</label>
-            <div style="display:flex; align-items:center; gap:16px; margin-top:8px;">
-              <div id="logoPreview" style="width:56px; height:56px; border-radius:50%; background:transparent; border:1.5px dashed var(--border); display:flex; align-items:center; justify-content:center; overflow:hidden;">
-                <span style="font-size:10px; color:var(--text-secondary);">Sem logo</span>
+  <!-- Main Content Canvas -->
+  <main class="md:ml-64 transition-all duration-300">
+    
+    <div class="content px-6 md:px-16 py-12 max-w-4xl mx-auto space-y-10">
+      
+      <!-- Page Header -->
+      <header class="mb-12 border-b border-outline-variant/25 pb-6">
+        <h2 class="font-headline-xl text-headline-xl text-primary">Ajustes do Sistema</h2>
+        <p class="font-body-lg text-on-surface-variant italic mt-1">Configure o perfil do profissional e as preferências locais do Estúdio.</p>
+      </header>
+
+      <div class="space-y-10">
+        <!-- Section 1: Professional Profile -->
+        <section class="bg-white rounded-2xl p-8 border border-outline-variant/30 shadow-sm space-y-6">
+          <div class="flex items-center gap-6 pb-6 border-b border-outline-variant/20">
+            <div class="relative group">
+              <div id="logoPreview" class="w-20 h-20 rounded-full overflow-hidden border border-outline-variant/50 bg-surface-container flex items-center justify-center">
+                <span class="text-[10px] text-outline uppercase tracking-wider">Sem Logo</span>
               </div>
-              <label class="btn" for="logoInput" style="margin:0; cursor:pointer; padding:8px 16px; font-size:11px;">Escolher Imagem</label>
-              <input type="file" id="logoInput" accept="image/*" style="display:none">
-              <button class="btn danger" id="removeLogoBtn" style="padding:8px 16px; font-size:11px; display:none;">Remover</button>
+              <label for="logoInput" class="absolute bottom-0 right-0 bg-primary text-white p-1.5 rounded-full shadow-lg hover:scale-105 transition-transform cursor-pointer flex items-center justify-center">
+                <span class="material-symbols-outlined text-[16px]">photo_camera</span>
+              </label>
+              <input type="file" id="logoInput" accept="image/*" class="hidden">
+            </div>
+            <div>
+              <h3 class="font-headline-md text-[20px] text-primary" id="profileNameDisplay">Profissional</h3>
+              <p class="font-body-md text-on-surface-variant" id="profileCompanyDisplay">Escritório de Arquitetura</p>
+              <button id="removeLogoBtn" class="text-error text-[11px] font-bold uppercase tracking-wider mt-1 hover:underline" style="display:none">Remover logo</button>
             </div>
           </div>
-        </div>
-        <button class="btn primary" id="saveProfileBtn" style="min-height:42px;">Salvar Perfil</button>
-        <span id="saveStatus" style="font-size:13px; color:var(--accent); margin-left:12px; font-weight:600;"></span>
-      </div>
 
-      <div class="card" style="border-bottom: 1px solid var(--border); padding-bottom: 48px; margin-bottom: 48px;">
-        <h3 style="font-size: 16px; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 24px;">Armazenamento</h3>
-        <p style="color:var(--text-secondary); font-size:13.5px; margin-bottom:12px; font-family:var(--font-serif); font-style:italic;" id="storageText">Calculando…</p>
-        <div style="background:var(--border); height:2px; overflow:hidden">
-          <div id="storageBar" style="background:var(--text-primary); height:100%; width:0%"></div>
-        </div>
-      </div>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="flex flex-col gap-1.5">
+              <label class="font-label-md text-[11px] font-bold text-outline uppercase tracking-wider">Nome do Profissional</label>
+              <input id="userName" class="bg-surface/30 border border-outline-variant/40 rounded-xl px-4 py-3 font-body-md focus:ring-1 focus:ring-primary focus:border-primary outline-none transition-all" type="text" placeholder="Ex.: Elena V. Rossi"/>
+            </div>
+            <div class="flex flex-col gap-1.5">
+              <label class="font-label-md text-[11px] font-bold text-outline uppercase tracking-wider">Nome da Empresa / Estúdio</label>
+              <input id="companyName" class="bg-surface/30 border border-outline-variant/40 rounded-xl px-4 py-3 font-body-md focus:ring-1 focus:ring-primary focus:border-primary outline-none transition-all" type="text" placeholder="Ex.: Dachshund Atelier"/>
+            </div>
+            <div class="flex flex-col gap-1.5 md:col-span-2">
+              <label class="font-label-md text-[11px] font-bold text-outline uppercase tracking-wider">Registro Profissional (CAU / CREA)</label>
+              <input id="registration" class="bg-surface/30 border border-outline-variant/40 rounded-xl px-4 py-3 font-body-md focus:ring-1 focus:ring-primary focus:border-primary outline-none transition-all" type="text" placeholder="Ex.: CAU A12345-6"/>
+            </div>
+          </div>
 
-      <div class="card" style="border-bottom: 1px solid var(--border); padding-bottom: 48px; margin-bottom: 48px;">
-        <h3 style="font-size: 16px; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 24px;">Backup Manual</h3>
-        <p style="color:var(--text-secondary); font-size:13.5px; margin-bottom:20px; font-family:var(--font-serif); font-style:italic;">Exporta projetos, notas e marcações para um arquivo. Fotos e modelos grandes não entram no arquivo.</p>
-        <div style="display:flex; gap:12px; flex-wrap:wrap">
-          <button class="btn primary" id="exportBtn" style="min-height:42px;">Exportar backup (.json)</button>
-          <label class="btn" for="importInput" style="min-height:42px; cursor:pointer; display:inline-flex; align-items:center; justify-content:center; margin:0;">Importar backup</label>
-          <input type="file" id="importInput" accept="application/json" style="display:none">
-        </div>
-        <p id="importStatus" style="font-size:12.5px; color:var(--text-secondary); margin-top:8px"></p>
-      </div>
+          <div class="pt-4 flex items-center gap-3">
+            <button class="bg-primary text-white px-8 py-3.5 rounded-full hover:bg-primary-container transition-all text-label-sm font-semibold uppercase tracking-wider" id="saveProfileBtn">
+              Salvar Perfil
+            </button>
+            <span id="saveStatus" class="text-[13px] font-bold text-primary italic"></span>
+          </div>
+        </section>
 
-      <div class="card" style="border-bottom: 1px solid var(--border); padding-bottom: 48px; margin-bottom: 48px;">
-        <h3 style="font-size: 16px; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 24px; color:var(--danger)">Zona de Risco</h3>
-        <p style="color:var(--text-secondary); font-size:13.5px; margin-bottom:20px; font-family:var(--font-serif); font-style:italic;">Apaga de forma irreversível todos os dados, projetos e modelos salvos no navegador.</p>
-        <button class="btn danger" id="clearAllBtn" style="min-height:42px;">Apagar todos os dados locais</button>
-      </div>
+        <!-- Section 2: Storage Management -->
+        <section class="bg-white rounded-2xl p-8 border border-outline-variant/30 shadow-sm space-y-6">
+          <div class="flex items-center gap-4 border-b border-outline-variant/20 pb-4">
+            <span class="material-symbols-outlined text-primary text-[24px]">database</span>
+            <h3 class="font-headline-md text-[20px] text-primary">Armazenamento Local</h3>
+          </div>
+          <div class="space-y-3">
+            <p class="font-body-md text-on-surface-variant text-[14px]" id="storageText">Calculando espaço ocupado no navegador...</p>
+            <div class="bg-surface-container h-2 rounded-full overflow-hidden">
+              <div id="storageBar" class="bg-primary h-full rounded-full transition-all duration-500" style="width:0%"></div>
+            </div>
+            <p class="text-[11px] text-outline italic">Nota: Todo o processamento ocorre localmente em ambiente seguro e privado.</p>
+          </div>
+        </section>
 
-      <div class="card">
-        <h3 style="font-size: 16px; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 24px;">Sobre a Plataforma</h3>
-        <p style="color:var(--text-secondary); font-size:14px; line-height:1.7; font-family:var(--font-serif); font-style:italic; max-width:720px;">
-          Salsi é uma ferramenta criada para auxiliar na vistoria e curadoria espacial técnica. Funciona de forma independente de servidores, armazenando as informações de maneira privada e segura no seu próprio dispositivo de trabalho.
-        </p>
+        <!-- Section 3: Backup & Security -->
+        <section class="bg-white rounded-2xl p-8 border border-outline-variant/30 shadow-sm space-y-6">
+          <div class="flex items-center gap-4 border-b border-outline-variant/20 pb-4">
+            <span class="material-symbols-outlined text-primary text-[24px]">backup</span>
+            <h3 class="font-headline-md text-[20px] text-primary">Backup e Segurança</h3>
+          </div>
+          
+          <div class="space-y-4">
+            <p class="font-body-md text-on-surface-variant text-[14px]">
+              Exporte seus dados (projetos, notas de campo e medições) para um arquivo local ou restaure um backup prévio.
+            </p>
+            <div class="flex flex-wrap gap-3 pt-2">
+              <button class="px-6 py-3 bg-surface-container text-primary hover:bg-primary hover:text-white rounded-full font-label-md text-label-md transition-all font-semibold uppercase tracking-wider" id="exportBtn">
+                Exportar Backup (.json)
+              </button>
+              <label for="importInput" class="px-6 py-3 border border-outline-variant text-primary hover:bg-surface-container rounded-full font-label-md text-label-md transition-all cursor-pointer inline-flex items-center justify-center font-semibold uppercase tracking-wider">
+                Importar Backup
+              </label>
+              <input type="file" id="importInput" accept="application/json" class="hidden">
+            </div>
+            <p id="importStatus" class="text-[12px] text-primary font-semibold italic mt-2"></p>
+          </div>
+        </section>
+
+        <!-- Section 4: Danger Zone -->
+        <section class="bg-white rounded-2xl p-8 border border-red-200/50 shadow-sm space-y-6">
+          <div class="flex items-center gap-4 border-b border-red-100 pb-4">
+            <span class="material-symbols-outlined text-error text-[24px]">warning</span>
+            <h3 class="font-headline-md text-[20px] text-error">Zona de Perigo</h3>
+          </div>
+          
+          <div class="space-y-4">
+            <p class="font-body-md text-on-surface-variant text-[14px]">
+              Esta ação apagará permanentemente todos os projetos, medições, fotos e notas salvos neste navegador de forma irreversível.
+            </p>
+            <div>
+              <button class="px-8 py-3.5 bg-error text-white rounded-full font-label-md text-label-md hover:bg-red-700 transition-all font-semibold uppercase tracking-wider" id="clearAllBtn">
+                Limpar Todos os Dados
+              </button>
+            </div>
+          </div>
+        </section>
       </div>
 
     </div>
+
+    <!-- Footer -->
+    <footer class="px-6 md:px-16 py-12 bg-surface text-center border-t border-outline-variant/15 mt-16">
+      <div class="max-w-7xl mx-auto flex flex-col items-center">
+        <img alt="Salsi Logo" class="h-10 w-10 mb-4 opacity-80 rounded-full" src="logo.png"/>
+        <p class="font-headline-md text-headline-md text-primary mb-2">Estúdio Salsi</p>
+        <p class="font-label-sm text-label-sm text-on-surface-variant max-w-lg mx-auto">
+          Configurações de privacidade, backup e perfil técnico integrado.
+        </p>
+        <p class="font-label-sm text-label-sm text-outline mt-8">© 2026 Salsi.</p>
+      </div>
+    </footer>
   </main>
-</div>
-<div id="sync-card-root"></div>
-<script src="assets/db.js"></script>
-<script src="assets/shell.js"></script>
-<script>
-SalsiShell.init('settings');
-(async function () {
-  'use strict';
 
-  const activeId = SalsiShell.getActiveProjectId();
-  const activeProj = activeId ? await SalsiDB.getProject(activeId) : null;
-  const pillEl = document.getElementById('activeProjectPill');
-  if (pillEl) pillEl.querySelector('span').textContent = activeProj ? activeProj.name : 'Nenhum Projeto';
+  <div id="sync-card-root"></div>
 
-  // ── Load Storage Stats ────────────────────────────────
-  try {
-    const est = await SalsiDB.getStorageEstimate();
-    const usageMB = ((est.usage || 0) / (1024 * 1024)).toFixed(1);
-    const quotaMB = ((est.quota || 0) / (1024 * 1024)).toFixed(0);
-    const pct = est.quota ? Math.min(100, (est.usage / est.quota) * 100) : 0;
-    document.getElementById('storageText').textContent = est.quota ? `${usageMB} MB usados de ${quotaMB} MB disponíveis` : 'Capacidade de armazenamento não mensurada.';
-    document.getElementById('storageBar').style.width = pct + '%';
-  } catch (_) {
-    document.getElementById('storageText').textContent = 'Informação de capacidade de armazenamento indisponível.';
-  }
+  <script src="assets/db.js"></script>
+  <script src="assets/shell.js"></script>
+  <script>
+    SalsiShell.init('settings');
+    (async function () {
+      'use strict';
 
-  // ── Load Profile ──────────────────────────────────────
-  const profile = await SalsiDB.getProfile();
-  if (profile) {
-    document.getElementById('userName').value = profile.name || '';
-    document.getElementById('companyName').value = profile.company || '';
-    document.getElementById('registration').value = profile.registration || '';
-    if (profile.logo) {
-      updateLogoPreview(profile.logo);
-    }
-  }
-
-  function updateLogoPreview(blob) {
-    const preview = document.getElementById('logoPreview');
-    const removeBtn = document.getElementById('removeLogoBtn');
-    preview.innerHTML = `<img src="${URL.createObjectURL(blob)}" style="width:100%; height:100%; object-fit:cover;">`;
-    removeBtn.style.display = 'inline-flex';
-  }
-
-  function resetLogoPreview() {
-    const preview = document.getElementById('logoPreview');
-    const removeBtn = document.getElementById('removeLogoBtn');
-    preview.innerHTML = `<span style="font-size:10px; color:var(--text-secondary);">Sem logo</span>`;
-    removeBtn.style.display = 'none';
-  }
-
-  // ── Save Profile ──────────────────────────────────────
-  document.getElementById('saveProfileBtn').addEventListener('click', async () => {
-    const name = document.getElementById('userName').value.trim();
-    const company = document.getElementById('companyName').value.trim();
-    const registration = document.getElementById('registration').value.trim();
-    const logoInput = document.getElementById('logoInput');
-
-    let logoBlob = profile ? profile.logo : null;
-    if (logoInput.files[0]) {
-      logoBlob = logoInput.files[0];
-    }
-
-    await SalsiDB.saveProfile({ name, company, registration, logo: logoBlob });
-    const status = document.getElementById('saveStatus');
-    status.textContent = 'Perfil salvo com sucesso.';
-    setTimeout(() => { status.textContent = ''; }, 2500);
-  });
-
-  // ── Logo Input Change ─────────────────────────────────
-  document.getElementById('logoInput').addEventListener('change', e => {
-    const file = e.target.files[0];
-    if (file) {
-      updateLogoPreview(file);
-    }
-  });
-
-  // ── Remove Logo ───────────────────────────────────────
-  document.getElementById('removeLogoBtn').addEventListener('click', () => {
-    document.getElementById('logoInput').value = '';
-    resetLogoPreview();
-    if (profile) {
-      profile.logo = null;
-    }
-  });
-
-  // ── Backup Export ─────────────────────────────────────
-  document.getElementById('exportBtn').addEventListener('click', async () => {
-    try {
-      const data = await SalsiDB.exportAllData();
-      const blob = new Blob([JSON.stringify(data)], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
-      const a = Object.assign(document.createElement('a'), {
-        href: url,
-        download: `Salsi_Backup_${new Date().toISOString().slice(0,10)}.json`
-      });
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      URL.revokeObjectURL(url);
-    } catch (_) {
-      alert('Não foi possível exportar os dados.');
-    }
-  });
-
-  // ── Backup Import ─────────────────────────────────────
-  document.getElementById('importInput').addEventListener('change', async e => {
-    const file = e.target.files[0];
-    if (!file) return;
-    const status = document.getElementById('importStatus');
-    status.textContent = 'Importando...';
-
-    const reader = new FileReader();
-    reader.onload = async (evt) => {
+      // Load Storage Stats
       try {
-        const data = JSON.parse(evt.target.result);
-        await SalsiDB.importAllData(data);
-        status.textContent = 'Importação concluída. Atualizando página...';
-        setTimeout(() => location.reload(), 1500);
+        const est = await SalsiDB.getStorageEstimate();
+        const usageMB = ((est.usage || 0) / (1024 * 1024)).toFixed(1);
+        const quotaMB = ((est.quota || 0) / (1024 * 1024)).toFixed(0);
+        const pct = est.quota ? Math.min(100, (est.usage / est.quota) * 100) : 0;
+        document.getElementById('storageText').textContent = est.quota 
+          ? `${usageMB} MB ocupados de ${quotaMB} MB de cota disponíveis.` 
+          : 'Estimativa de armazenamento local indisponível.';
+        document.getElementById('storageBar').style.width = pct + '%';
       } catch (_) {
-        status.textContent = 'Erro ao ler arquivo de backup.';
+        document.getElementById('storageText').textContent = 'Informação de capacidade de armazenamento indisponível.';
       }
-    };
-    reader.readAsText(file);
-  });
 
-  // ── Clear All Data ────────────────────────────────────
-  document.getElementById('clearAllBtn').addEventListener('click', async () => {
-    const confirmation = prompt('Para prosseguir e apagar definitivamente todos os dados do navegador, digite: CONFIRMAR');
-    if (confirmation === 'CONFIRMAR') {
-      await SalsiDB.clearAllData();
-      alert('Todos os dados locais foram apagados.');
-      location.href = 'index.html';
-    }
-  });
-})();
-</script>
+      // Load Profile
+      const profile = await SalsiDB.getProfile();
+      if (profile) {
+        document.getElementById('userName').value = profile.name || '';
+        document.getElementById('companyName').value = profile.company || '';
+        document.getElementById('registration').value = profile.registration || '';
+        
+        if (profile.name) document.getElementById('profileNameDisplay').textContent = profile.name;
+        if (profile.company) document.getElementById('profileCompanyDisplay').textContent = profile.company;
+        
+        if (profile.logo) {
+          updateLogoPreview(profile.logo);
+        }
+      }
+
+      function updateLogoPreview(blob) {
+        const preview = document.getElementById('logoPreview');
+        const removeBtn = document.getElementById('removeLogoBtn');
+        preview.innerHTML = `<img src="${URL.createObjectURL(blob)}" class="w-full h-full object-cover">`;
+        removeBtn.style.display = 'inline-block';
+      }
+
+      function resetLogoPreview() {
+        const preview = document.getElementById('logoPreview');
+        const removeBtn = document.getElementById('removeLogoBtn');
+        preview.innerHTML = `<span class="text-[10px] text-outline uppercase tracking-wider">Sem Logo</span>`;
+        removeBtn.style.display = 'none';
+      }
+
+      // Save Profile
+      document.getElementById('saveProfileBtn').addEventListener('click', async () => {
+        const name = document.getElementById('userName').value.trim();
+        const company = document.getElementById('companyName').value.trim();
+        const registration = document.getElementById('registration').value.trim();
+        const logoInput = document.getElementById('logoInput');
+
+        let logoBlob = profile ? profile.logo : null;
+        if (logoInput.files[0]) {
+          logoBlob = logoInput.files[0];
+        }
+
+        await SalsiDB.saveProfile({ name, company, registration, logo: logoBlob });
+        
+        if (name) document.getElementById('profileNameDisplay').textContent = name;
+        if (company) document.getElementById('profileCompanyDisplay').textContent = company;
+
+        const status = document.getElementById('saveStatus');
+        status.textContent = 'Perfil atualizado.';
+        setTimeout(() => { status.textContent = ''; }, 2500);
+      });
+
+      // Logo Input Change
+      document.getElementById('logoInput').addEventListener('change', e => {
+        const file = e.target.files[0];
+        if (file) {
+          updateLogoPreview(file);
+        }
+      });
+
+      // Remove Logo
+      document.getElementById('removeLogoBtn').addEventListener('click', () => {
+        document.getElementById('logoInput').value = '';
+        resetLogoPreview();
+        if (profile) {
+          profile.logo = null;
+        }
+      });
+
+      // Backup Export
+      document.getElementById('exportBtn').addEventListener('click', async () => {
+        try {
+          const data = await SalsiDB.exportAllData();
+          const blob = new Blob([JSON.stringify(data)], { type: 'application/json' });
+          const url = URL.createObjectURL(blob);
+          const a = Object.assign(document.createElement('a'), {
+            href: url,
+            download: `Salsi_Backup_${new Date().toISOString().slice(0,10)}.json`
+          });
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+          URL.revokeObjectURL(url);
+        } catch (_) {
+          alert('Não foi possível exportar os dados.');
+        }
+      });
+
+      // Backup Import
+      document.getElementById('importInput').addEventListener('change', async e => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const status = document.getElementById('importStatus');
+        status.textContent = 'Importando...';
+
+        const reader = new FileReader();
+        reader.onload = async (evt) => {
+          try {
+            const data = JSON.parse(evt.target.result);
+            await SalsiDB.importAllData(data);
+            status.textContent = 'Backup restaurado com sucesso! Recarregando...';
+            setTimeout(() => { location.reload(); }, 1500);
+          } catch (_) {
+            status.textContent = 'Erro ao decodificar o arquivo de backup.';
+          }
+        };
+        reader.readAsText(file);
+      });
+
+      // Danger Zone Clear
+      document.getElementById('clearAllBtn').addEventListener('click', async () => {
+        const confirmation = prompt('Isso apagará TODOS os projetos, modelos, fotos e notas. Esta ação é irreversível. Digite CONFIRMAR para prosseguir:');
+        if (confirmation === 'CONFIRMAR') {
+          await SalsiDB.clearAllData();
+          localStorage.clear();
+          alert('Todos os dados locais foram excluídos.');
+          location.href = 'index.html';
+        }
+      });
+
+    })();
+  </script>
 </body>
 </html>

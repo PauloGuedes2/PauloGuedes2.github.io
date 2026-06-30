@@ -1,178 +1,289 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-br">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Salsi — Projetos</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
-<link rel="icon" href="logo.png">
-<link rel="apple-touch-icon" href="logo.png">
-<link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#fbfaf8">
-<link rel="stylesheet" href="assets/app.css">
-</head>
-<body>
-<svg width="0" height="0" style="position:absolute" aria-hidden="true">
-<defs>
-<symbol id="i-home" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-  <path d="M4 11l8-7 8 7"/><path d="M6 10v9a1 1 0 0 0 1 1h3v-6h4v6h3a1 1 0 0 0 1-1v-9"/>
-</symbol>
-<symbol id="i-building" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-  <rect x="6" y="3" width="12" height="18" rx="1"/>
-  <rect x="9" y="6.5" width="2" height="2" fill="currentColor" stroke="none"/><rect x="13" y="6.5" width="2" height="2" fill="currentColor" stroke="none"/>
-  <rect x="9" y="11" width="2" height="2" fill="currentColor" stroke="none"/><rect x="13" y="11" width="2" height="2" fill="currentColor" stroke="none"/>
-  <rect x="9" y="15.5" width="2" height="2" fill="currentColor" stroke="none"/><rect x="13" y="15.5" width="2" height="2" fill="currentColor" stroke="none"/>
-</symbol>
-<symbol id="i-camera" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-  <rect x="3" y="7" width="18" height="13" rx="2"/><circle cx="12" cy="13.5" r="3.5"/>
-</symbol>
-<symbol id="i-notes" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-  <rect x="4" y="3" width="16" height="18" rx="2"/><line x1="8" y1="8" x2="16" y2="8"/><line x1="8" y1="12" x2="16" y2="12"/>
-</symbol>
-<symbol id="i-cube" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-  <path d="M12 2L20 6.5V17.5L12 22L4 17.5V6.5L12 2Z"/><path d="M12 12V22"/><path d="M12 12L20 6.5"/><path d="M12 12L4 6.5"/>
-</symbol>
-<symbol id="i-report" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-  <path d="M7 3h7l4 4v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/><path d="M14 3v4h4"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="16" x2="15" y2="16"/>
-</symbol>
-<symbol id="i-settings" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-  <circle cx="12" cy="12" r="3.2"/><path d="M12 2.5v3M12 18.5v3M3.5 12h3M17.5 12h3"/>
-</symbol>
-<symbol id="i-trash" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-  <path d="M5 7h14"/><path d="M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/><path d="M7 7l1 13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1l1-13"/>
-</symbol>
-<symbol id="i-plus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round">
-  <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
-</symbol>
-</defs>
-</svg>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <title>Projetos | Salsi</title>
+  
+  <!-- PWA Manifest & Icons -->
+  <link rel="icon" href="logo.png">
+  <link rel="apple-touch-icon" href="logo.png">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#FDFCE8">
 
-<div id="offline-banner-root"></div>
-<div class="shell">
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  
+  <!-- Google Fonts: EB Garamond & Outfit -->
+  <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:wght@400;500;600;700&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  
+  <!-- Material Symbols -->
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+
+  <script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "surface-dim": "#e6d8cb",
+            "on-secondary-fixed-variant": "#474743",
+            "on-primary-container": "#ffd7bb",
+            "on-tertiary-fixed-variant": "#603f2b",
+            "on-tertiary-fixed": "#2e1505",
+            "surface-container": "#faebde",
+            "secondary-fixed-dim": "#c8c6c2",
+            "surface": "#fff8f4",
+            "tertiary": "#64432f",
+            "secondary-fixed": "#e5e2dd",
+            "on-background": "#211a13",
+            "error": "#ba1a1a",
+            "surface-container-high": "#f4e6d9",
+            "tertiary-container": "#7f5a45",
+            "primary-fixed-dim": "#ffb77f",
+            "on-secondary": "#ffffff",
+            "primary-fixed": "#ffdcc3",
+            "tertiary-fixed": "#ffdbc8",
+            "on-tertiary": "#ffffff",
+            "on-secondary-fixed": "#1c1c19",
+            "outline": "#847469",
+            "on-surface-variant": "#52443a",
+            "on-error": "#ffffff",
+            "error-container": "#ffdad6",
+            "outline-variant": "#d7c3b6",
+            "inverse-surface": "#372f26",
+            "secondary-container": "#e5e2dd",
+            "surface-bright": "#fff8f4",
+            "on-primary-fixed": "#2f1500",
+            "on-primary-fixed-variant": "#6c3a0a",
+            "on-primary": "#ffffff",
+            "surface-container-low": "#fff1e6",
+            "inverse-primary": "#ffb77f",
+            "surface-tint": "#885120",
+            "on-secondary-container": "#656461",
+            "inverse-on-surface": "#fdeee1",
+            "on-tertiary-container": "#ffd7c1",
+            "secondary": "#5f5e5b",
+            "surface-container-lowest": "#ffffff",
+            "on-surface": "#211a13",
+            "primary": "#391E10", /* Bistre */
+            "on-error-container": "#93000a",
+            "background": "#FDFCE8", /* Ivory */
+            "surface-container-highest": "#efe0d3",
+            "primary-container": "#734128", /* Kobicha */
+            "tertiary-fixed-dim": "#ecbda2",
+            "surface-variant": "#efe0d3"
+          },
+          "fontFamily": {
+            "headline-xl": ["EB Garamond"],
+            "headline-lg": ["EB Garamond"],
+            "headline-md": ["EB Garamond"],
+            "body-md": ["Outfit"],
+            "body-lg": ["Outfit"],
+            "label-md": ["Outfit"],
+            "label-sm": ["Outfit"]
+          }
+        }
+      }
+    }
+  </script>
+  
+  <style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    }
+    .glass-nav {
+      backdrop-filter: blur(12px);
+      background-color: rgba(255, 248, 244, 0.8);
+    }
+    .linen-texture {
+      background-image: radial-gradient(#e5e2dd 0.5px, transparent 0.5px);
+      background-size: 24px 24px;
+    }
+  </style>
+</head>
+<body class="bg-background text-on-background font-body-md overflow-x-hidden">
+
+  <!-- Dynamic SideNav Root -->
+  <div id="offline-banner-root"></div>
   <div id="sidebar-root"></div>
-  <main class="main">
-    <div class="topbar">
-      <div class="brand-mark"><img src="logo.png" alt="Salsi"><span class="display">Salsi</span></div>
-      <a class="project-pill" href="projects.html" id="activeProjectPill">
-        <svg><use href="#i-building"/></svg><span>Carregando…</span>
+
+  <!-- Mobile TopAppBar -->
+  <header class="md:hidden sticky top-0 z-40 w-full h-20 bg-surface/80 backdrop-blur-md flex justify-between items-center px-6 border-b border-outline-variant/20">
+    <div class="flex items-center gap-3">
+      <img alt="Salsi Logo" class="h-8 w-8 rounded-full" src="logo.png"/>
+      <span class="font-headline-md text-headline-md text-primary">Salsi</span>
+    </div>
+    <div class="flex items-center gap-4">
+      <a href="settings.html" class="w-8 h-8 rounded-full overflow-hidden bg-surface-container flex items-center justify-center">
+        <span class="material-symbols-outlined text-primary">settings</span>
       </a>
     </div>
-    <div class="content">
+  </header>
+
+  <!-- Main Content Canvas -->
+  <main class="md:ml-64 transition-all duration-300">
+    
+    <div class="content px-6 md:px-16 py-12 max-w-7xl mx-auto space-y-10">
       
-      <!-- Editorial Page Header -->
-      <div class="page-header-block">
-        <h1 class="page-title">Coleção de Projetos</h1>
-        <p class="page-sub">Espaço dedicado ao gerenciamento de modelos e documentações</p>
-      </div>
+      <!-- Page Header -->
+      <header class="border-b border-outline-variant/25 pb-6">
+        <h2 class="font-headline-xl text-headline-xl text-primary">Coleção de Projetos</h2>
+        <p class="font-body-lg text-on-surface-variant italic mt-1">Gere e gerencie a lista completa de projetos arquitetônicos locais.</p>
+      </header>
 
-      <div class="card" style="margin-bottom: 60px;">
-        <h3 style="font-size: 16px; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 24px;">Novo projeto</h3>
-        <div style="display:grid; gap:24px; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); margin-bottom:24px;">
-          <div>
-            <label class="field-label">Nome do Projeto *</label>
-            <input type="text" id="newProjName" placeholder="Ex.: Residência Jardins">
+      <!-- New Project Form Card -->
+      <section class="bg-white rounded-2xl p-8 border border-outline-variant/30 shadow-sm space-y-6">
+        <h3 class="font-headline-md text-[18px] font-semibold text-primary border-b border-outline-variant/20 pb-2">Criar Novo Projeto</h3>
+        
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div class="flex flex-col gap-1.5">
+            <label class="font-label-md text-[11px] font-bold text-outline uppercase tracking-wider">Nome do Projeto *</label>
+            <input id="newProjName" class="bg-surface/30 border border-outline-variant/40 rounded-xl px-4 py-3 font-body-md focus:ring-1 focus:ring-primary focus:border-primary outline-none transition-all" type="text" placeholder="Ex.: Residência Jardins"/>
           </div>
-          <div>
-            <label class="field-label">Cliente</label>
-            <input type="text" id="newProjClient" placeholder="Ex.: Cláudia Souza">
+          <div class="flex flex-col gap-1.5">
+            <label class="font-label-md text-[11px] font-bold text-outline uppercase tracking-wider">Cliente</label>
+            <input id="newProjClient" class="bg-surface/30 border border-outline-variant/40 rounded-xl px-4 py-3 font-body-md focus:ring-1 focus:ring-primary focus:border-primary outline-none transition-all" type="text" placeholder="Ex.: Cláudia Souza"/>
           </div>
-          <div>
-            <label class="field-label">Endereço</label>
-            <input type="text" id="newProjAddress" placeholder="Ex.: Av. das Palmeiras, 100">
+          <div class="flex flex-col gap-1.5">
+            <label class="font-label-md text-[11px] font-bold text-outline uppercase tracking-wider">Localização / Endereço</label>
+            <input id="newProjAddress" class="bg-surface/30 border border-outline-variant/40 rounded-xl px-4 py-3 font-body-md focus:ring-1 focus:ring-primary focus:border-primary outline-none transition-all" type="text" placeholder="Ex.: Av. Paulista, 100"/>
+          </div>
+          <div class="flex flex-col gap-1.5 md:col-span-3">
+            <label class="font-label-md text-[11px] font-bold text-outline uppercase tracking-wider">Descrição Detalhada</label>
+            <textarea id="newProjDesc" class="bg-surface/30 border border-outline-variant/40 rounded-xl px-4 py-3 font-body-md focus:ring-1 focus:ring-primary focus:border-primary outline-none transition-all resize-none" rows="3" placeholder="Insira os detalhes do escopo do projeto..."></textarea>
           </div>
         </div>
-        <div style="margin-bottom:24px;">
-          <label class="field-label">Descrição</label>
-          <textarea id="newProjDesc" placeholder="Ex.: Reforma completa e ampliação da área gourmet" rows="2" style="width:100%; border:none; border-bottom:1.5px solid var(--border); background:transparent; color:var(--text-primary); font-family:var(--font-sans); font-size:14px; resize:vertical; padding:8px 0;"></textarea>
-        </div>
-        <button class="btn primary" id="createProjBtn" style="min-height:42px;">Criar projeto</button>
-      </div>
 
-      <div class="grid" id="projectsList"></div>
+        <div class="pt-2">
+          <button class="bg-primary text-white px-10 py-3.5 rounded-full hover:bg-primary-container transition-all text-label-sm font-semibold uppercase tracking-wider shadow-sm flex items-center gap-2" id="createProjBtn">
+            <span class="material-symbols-outlined text-[18px]">add_circle</span>
+            Adicionar Projeto
+          </button>
+        </div>
+      </section>
+
+      <!-- Projects Grid -->
+      <section class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8" id="projectsList">
+        <!-- Dynamically populated -->
+      </section>
 
     </div>
-<div id="sync-card-root"></div>
-<script src="assets/db.js"></script>
-<script src="assets/shell.js"></script>
-<script>
-SalsiShell.init('projects');
-(async function () {
-  'use strict';
 
-  function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+    <!-- Footer -->
+    <footer class="px-6 md:px-16 py-12 bg-surface text-center border-t border-outline-variant/15 mt-16">
+      <div class="max-w-7xl mx-auto flex flex-col items-center">
+        <img alt="Salsi Logo" class="h-10 w-10 mb-4 opacity-80 rounded-full" src="logo.png"/>
+        <p class="font-headline-md text-headline-md text-primary mb-2">Estúdio Salsi</p>
+        <p class="font-label-sm text-label-sm text-on-surface-variant max-w-lg mx-auto">
+          Gerenciamento e controle local de modelos 3D e notas espaciais.
+        </p>
+        <p class="font-label-sm text-label-sm text-outline mt-8">© 2026 Salsi.</p>
+      </div>
+    </footer>
+  </main>
 
-  async function renderList() {
-    const projects = await SalsiDB.getProjects();
-    const activeId = SalsiShell.getActiveProjectId();
-    const active = activeId ? await SalsiDB.getProject(activeId) : null;
-    const pillEl = document.getElementById('activeProjectPill');
-    if (pillEl) pillEl.querySelector('span').textContent = active ? active.name : 'Nenhum Projeto';
+  <div id="sync-card-root"></div>
 
-    const el = document.getElementById('projectsList');
-    if (projects.length === 0) {
-      el.innerHTML = `<div class="empty" style="grid-column:1/-1"><img src="logo.png" alt=""><strong>Nenhum projeto ainda</strong><span>Crie o primeiro ali em cima.</span></div>`;
-      return;
-    }
-    el.innerHTML = projects.map(p => `
-      <div class="card" style="display:flex; flex-direction:column; justify-content:space-between; min-height:220px;">
-        <div>
-          <div style="display:flex;justify-content:space-between;align-items:start;gap:8px;margin-bottom:8px;">
-            <h3 style="margin:0;font-size:16px;">${esc(p.name)}</h3>
-            ${p.id === activeId ? '<span class="badge-pill synced">Ativo</span>' : ''}
-          </div>
-          ${p.client ? `<p style="color:var(--accent);font-size:12px;margin:0 0 4px;font-weight:700;">Cliente: ${esc(p.client)}</p>` : ''}
-          ${p.address ? `<p style="color:var(--text-secondary);font-size:12px;margin:0 0 8px;">Endereço: ${esc(p.address)}</p>` : ''}
-          <p style="color:var(--text-secondary);font-size:13px;margin:8px 0 14px;line-height:1.5;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;text-overflow:ellipsis;">
-            ${esc(p.description || 'Sem descrição')}
-          </p>
-        </div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:auto;">
-          <button class="btn primary" data-activate="${p.id}"><svg><use href="#i-cube"/></svg>Abrir modelo</button>
-          <button class="btn danger" data-delete="${p.id}"><svg><use href="#i-trash"/></svg></button>
-        </div>
-      </div>`).join('');
+  <script src="assets/db.js"></script>
+  <script src="assets/shell.js"></script>
+  <script>
+    SalsiShell.init('projects');
+    (async function () {
+      'use strict';
 
-    el.querySelectorAll('[data-activate]').forEach(btn => btn.addEventListener('click', () => {
-      SalsiShell.setActiveProjectId(btn.dataset.activate);
-      location.href = 'models.html';
-    }));
-    el.querySelectorAll('[data-delete]').forEach(btn => btn.addEventListener('click', async () => {
-      if (!confirm('Excluir este projeto e todos os dados ligados a ele (fotos, notas, modelo, marcações)? Essa ação não pode ser desfeita.')) return;
-      await SalsiDB.deleteProject(btn.dataset.delete);
-      if (SalsiShell.getActiveProjectId() === btn.dataset.delete) localStorage.removeItem('salsi:activeProjectId');
+      function esc(s) { 
+        return String(s == null ? '' : s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); 
+      }
+
+      async function renderList() {
+        const projects = await SalsiDB.getProjects();
+        const activeId = localStorage.getItem('salsi_active_project_id');
+        
+        const el = document.getElementById('projectsList');
+        if (projects.length === 0) {
+          el.innerHTML = `
+            <div class="col-span-1 md:col-span-3 p-12 border border-dashed border-outline-variant/60 rounded-2xl flex flex-col items-center justify-center text-center space-y-4 bg-white">
+              <span class="material-symbols-outlined text-[48px] text-outline opacity-40">folder_open</span>
+              <h4 class="font-headline-md text-headline-md text-primary">Nenhum projeto cadastrado</h4>
+              <p class="font-body-md text-on-surface-variant max-w-xs">Preencha os campos acima para cadastrar seu primeiro projeto arquitetônico.</p>
+            </div>`;
+          return;
+        }
+
+        el.innerHTML = projects.map(p => {
+          const isActive = p.id === activeId;
+          return `
+            <div class="bg-white rounded-2xl border border-outline-variant/20 p-6 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between min-h-[240px] relative overflow-hidden group">
+              ${isActive ? '<div class="absolute top-0 left-0 w-full h-1 bg-primary"></div>' : ''}
+              <div>
+                <div class="flex justify-between items-start gap-4 mb-3">
+                  <h3 class="font-headline-md text-[18px] text-primary font-semibold truncate max-w-[180px]">${esc(p.name)}</h3>
+                  ${isActive ? '<span class="text-[10px] bg-primary/10 text-primary px-2.5 py-0.5 rounded-full font-bold uppercase tracking-wider">Ativo</span>' : ''}
+                </div>
+                ${p.client ? `<p class="text-[12px] font-bold text-primary-container mb-1 flex items-center gap-1.5"><span class="material-symbols-outlined text-[14px]">person</span> ${esc(p.client)}</p>` : ''}
+                ${p.address ? `<p class="text-[12px] text-on-surface-variant/85 mb-3 flex items-center gap-1.5"><span class="material-symbols-outlined text-[14px]">location_on</span> ${esc(p.address)}</p>` : ''}
+                <p class="text-[13px] text-on-surface-variant line-clamp-3 leading-relaxed mt-2">
+                  ${esc(p.description || 'Nenhuma descrição adicionada ao projeto.')}
+                </p>
+              </div>
+              <div class="flex gap-2.5 mt-6 pt-4 border-t border-outline-variant/10">
+                <button class="flex-grow bg-primary text-white px-4 py-2.5 rounded-xl hover:bg-primary-container transition-all text-label-sm font-semibold flex items-center justify-center gap-2 active:scale-95" data-activate="${p.id}">
+                  <span class="material-symbols-outlined text-[16px]">view_in_ar</span>
+                  Visualizar 3D
+                </button>
+                <button class="w-10 h-10 rounded-xl hover:bg-error/10 hover:text-error text-outline border border-outline-variant/35 transition-all flex items-center justify-center active:scale-95" data-delete="${p.id}" title="Excluir Projeto">
+                  <span class="material-symbols-outlined text-[18px]">delete</span>
+                </button>
+              </div>
+            </div>`;
+        }).join('');
+
+        el.querySelectorAll('[data-activate]').forEach(btn => btn.addEventListener('click', () => {
+          localStorage.setItem('salsi_active_project_id', btn.dataset.activate);
+          location.href = 'models.html';
+        }));
+
+        el.querySelectorAll('[data-delete]').forEach(btn => btn.addEventListener('click', async () => {
+          if (!confirm('Deseja excluir este projeto e todos os seus dados vinculados (modelos, notas de campo, medições e fotos)? Esta ação é permanente.')) return;
+          await SalsiDB.deleteProject(btn.dataset.delete);
+          if (localStorage.getItem('salsi_active_project_id') === btn.dataset.delete) {
+            localStorage.removeItem('salsi_active_project_id');
+          }
+          await renderList();
+        }));
+      }
+
+      document.getElementById('createProjBtn').addEventListener('click', async () => {
+        const nameEl = document.getElementById('newProjName');
+        const clientEl = document.getElementById('newProjClient');
+        const addressEl = document.getElementById('newProjAddress');
+        const descEl = document.getElementById('newProjDesc');
+
+        const name = nameEl.value.trim();
+        if (!name) { 
+          nameEl.focus(); 
+          return; 
+        }
+
+        const project = await SalsiDB.addProject({
+          name,
+          client: clientEl.value.trim(),
+          address: addressEl.value.trim(),
+          description: descEl.value.trim()
+        });
+
+        nameEl.value = '';
+        clientEl.value = '';
+        addressEl.value = '';
+        descEl.value = '';
+
+        localStorage.setItem('salsi_active_project_id', project.id);
+        await renderList();
+      });
+
       await renderList();
-      await SalsiShell.refreshAll();
-    }));
-  }
-
-  document.getElementById('createProjBtn').addEventListener('click', async () => {
-    const nameEl = document.getElementById('newProjName');
-    const clientEl = document.getElementById('newProjClient');
-    const addressEl = document.getElementById('newProjAddress');
-    const descEl = document.getElementById('newProjDesc');
-
-    if (!nameEl.value.trim()) { nameEl.focus(); return; }
-
-    const project = await SalsiDB.addProject({
-      name: nameEl.value.trim(),
-      client: clientEl.value.trim(),
-      address: addressEl.value.trim(),
-      description: descEl.value.trim()
-    });
-
-    nameEl.value = '';
-    clientEl.value = '';
-    addressEl.value = '';
-    descEl.value = '';
-
-    SalsiShell.setActiveProjectId(project.id);
-    await renderList();
-  });
-
-  await renderList();
-})();
-
-</script>
+    })();
+  </script>
 </body>
 </html>

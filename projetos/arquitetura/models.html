@@ -1,1684 +1,1136 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-br">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Modelos 3D — Salsi</title>
-<meta name="description" content="Visualize, meça e anote modelos 3D de projetos arquitetônicos offline com o Salsi.">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
-<link rel="icon" href="logo.png">
-<link rel="apple-touch-icon" href="logo.png">
-<link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#faf7f2">
-<link rel="stylesheet" href="assets/app.css">
-<script type="module" src="https://cdnjs.cloudflare.com/ajax/libs/model-viewer/4.1.0/model-viewer.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<style>
-  /* Page-specific overrides — dark theme aligned */
-  .meta-row { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:14px; }
-  .chip { font-size:12px; font-weight:600; color:var(--text-secondary); background:rgba(255,255,255,0.03); border:1px solid var(--border); border-radius:999px; padding:6px 13px; display:flex; gap:6px; align-items:center; }
-  .chip b { color:var(--accent); }
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <title>Modelos 3D | Salsi</title>
+  
+  <!-- PWA Manifest & Icons -->
+  <link rel="icon" href="logo.png">
+  <link rel="apple-touch-icon" href="logo.png">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#FDFCE8">
 
-  /* New Two-Column Layout Grid */
-  .viewer-layout-grid {
-    display: grid;
-    grid-template-columns: 1fr 360px;
-    gap: 20px;
-    align-items: start;
-    margin-top: 16px;
-  }
-  .viewer-side {
-    display: flex;
-    flex-direction: column;
-    width: 100%;
-  }
-  .control-sidebar {
-    background: rgba(18, 26, 38, 0.8);
-    backdrop-filter: blur(16px);
-    border: 1px solid var(--border);
-    border-radius: 20px;
-    padding: 20px;
-    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-    max-height: 70vh;
-    overflow-y: auto;
-  }
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  
+  <!-- Google Fonts: EB Garamond & Outfit -->
+  <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:wght@400;500;600;700&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  
+  <!-- Material Symbols -->
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
 
-  /* Tab System */
-  .tab-header {
-    display: flex;
-    border-bottom: 1.5px solid var(--border);
-    margin-bottom: 16px;
-    gap: 4px;
-  }
-  .tab-btn {
-    flex: 1;
-    background: transparent;
-    border: none;
-    color: var(--text-secondary);
-    font-family: 'Manrope', sans-serif;
-    font-size: 12px;
-    font-weight: 800;
-    padding: 10px 4px;
-    cursor: pointer;
-    text-align: center;
-    border-bottom: 3px solid transparent;
-    transition: all 0.2s ease;
-    min-height: 40px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
-  }
-  .tab-btn:hover {
-    color: var(--text-primary);
-  }
-  .tab-btn.active {
-    color: var(--accent);
-    border-bottom-color: var(--accent);
-  }
-  .tab-pane {
-    display: none;
-    animation: fadeIn 0.2s ease-out;
-  }
-  .tab-pane.active {
-    display: block;
-  }
-  @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(4px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
+  <!-- model-viewer & Three.js & jsPDF -->
+  <script type="module" src="https://cdnjs.cloudflare.com/ajax/libs/model-viewer/4.1.0/model-viewer.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
-  /* Adjustments for responsive viewports */
-  @media (max-width: 992px) {
-    .viewer-layout-grid {
-      grid-template-columns: 1fr;
+  <script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "surface-dim": "#e6d8cb",
+            "on-secondary-fixed-variant": "#474743",
+            "on-primary-container": "#ffd7bb",
+            "on-tertiary-fixed-variant": "#603f2b",
+            "on-tertiary-fixed": "#2e1505",
+            "surface-container": "#faebde",
+            "secondary-fixed-dim": "#c8c6c2",
+            "surface": "#fff8f4",
+            "tertiary": "#64432f",
+            "secondary-fixed": "#e5e2dd",
+            "on-background": "#211a13",
+            "error": "#ba1a1a",
+            "surface-container-high": "#f4e6d9",
+            "tertiary-container": "#7f5a45",
+            "primary-fixed-dim": "#ffb77f",
+            "on-secondary": "#ffffff",
+            "primary-fixed": "#ffdcc3",
+            "tertiary-fixed": "#ffdbc8",
+            "on-tertiary": "#ffffff",
+            "on-secondary-fixed": "#1c1c19",
+            "outline": "#847469",
+            "on-surface-variant": "#52443a",
+            "on-error": "#ffffff",
+            "error-container": "#ffdad6",
+            "outline-variant": "#d7c3b6",
+            "inverse-surface": "#372f26",
+            "secondary-container": "#e5e2dd",
+            "surface-bright": "#fff8f4",
+            "on-primary-fixed": "#2f1500",
+            "on-primary-fixed-variant": "#6c3a0a",
+            "on-primary": "#ffffff",
+            "surface-container-low": "#fff1e6",
+            "inverse-primary": "#ffb77f",
+            "surface-tint": "#885120",
+            "on-secondary-container": "#656461",
+            "inverse-on-surface": "#fdeee1",
+            "on-tertiary-container": "#ffd7c1",
+            "secondary": "#5f5e5b",
+            "surface-container-lowest": "#ffffff",
+            "on-surface": "#211a13",
+            "primary": "#391E10", /* Bistre */
+            "on-error-container": "#93000a",
+            "background": "#FDFCE8", /* Ivory */
+            "surface-container-highest": "#efe0d3",
+            "primary-container": "#734128", /* Kobicha */
+            "tertiary-fixed-dim": "#ecbda2",
+            "surface-variant": "#efe0d3"
+          },
+          "fontFamily": {
+            "headline-xl": ["EB Garamond"],
+            "headline-lg": ["EB Garamond"],
+            "headline-md": ["EB Garamond"],
+            "body-md": ["Outfit"],
+            "body-lg": ["Outfit"],
+            "label-md": ["Outfit"],
+            "label-sm": ["Outfit"]
+          }
+        }
+      }
     }
-    .control-sidebar {
-      max-height: none;
+  </script>
+  
+  <style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
     }
-  }
+    .glass-panel {
+      backdrop-filter: blur(16px);
+      background-color: rgba(255, 248, 244, 0.85);
+      border: 1px solid rgba(199, 162, 122, 0.2);
+    }
+    .glass-nav {
+      backdrop-filter: blur(12px);
+      background-color: rgba(255, 248, 244, 0.8);
+    }
+    
+    /* snappers and ruler */
+    #rulerOverlay {
+      position: fixed;
+      pointer-events: none;
+      z-index: 9999;
+      display: none;
+      background: rgba(57, 30, 16, 0.95); /* Bistre */
+      color: #C7A27A; /* Lion */
+      font-family: 'Outfit', sans-serif;
+      font-size: 14px;
+      font-weight: 600;
+      padding: 6px 14px;
+      border-radius: 10px;
+      border: 1px solid #E2CEB1;
+      white-space: nowrap;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+      transform: translate(16px, -50%);
+    }
 
-  /* Live measurement overlay — fixed on screen, follows cursor */
-  #rulerOverlay {
-    position: fixed;
-    pointer-events: none;
-    z-index: 9999;
-    display: none;
-    background: rgba(10,14,20,0.92);
-    color: #dca153;
-    font-family: 'Manrope', sans-serif;
-    font-size: 15px;
-    font-weight: 800;
-    padding: 7px 16px;
-    border-radius: 12px;
-    border: 1.5px solid #dca153;
-    white-space: nowrap;
-    box-shadow: 0 4px 20px rgba(0,0,0,.6);
-    transform: translate(16px, -50%);
-  }
+    /* Hotspots (points A/B) */
+    .hotspot-pin {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      border: 2.5px solid #ffffff;
+      box-shadow: 0 0 0 2px currentColor, 0 2px 8px rgba(0,0,0,0.4);
+      cursor: pointer;
+      pointer-events: none;
+      transition: all 0.2s;
+    }
+    .hotspot-pin.point-a {
+      background-color: #dca153; /* gold-orange */
+      color: #dca153;
+    }
+    .hotspot-pin.point-b {
+      background-color: #64b5f6; /* sky blue */
+      color: #64b5f6;
+    }
 
-  /* Measurement history strip below viewer */
-  #measStrip {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    align-items: center;
-    min-height: 36px;
-    margin-top: 12px;
-  }
-  #measStrip:empty::before {
-    content: 'Nenhuma medição — ative a régua e clique em dois pontos no modelo';
-    font-size: 12px;
-    color: var(--text-secondary);
-    font-style: italic;
-  }
-  .meas-chip {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    background: rgba(220,161,83,0.12);
-    border: 1.5px solid #dca153;
-    border-radius: 999px;
-    padding: 5px 8px 5px 14px;
-    font-size: 13px;
-    font-weight: 700;
-    color: #dca153;
-    font-family: 'Manrope', sans-serif;
-    animation: chipIn .2s ease;
-  }
-  @keyframes chipIn { from { opacity:0; transform:scale(.85); } to { opacity:1; transform:scale(1); } }
-  .meas-chip-remove {
-    width: 20px; height: 20px;
-    border-radius: 50%;
-    border: none;
-    background: rgba(255,255,255,0.1);
-    color: rgba(255,255,255,0.7);
-    font-size: 14px;
-    font-weight: 700;
-    line-height: 1;
-    cursor: pointer;
-    display: flex; align-items: center; justify-content: center;
-    transition: background .15s, color .15s;
-    flex-shrink: 0;
-  }
-  .meas-chip-remove:hover { background: rgba(220,80,60,.8); color: #fff; }
+    /* Measurement chips style */
+    .meas-chip {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      background: rgba(199, 162, 122, 0.12);
+      border: 1px solid #C7A27A;
+      border-radius: 12px;
+      padding: 8px 12px;
+      font-size: 13px;
+      font-weight: 600;
+      color: #391E10;
+      font-family: 'Outfit', sans-serif;
+      animation: chipIn .25s ease-out;
+    }
+    @keyframes chipIn { from{opacity:0;transform:scale(.9)} to{opacity:1;transform:scale(1)} }
+    .meas-chip-remove {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      border: none;
+      background: rgba(57, 30, 16, 0.1);
+      color: #391E10;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.15s;
+    }
+    .meas-chip-remove:hover {
+      background: #c86a5e;
+      color: #ffffff;
+    }
 
-  /* Viewer stage */
-  .vstage { position:relative; border-radius:22px; overflow:hidden; background: #ece9e6; box-shadow:0 24px 60px rgba(0,0,0,.15); border: 1px solid var(--border); }
-  model-viewer { width:100%; height:54vh; min-height:340px; display:block; --poster-color:transparent; }
-
-  /* Floating toolbar (top-right of viewer) */
-  .float-toolbar { position:absolute; top:14px; right:14px; display:flex; gap:4px; background:rgba(18,26,38,0.92); backdrop-filter:blur(16px); border:1px solid rgba(255,255,255,0.08); border-radius:999px; padding:5px; box-shadow:0 8px 24px rgba(0,0,0,.4); z-index:3; }
-  .float-toolbar button { width:34px; height:34px; border-radius:50%; border:none; background:transparent; color:var(--text-secondary); display:flex; align-items:center; justify-content:center; cursor:pointer; transition:all .2s; }
-  .float-toolbar button svg { width:17px; height:17px; }
-  .float-toolbar button:hover { color:var(--text-primary); background:rgba(255,255,255,0.07); }
-  .float-toolbar button.active { background:var(--accent); color:#0a0e14; box-shadow:0 0 12px rgba(220,161,83,.4); }
-
-  /* Floating stack (right side of viewer) */
-  .float-stack { position:absolute; top:64px; right:14px; display:flex; flex-direction:column; gap:8px; z-index:3; }
-  .float-stack button { width:34px; height:34px; border-radius:50%; border:1px solid rgba(255,255,255,0.1); background:rgba(18,26,38,0.92); backdrop-filter:blur(12px); color:var(--text-secondary); display:flex; align-items:center; justify-content:center; cursor:pointer; box-shadow:0 4px 12px rgba(0,0,0,.3); transition:all .2s; }
-  .float-stack button svg { width:16px; height:16px; }
-  .float-stack button:hover { color:var(--text-primary); border-color:var(--accent); }
-
-  /* Progress bar */
-  .progress-wrap { position:absolute; top:12px; left:12px; right:64px; height:4px; border-radius:999px; background:rgba(255,255,255,.1); overflow:hidden; z-index:3; }
-  .progress-wrap.hidden { display:none; }
-  .progress-bar { height:100%; width:0%; background:var(--accent); transition:width .15s linear; }
-
-  /* Empty state */
-  .empty-state { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:32px; gap:12px; color:#fff; }
-  .empty-state.hidden { display:none; }
-  .empty-state img { width:64px; height:64px; border-radius:50%; opacity:.7; }
-  .empty-state strong { font-family:'Manrope',sans-serif; font-size:16px; color:#fff; }
-  .empty-state span { font-size:13px; color:rgba(255,255,255,.6); max-width:340px; line-height:1.5; }
-
-  /* Hotspot pins on the 3D model */
-  .hotspot-pin { width:24px; height:24px; border-radius:50%; background:var(--accent); color:#0a0e14; border:2px solid #fff; font-size:11px; font-weight:700; display:flex; align-items:center; justify-content:center; box-shadow:0 2px 10px rgba(0,0,0,.5); cursor:pointer; }
-
-  /* View buttons active state */
-  .viewbtn.active { background:var(--accent) !important; border-color:transparent !important; color:#0a0e14 !important; }
-
-  /* Note input in side panel */
-  .panel-note-input { width:100%; background:rgba(255,255,255,0.04); border:1px solid var(--border); border-radius:10px; color:var(--text-primary); font-family:inherit; }
-  .panel-note-input:focus { outline:none; border-color:var(--accent); }
-  .panel-note-input:disabled { opacity:.4; cursor:not-allowed; }
-
-  /* Shortcuts overlay */
-  .overlay { display:flex; position:fixed; inset:0; align-items:center; justify-content:center; background:rgba(0,0,0,.6); backdrop-filter:blur(4px); z-index:50; }
-  .overlay.hidden { display:none !important; }
-  .shortcuts-box { background:#121a26; border:1px solid var(--border); border-radius:18px; padding:24px; max-width:340px; width:100%; }
-  .shortcuts-box strong { font-family:'Manrope',sans-serif; color:var(--text-primary); }
-  .shortcuts-box .sc-row { display:flex; justify-content:space-between; font-size:13px; color:var(--text-secondary); padding:5px 0; border-bottom:1px solid rgba(255,255,255,.04); }
-  .shortcuts-box .sc-row:last-child { border-bottom:none; }
-
-  /* Bússola Salsicha (Dachshund Compass) */
-  #compassContainer {
-    position: absolute;
-    bottom: 16px;
-    left: 16px;
-    width: 68px;
-    height: 68px;
-    background: rgba(18, 26, 38, 0.88);
-    backdrop-filter: blur(12px);
-    border: 1.5px solid var(--accent);
-    border-radius: 50%;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
-    z-index: 3;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    user-select: none;
-    pointer-events: none;
-    transition: transform 0.25s ease;
-  }
-  #compassDial {
-    position: relative;
-    width: 100%;
-    height: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-  .cardinal {
-    position: absolute;
-    font-family: 'Manrope', sans-serif;
-    font-size: 9px;
-    font-weight: 900;
-    color: var(--text-secondary);
-    line-height: 1;
-  }
-  .cardinal.n { top: 4px; color: var(--accent); }
-  .cardinal.s { bottom: 4px; }
-  .cardinal.l { right: 5px; }
-  .cardinal.o { left: 5px; }
-  #dachshundPointer {
-    width: 32px;
-    height: 32px;
-    transform-origin: center center;
-    transition: transform 0.1s ease-out;
-  }
-
-  /* Responsive grid */
-  @media (max-width:768px) {
-    .viewer-grid { grid-template-columns:1fr !important; }
-    .side-panel { height:320px !important; min-height:320px !important; }
-  }
-</style>
+    /* Transition drawer */
+    .drawer-transition {
+      transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    
+    /* Tabs style */
+    .tab-btn.active {
+      color: #391E10;
+      border-bottom: 2px solid #C7A27A;
+      font-weight: 600;
+    }
+  </style>
 </head>
-<body>
-  <!-- Live ruler distance overlay (fixed CSS, follows mouse) -->
+<body class="bg-background h-screen w-full overflow-hidden flex transition-opacity duration-500">
+
+  <!-- Live ruler distance overlay -->
   <div id="rulerOverlay"></div>
 
-<!-- ── SVG Icon Sprite ───────────────────────────────── -->
-<svg width="0" height="0" style="position:absolute" aria-hidden="true">
-<defs>
-  <symbol id="i-home" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-    <path d="M4 11l8-7 8 7"/><path d="M6 10v9a1 1 0 0 0 1 1h3v-6h4v6h3a1 1 0 0 0 1-1v-9"/>
-  </symbol>
-  <symbol id="i-building" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-    <rect x="6" y="3" width="12" height="18" rx="1"/>
-    <rect x="9" y="6.5" width="2" height="2" fill="currentColor" stroke="none"/><rect x="13" y="6.5" width="2" height="2" fill="currentColor" stroke="none"/>
-    <rect x="9" y="11" width="2" height="2" fill="currentColor" stroke="none"/><rect x="13" y="11" width="2" height="2" fill="currentColor" stroke="none"/>
-    <rect x="9" y="15.5" width="2" height="2" fill="currentColor" stroke="none"/><rect x="13" y="15.5" width="2" height="2" fill="currentColor" stroke="none"/>
-  </symbol>
-  <symbol id="i-camera" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-    <rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7l1.5-2.5h5L16 7"/><circle cx="12" cy="13.5" r="3.5"/>
-  </symbol>
-  <symbol id="i-notes" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-    <rect x="4" y="3" width="16" height="18" rx="2"/><line x1="8" y1="8" x2="16" y2="8"/><line x1="8" y1="12" x2="16" y2="12"/>
-  </symbol>
-  <symbol id="i-cube" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-    <path d="M12 2L20 6.5V17.5L12 22L4 17.5V6.5L12 2Z"/><path d="M12 12V22"/><path d="M12 12L20 6.5"/><path d="M12 12L4 6.5"/>
-  </symbol>
-  <symbol id="i-report" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-    <path d="M7 3h7l4 4v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/><path d="M14 3v4h4"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="16" x2="15" y2="16"/>
-  </symbol>
-  <symbol id="i-settings" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-    <circle cx="12" cy="12" r="3.2"/><path d="M12 2.5v3M12 18.5v3M3.5 12h3M17.5 12h3M5.8 5.8l2.1 2.1M16.1 16.1l2.1 2.1M18.2 5.8l-2.1 2.1M7.9 16.1l-2.1 2.1"/>
-  </symbol>
-  <symbol id="i-sync" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-    <path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/><path d="M3 21v-5h5"/>
-  </symbol>
-  <symbol id="i-close" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round">
-    <line x1="6" y1="6" x2="18" y2="18"/><line x1="18" y1="6" x2="6" y2="18"/>
-  </symbol>
-  <symbol id="i-plus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round">
-    <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
-  </symbol>
-  <symbol id="i-trash" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-    <path d="M5 7h14"/><path d="M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/><path d="M7 7l1 13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1l1-13"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/>
-  </symbol>
-  <symbol id="i-upload" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-    <path d="M12 16V4"/><path d="M7 9l5-5 5 5"/><path d="M4 18v2a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-2"/>
-  </symbol>
-  <symbol id="i-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-    <path d="M5 13l4 4L19 7"/>
-  </symbol>
-  <symbol id="i-pin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-    <path d="M12 21s7-7.5 7-12a7 7 0 1 0-14 0c0 4.5 7 12 7 12z"/><circle cx="12" cy="9" r="2.3"/>
-  </symbol>
-  <symbol id="i-orbit" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
-    <ellipse cx="12" cy="12" rx="9" ry="5"/><circle cx="12" cy="12" r="1.6" fill="currentColor" stroke="none"/>
-  </symbol>
-  <symbol id="i-zoom-in" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
-    <circle cx="10" cy="10" r="6"/><line x1="14.5" y1="14.5" x2="20" y2="20"/><line x1="10" y1="7" x2="10" y2="13"/><line x1="7" y1="10" x2="13" y2="10"/>
-  </symbol>
-  <symbol id="i-zoom-out" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
-    <circle cx="10" cy="10" r="6"/><line x1="14.5" y1="14.5" x2="20" y2="20"/><line x1="7" y1="10" x2="13" y2="10"/>
-  </symbol>
-  <symbol id="i-fullscreen" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-    <path d="M4 9V4h5"/><path d="M15 4h5v5"/><path d="M20 15v5h-5"/><path d="M9 20H4v-5"/>
-  </symbol>
-  <symbol id="i-link" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-    <path d="M9 15l6-6"/><path d="M13 5h4a4 4 0 0 1 0 8h-2"/><path d="M11 19H7a4 4 0 0 1 0-8h2"/>
-  </symbol>
-  <symbol id="i-target" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
-    <circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="1.4" fill="currentColor" stroke="none"/><line x1="12" y1="2" x2="12" y2="5"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="2" y1="12" x2="5" y2="12"/><line x1="19" y1="12" x2="22" y2="12"/>
-  </symbol>
-  <symbol id="i-play" viewBox="0 0 24 24"><path d="M7 5l12 7-12 7V5z" fill="currentColor"/></symbol>
-  <symbol id="i-pause" viewBox="0 0 24 24"><rect x="6" y="5" width="4" height="14" rx="1" fill="currentColor"/><rect x="14" y="5" width="4" height="14" rx="1" fill="currentColor"/></symbol>
-  <symbol id="i-warning" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-    <path d="M12 3l9 16H3z"/><line x1="12" y1="9" x2="12" y2="14"/><circle cx="12" cy="17" r="0.6" fill="currentColor" stroke="none"/>
-  </symbol>
-  <symbol id="i-ruler" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-    <path d="M4 6h16v12H4z"/><line x1="8" y1="6" x2="8" y2="10"/><line x1="12" y1="6" x2="12" y2="12"/><line x1="16" y1="6" x2="16" y2="10"/>
-  </symbol>
-  <symbol id="i-walk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-    <path d="M17 21v-4M14 17h4M12 21V10M12 10H8M12 10l5-4M8 10V5a2 2 0 1 1 4 0v5"/>
-  </symbol>
-</defs>
-</svg>
-
-<!-- ── App Shell ─────────────────────────────────────── -->
-<div id="offline-banner-root"></div>
-<div class="shell">
+  <!-- Collapsed Left Sidebar (w-20 for maximum viewport space) -->
   <div id="sidebar-root"></div>
-  <main class="main">
-    <div class="topbar">
-      <div class="brand-mark"><img src="logo.png" alt="Salsi"><span class="display">Salsi</span></div>
-      <a class="project-pill" href="projects.html" id="activeProjectPill">
-        <svg><use href="#i-building"/></svg><span>Carregando…</span>
-      </a>
-    </div>
 
-    <div class="content full-width-layout">
-      <h1 class="page-title" style="margin-bottom:4px">Modelo 3D</h1>
-      <p class="page-sub">Vistas, medição e marcações — tudo salvo neste projeto, mesmo offline.</p>
+  <!-- Main Canvas Area -->
+  <main class="relative flex-1 h-full w-full bg-background p-4 md:ml-64" id="canvas-area">
+    <div class="relative w-full h-full rounded-xl overflow-hidden shadow-[inset_0_2px_10px_rgba(0,0,0,0.05)] border border-outline-variant/40 bg-[#ece9e6]">
+      
+      <!-- Fallback / Empty State -->
+      <div id="noProjectState" class="absolute inset-0 w-full h-full flex flex-col items-center justify-center bg-background/95 z-20" style="display:none">
+        <img src="logo.png" class="w-16 h-16 rounded-full mb-4 opacity-80" alt="">
+        <h3 class="font-headline-lg text-headline-lg text-primary">Nenhum projeto ativo</h3>
+        <p class="font-body-md text-on-surface-variant max-w-xs text-center mt-1">Selecione ou crie um projeto nas configurações para abrir o modelo 3D.</p>
+        <button onclick="location.href='projects.html'" class="mt-6 px-8 py-3 bg-primary text-white rounded-full font-label-md text-label-md">
+          Ir para Projetos
+        </button>
+      </div>
 
-      <!-- No project selected state -->
-      <div id="noProjectState" class="empty" style="display:none">
-        <img src="logo.png" alt="">
-        <strong>Nenhum projeto selecionado</strong>
-        <span>Escolha ou crie um projeto antes de carregar um modelo.</span>
-        <div style="margin-top:14px">
-          <a class="btn primary" href="projects.html"><svg><use href="#i-building"/></svg>Ir para Projects</a>
+      <div id="emptyState" class="absolute inset-0 w-full h-full flex flex-col items-center justify-center bg-background/95 z-20" style="display:none">
+        <span class="material-symbols-outlined text-[48px] text-primary mb-4">view_in_ar</span>
+        <h3 class="font-headline-lg text-headline-lg text-primary">Nenhum modelo carregado</h3>
+        <p class="font-body-md text-on-surface-variant max-w-xs text-center mt-1">Carregue um arquivo .GLB ou .GLTF para iniciar a curadoria técnica.</p>
+        <label for="fileInput" class="mt-6 px-8 py-3 bg-primary text-white rounded-full font-label-md text-label-md cursor-pointer inline-flex items-center gap-2 shadow-md">
+          <span class="material-symbols-outlined text-[20px]">upload</span> Carregar GLB
+        </label>
+      </div>
+
+      <!-- 3D Canvas Stage -->
+      <div class="absolute inset-0 w-full h-full z-0" id="3d-canvas-surface">
+        <div class="progress-wrap absolute top-4 left-4 right-4 h-1 bg-surface-container/55 rounded overflow-hidden hidden z-30" id="progressWrap">
+          <div class="progress-bar h-full bg-primary transition-all duration-300 w-0" id="progressBar"></div>
+        </div>
+
+        <model-viewer
+          id="viewer"
+          alt="Modelo 3D do projeto"
+          camera-controls
+          touch-action="pan-y"
+          shadow-intensity="1"
+          exposure="1"
+          environment-image="neutral"
+          style="width: 100%; height: 100%;">
+        </model-viewer>
+      </div>
+
+      <!-- Floating Top Bar -->
+      <header class="absolute top-6 left-6 right-6 flex justify-between items-start z-10 pointer-events-none" id="modelArea" style="display:none">
+        <div class="bg-white/90 backdrop-blur-md border border-outline-variant/40 px-6 py-4 rounded-xl pointer-events-auto shadow-xl flex flex-col gap-1 max-w-[400px]">
+          <h1 class="text-primary text-[20px] font-semibold tracking-tight leading-tight font-display" id="activeProjectPill">Carregando…</h1>
+          <div class="flex flex-wrap gap-2 mt-2">
+            <span class="text-[11px] bg-surface-container/60 px-2.5 py-0.5 rounded-full text-on-surface-variant font-medium">F: <b id="filename" class="font-semibold">—</b></span>
+            <span class="text-[11px] bg-surface-container/60 px-2.5 py-0.5 rounded-full text-on-surface-variant font-medium">D: <b id="dims" class="font-semibold">—</b></span>
+            <span class="text-[11px] bg-surface-container/60 px-2.5 py-0.5 rounded-full text-on-surface-variant font-medium" id="lastMeasureBox" style="display:none">M: <b id="lastMeasure" class="font-semibold">—</b></span>
+          </div>
+        </div>
+
+        <div class="flex gap-3 pointer-events-auto">
+          <!-- Model upload button -->
+          <label for="fileInput" class="bg-white/90 backdrop-blur border border-outline-variant/40 text-primary w-12 h-12 rounded-xl hover:bg-surface-container hover:scale-105 transition-all flex items-center justify-center cursor-pointer shadow-md" title="Substituir modelo 3D (GLB)">
+            <span class="material-symbols-outlined">upload_file</span>
+          </label>
+          <button id="pdfReportBtn" class="bg-primary text-white px-6 py-3 rounded-xl hover:bg-primary-container hover:scale-105 active:scale-95 transition-all duration-300 text-label-sm uppercase tracking-wider shadow-lg flex items-center gap-2 font-semibold">
+            <span class="material-symbols-outlined text-[18px]">picture_as_pdf</span>
+            Relatório
+          </button>
+        </div>
+      </header>
+
+      <!-- Floating Tool Palette (Bottom Dock) -->
+      <div class="absolute bottom-8 left-1/2 -translate-x-1/2 z-10 pointer-events-auto">
+        <div class="bg-white/90 backdrop-blur-xl border border-outline-variant/30 h-16 rounded-2xl flex items-center px-4 shadow-2xl gap-2">
+          
+          <button id="toggleRotate" aria-label="Auto-rotate" class="w-12 h-12 rounded-xl flex items-center justify-center text-on-surface-variant hover:bg-surface-container-low transition-all group relative active:scale-95">
+            <span class="material-symbols-outlined text-2xl group-hover:text-primary transition-colors">orbit</span>
+            <div class="absolute -top-12 bg-primary text-white text-[10px] px-2.5 py-1 rounded opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap transition-all duration-300 translate-y-2 group-hover:translate-y-0 uppercase tracking-wider">Girar</div>
+          </button>
+
+          <button id="annotateBtn" aria-label="Measure" class="w-12 h-12 rounded-xl flex items-center justify-center text-on-surface-variant hover:bg-surface-container-low transition-all group relative active:scale-95">
+            <span class="material-symbols-outlined text-2xl group-hover:text-primary transition-colors">straighten</span>
+            <div class="absolute -top-12 bg-primary text-white text-[10px] px-2.5 py-1 rounded opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap transition-all duration-300 translate-y-2 group-hover:translate-y-0 uppercase tracking-wider">Régua</div>
+          </button>
+
+          <button id="captureBtn" aria-label="Capture" class="w-12 h-12 rounded-xl flex items-center justify-center text-on-surface-variant hover:bg-surface-container-low transition-all group relative active:scale-95">
+            <span class="material-symbols-outlined text-2xl group-hover:text-primary transition-colors">photo_camera</span>
+            <div class="absolute -top-12 bg-primary text-white text-[10px] px-2.5 py-1 rounded opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap transition-all duration-300 translate-y-2 group-hover:translate-y-0 uppercase tracking-wider">Capturar</div>
+          </button>
+
+          <button id="shareBtn" aria-label="Share" class="w-12 h-12 rounded-xl flex items-center justify-center text-on-surface-variant hover:bg-surface-container-low transition-all group relative active:scale-95">
+            <span class="material-symbols-outlined text-2xl group-hover:text-primary transition-colors">share</span>
+            <div class="absolute -top-12 bg-primary text-white text-[10px] px-2.5 py-1 rounded opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap transition-all duration-300 translate-y-2 group-hover:translate-y-0 uppercase tracking-wider">Compartilhar</div>
+          </button>
+
+          <div class="w-px h-8 bg-outline-variant/40 mx-1"></div>
+
+          <button id="zoomInBtn" aria-label="Zoom In" class="w-10 h-10 rounded-lg flex items-center justify-center text-on-surface-variant hover:bg-surface-container-low transition-all active:scale-95">
+            <span class="material-symbols-outlined text-xl">zoom_in</span>
+          </button>
+
+          <button id="zoomOutBtn" aria-label="Zoom Out" class="w-10 h-10 rounded-lg flex items-center justify-center text-on-surface-variant hover:bg-surface-container-low transition-all active:scale-95">
+            <span class="material-symbols-outlined text-xl">zoom_out</span>
+          </button>
+
+          <button id="fullscreenBtn" aria-label="Fullscreen" class="w-10 h-10 rounded-lg flex items-center justify-center text-on-surface-variant hover:bg-surface-container-low transition-all active:scale-95">
+            <span class="material-symbols-outlined text-xl">fullscreen</span>
+          </button>
+
+          <div class="w-px h-8 bg-outline-variant/40 mx-1"></div>
+
+          <button id="clearAnnotationsBtn" aria-label="Clear" class="w-12 h-12 rounded-xl flex items-center justify-center text-on-surface-variant hover:text-error hover:bg-error-container/10 transition-all group relative active:scale-95">
+            <span class="material-symbols-outlined text-2xl transition-colors">delete</span>
+            <div class="absolute -top-12 bg-primary text-white text-[10px] px-2.5 py-1 rounded opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap transition-all duration-300 translate-y-2 group-hover:translate-y-0 uppercase tracking-wider">Limpar</div>
+          </button>
+
         </div>
       </div>
 
-      <!-- Main model area -->
-      <div id="modelArea" style="display:none">
-
-        <!-- Meta chips above the grid -->
-        <div class="meta-row" style="margin-bottom: 20px;">
-          <span class="chip">Arquivo: <b id="filename">—</b></span>
-          <span class="chip">Dimensões: <b id="dims">—</b></span>
-          <span class="chip">Medida: <b id="lastMeasure">—</b></span>
-        </div>
-
-        <!-- Grid de Duas Colunas (UX 500 Arquitetos) -->
-        <div class="viewer-layout-grid">
-          
-          <!-- Coluna Esquerda: O Visualizador 3D -->
-          <div class="viewer-side">
-
-            <!-- 3D Viewer Stage -->
-            <div class="vstage">
-              <div class="progress-wrap hidden" id="progressWrap">
-                <div class="progress-bar" id="progressBar"></div>
-              </div>
-
-              <!-- Floating Toolbar (top-right) -->
-              <div class="float-toolbar">
-                <button id="toggleRotate" title="Girar automaticamente (Espaço)"><svg><use href="#i-orbit"/></svg></button>
-                <button id="walkBtn" title="Visão Interna (Primeira Pessoa)"><svg><use href="#i-walk"/></svg></button>
-                <button id="annotateBtn" title="Régua — clique no 1º ponto, depois no 2º (A)"><svg><use href="#i-ruler"/></svg></button>
-                <button id="captureBtn" title="Capturar imagem (C)"><svg><use href="#i-camera"/></svg></button>
-                <button id="shareBtn" title="Compartilhar vista"><svg><use href="#i-link"/></svg></button>
-              </div>
-
-              <!-- Floating Stack (right-side buttons) -->
-              <div class="float-stack">
-                <button id="zoomInBtn" title="Zoom +"><svg><use href="#i-zoom-in"/></svg></button>
-                <button id="zoomOutBtn" title="Zoom −"><svg><use href="#i-zoom-out"/></svg></button>
-                <button id="fullscreenBtn" title="Tela cheia (F)"><svg><use href="#i-fullscreen"/></svg></button>
-                <button id="clearAnnotationsBtn" title="Limpar medida"><svg><use href="#i-trash"/></svg></button>
-              </div>
-
-              <!-- The 3D viewer -->
-              <model-viewer
-                id="viewer"
-                alt="Modelo 3D do projeto"
-                camera-controls
-                touch-action="pan-y"
-                shadow-intensity="1"
-                exposure="1"
-                environment-image="neutral"
-                min-camera-orbit="auto 0deg auto"
-                max-camera-orbit="auto 180deg auto"
-                ar
-                ar-modes="scene-viewer webxr quick-look">
-              </model-viewer>
-
-              <!-- Bússola Salsicha (Dachshund Compass) -->
-              <div id="compassContainer" title="Orientação do projeto">
-                <div id="compassDial">
-                  <span class="cardinal n">N</span>
-                  <span class="cardinal s">S</span>
-                  <span class="cardinal l">L</span>
-                  <span class="cardinal o">O</span>
-                  <svg id="dachshundPointer" viewBox="0 0 100 100">
-                    <path d="M 50 15 
-                             C 47 18, 46 22, 46 26 
-                             C 46 30, 48 34, 47 38 
-                             C 46 41, 44 43, 44 46 
-                             L 43 55 
-                             C 41 57, 40 60, 40 64 
-                             L 41 78 
-                             C 42 81, 45 83, 48 83 
-                             C 52 83, 55 81, 56 78 
-                             L 57 64 
-                             C 57 60, 56 57, 54 55 
-                             L 53 46 
-                             C 53 43, 51 41, 50 38 
-                             C 49 34, 51 30, 51 26 
-                             C 51 22, 50 18, 50 15 Z" fill="var(--accent)"/>
-                    <ellipse cx="50" cy="28" rx="8" ry="4" fill="#fff" opacity="0.15"/>
-                  </svg>
-                </div>
-              </div>
-
-              <!-- Empty state overlay -->
-              <div class="empty-state" id="emptyState">
-                <img src="logo.png" alt="">
-                <strong>Nenhum modelo neste projeto</strong>
-                <span>Carregue um arquivo .glb ou .gltf exportado do SketchUp.</span>
-                <label class="btn primary" for="fileInput" style="margin-top:6px; cursor:pointer;">
-                  <svg><use href="#i-upload"/></svg>Carregar modelo
-                </label>
-              </div>
-            </div>
-          </div>
-
-          <!-- Coluna Direita: O Painel de Operações Unificado (Sidebar) -->
-          <div class="control-sidebar side-panel">
-            
-            <!-- Sistema de Abas -->
-            <div class="tab-header">
-              <button class="tab-btn active" data-tab="tab-project">Geral</button>
-              <button class="tab-btn" data-tab="tab-sketchup">SketchUp</button>
-              <button class="tab-btn" data-tab="tab-measures">Medidas</button>
-            </div>
-            
-            <div class="side-panel-content">
-            <!-- Aba 1: Projeto & Vistas -->
-            <div class="tab-pane active" id="tab-project">
-              <h4 style="margin:0 0 12px; color:var(--text-primary); font-size:14px;">Vistas Clássicas</h4>
-              <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:16px;">
-                <button class="btn viewbtn" data-orbit="0deg 90deg auto" style="min-height:38px; font-size:12px;">Frente</button>
-                <button class="btn viewbtn" data-orbit="180deg 90deg auto" style="min-height:38px; font-size:12px;">Trás</button>
-                <button class="btn viewbtn" data-orbit="90deg 90deg auto" style="min-height:38px; font-size:12px;">Direita</button>
-                <button class="btn viewbtn" data-orbit="-90deg 90deg auto" style="min-height:38px; font-size:12px;">Esquerda</button>
-                <button class="btn viewbtn" data-orbit="0deg 0.1deg auto" style="min-height:38px; font-size:12px;">Topo</button>
-                <button class="btn viewbtn" data-orbit="0deg 179.9deg auto" style="min-height:38px; font-size:12px;">Base</button>
-                <button class="btn viewbtn" data-orbit="45deg 55deg auto" style="grid-column: span 2; min-height:38px; font-size:12px;"><svg style="width:14px;height:14px;margin-right:6px;"><use href="#i-cube"/></svg>Isométrica</button>
-              </div>
-
-              <div style="display:flex; flex-direction:column; gap:8px;">
-                <button class="btn" id="resetViewBtn" style="min-height:40px;"><svg style="width:16px;height:16px;margin-right:6px;"><use href="#i-target"/></svg>Recentrar Modelo</button>
-                <button class="btn hidden" id="animBtn" style="min-height:40px;"><svg style="width:16px;height:16px;margin-right:6px;"><use href="#i-play"/></svg>Animação</button>
-                <label class="btn" for="fileInput" style="cursor:pointer; min-height:40px; display:flex; align-items:center; justify-content:center; gap:6px; margin:0;"><svg style="width:16px;height:16px;"><use href="#i-upload"/></svg>Substituir Modelo</label>
-                <button class="btn" id="pdfReportBtn" style="min-height:40px; background:rgba(220,161,83,0.08); border:1px solid var(--accent); color:var(--accent);"><svg style="width:16px;height:16px;margin-right:6px;"><use href="#i-report"/></svg>Gerar Relatório PDF</button>
-                <button class="btn" id="helpBtn" style="min-height:40px;">Atalhos e Ajuda</button>
-              </div>
-            </div>
-
-            <!-- Aba 2: Estilos & Cortes (SketchUp) -->
-            <div class="tab-pane" id="tab-sketchup">
-              <!-- Projeção -->
-              <div style="margin-bottom:18px;">
-                <label class="field-label" style="margin-bottom:6px;">Projeção da Câmera</label>
-                <div style="display:flex; gap:8px;">
-                  <button class="btn primary" id="projPerspBtn" style="flex:1; min-height:38px; font-size:12px;">Perspectiva</button>
-                  <button class="btn" id="projParallelBtn" style="flex:1; min-height:38px; font-size:12px;">Paralela</button>
-                </div>
-              </div>
-
-              <!-- Estilos de Face -->
-              <div style="margin-bottom:18px;">
-                <label class="field-label" style="margin-bottom:6px;">Estilo de Visualização</label>
-                <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px;">
-                  <button class="btn primary" id="styleShadedBtn" style="font-size:11.5px; min-height:36px; padding:6px 2px;">Texturizado</button>
-                  <button class="btn" id="styleXrayBtn" style="font-size:11.5px; min-height:36px; padding:6px 2px;">Raio-X</button>
-                  <button class="btn" id="styleMonoBtn" style="font-size:11.5px; min-height:36px; padding:6px 2px;">Monocromo</button>
-                  <button class="btn" id="styleWireBtn" style="font-size:11.5px; min-height:36px; padding:6px 2px;">Aramado</button>
-                </div>
-              </div>
-
-              <!-- Estudo Solar & Variante -->
-              <div style="margin-bottom:18px; display:flex; flex-direction:column; gap:12px;">
-                <div>
-                  <label class="field-label" for="sunAngle">Direção do Sol: <b id="sunAngleVal" style="color:var(--accent)">0°</b></label>
-                  <input type="range" id="sunAngle" min="0" max="360" step="1" value="0" style="width:100%">
-                </div>
-                <div id="variantContainer" style="display:none">
-                  <label class="field-label" for="variantSelect">Acabamento (Variante):</label>
-                  <select id="variantSelect" style="width:100%"></select>
-                </div>
-              </div>
-
-              <!-- Planos de Corte -->
-              <div style="border-top:1px solid var(--border); padding-top:16px;">
-                <label class="field-label" style="margin-bottom:8px;">Planos de Seção (Corte)</label>
-                <div style="display:flex; flex-direction:column; gap:10px;">
-                  <div>
-                    <label class="field-label" for="clipY" style="font-size:11px; margin-bottom:4px;">Corte Y (Altura): <b id="clipYVal" style="color:var(--accent)">Desativado</b></label>
-                    <input type="range" id="clipY" min="-2" max="15" step="0.05" value="15" style="width:100%">
-                  </div>
-                  <div>
-                    <label class="field-label" for="clipZ" style="font-size:11px; margin-bottom:4px;">Corte Z (Profundidade): <b id="clipZVal" style="color:var(--accent)">Desativado</b></label>
-                    <input type="range" id="clipZ" min="-15" max="15" step="0.05" value="15" style="width:100%">
-                  </div>
-                  <button class="btn" id="invertCutBtn" style="min-height:38px; display:inline-flex; align-items:center; justify-content:center; gap:6px;"><svg style="width:14px;height:14px;"><use href="#i-sync"/></svg>Inverter Corte</button>
-                </div>
-              </div>
-            </div>
-
-            <!-- Aba 3: Medições -->
-            <div class="tab-pane" id="tab-measures">
-              <h4 style="margin:0 0 12px; color:var(--text-primary); font-size:14px;">Histórico de Medidas</h4>
-              <div id="measStrip" style="flex-direction:column; align-items:stretch; gap:8px;"></div>
-            </div>
-
-            </div><!-- /.side-panel-content -->
-          </div>
-        </div>
-
-        <!-- Hidden file input -->
-        <input type="file" id="fileInput" accept=".glb,.gltf" style="display:none">
-      </div><!-- /#modelArea -->
-    </div><!-- /.content -->
-  </main>
-</div><!-- /.shell -->
-
-<div id="sync-card-root"></div>
-
-<!-- Keyboard Shortcuts Overlay -->
-<div class="overlay hidden" id="shortcutsOverlay">
-  <div class="shortcuts-box">
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
-      <strong>Atalhos de teclado</strong>
-      <button id="closeShortcuts" style="background:none;border:none;cursor:pointer;color:var(--text-secondary);display:flex;align-items:center;">
-        <svg style="width:18px;height:18px;"><use href="#i-close"/></svg>
+      <!-- Floating Right Toggle Button for Drawer -->
+      <button id="toggleDrawerBtn" class="absolute right-6 top-1/2 -translate-y-1/2 z-10 w-12 h-12 bg-white/90 backdrop-blur border border-outline-variant/40 rounded-xl hover:bg-surface-container hover:scale-105 active:scale-95 transition-all flex items-center justify-center shadow-lg pointer-events-auto">
+        <span class="material-symbols-outlined text-primary text-2xl" id="drawerIcon">tune</span>
       </button>
+
+      <!-- Sliding Technical Controls Side Drawer -->
+      <div id="techDrawer" class="absolute right-0 top-0 h-full w-[350px] bg-white/95 backdrop-blur-md border-l border-outline-variant/40 shadow-2xl z-25 flex flex-col drawer-transition translate-x-full pointer-events-auto">
+        <div class="p-6 flex justify-between items-center border-b border-outline-variant/20 shrink-0">
+          <h3 class="font-headline-md text-[18px] font-semibold text-primary">Ferramentas &amp; Estudos</h3>
+          <button id="closeDrawerBtn" class="w-8 h-8 rounded-full hover:bg-surface-container flex items-center justify-center text-on-surface-variant">
+            <span class="material-symbols-outlined">close</span>
+          </button>
+        </div>
+
+        <!-- Drawer Navigation Tabs -->
+        <div class="flex border-b border-outline-variant/20 text-[12px] font-semibold uppercase tracking-wider shrink-0 bg-surface-container-low/20">
+          <button id="tabBtnViews" class="flex-1 py-3 text-center tab-btn active" onclick="switchTab('views')">Vistas</button>
+          <button id="tabBtnStudies" class="flex-1 py-3 text-center tab-btn" onclick="switchTab('studies')">Estudos</button>
+          <button id="tabBtnMeasures" class="flex-1 py-3 text-center tab-btn" onclick="switchTab('measures')">Medidas</button>
+        </div>
+
+        <!-- Drawer Body Content -->
+        <div class="flex-grow overflow-y-auto p-6 space-y-6">
+          
+          <!-- Tab 1: Vistas Rápidas -->
+          <div id="tabViews" class="space-y-4">
+            <h4 class="font-label-sm text-[11px] text-on-surface-variant uppercase tracking-widest">Orientação da Câmera</h4>
+            <div class="grid grid-cols-2 gap-2">
+              <button class="viewbtn px-4 py-2.5 bg-surface-container hover:bg-primary-container hover:text-white rounded-xl text-label-sm font-medium transition-all text-center" data-orbit="0deg 90deg auto">Frente (1)</button>
+              <button class="viewbtn px-4 py-2.5 bg-surface-container hover:bg-primary-container hover:text-white rounded-xl text-label-sm font-medium transition-all text-center" data-orbit="180deg 90deg auto">Trás (2)</button>
+              <button class="viewbtn px-4 py-2.5 bg-surface-container hover:bg-primary-container hover:text-white rounded-xl text-label-sm font-medium transition-all text-center" data-orbit="90deg 90deg auto">Direita (3)</button>
+              <button class="viewbtn px-4 py-2.5 bg-surface-container hover:bg-primary-container hover:text-white rounded-xl text-label-sm font-medium transition-all text-center" data-orbit="-90deg 90deg auto">Esquerda (4)</button>
+              <button class="viewbtn px-4 py-2.5 bg-surface-container hover:bg-primary-container hover:text-white rounded-xl text-label-sm font-medium transition-all text-center" data-orbit="0deg 0.1deg auto">Topo (5)</button>
+              <button class="viewbtn px-4 py-2.5 bg-surface-container hover:bg-primary-container hover:text-white rounded-xl text-label-sm font-medium transition-all text-center" data-orbit="0deg 179.9deg auto">Base (6)</button>
+              <button class="viewbtn px-4 py-2.5 bg-surface-container hover:bg-primary-container hover:text-white rounded-xl text-label-sm font-medium transition-all text-center" data-orbit="45deg 55deg auto">Isométrica (7)</button>
+              <button id="resetViewBtn" class="px-4 py-2.5 bg-primary/10 hover:bg-primary hover:text-white text-primary rounded-xl text-label-sm font-semibold transition-all text-center">Recentrar (R)</button>
+            </div>
+            <div class="pt-4 border-t border-outline-variant/10">
+              <button id="animBtn" class="w-full flex items-center justify-center gap-2 py-3 border border-outline text-primary hover:bg-surface-container rounded-xl text-label-sm font-semibold transition-all">
+                <span class="material-symbols-outlined text-[20px]" id="animIcon">play_arrow</span>
+                <span id="animText">Girar Câmera</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Tab 2: Estudos Técnicos -->
+          <div id="tabStudies" class="space-y-6 hidden">
+            <!-- Estudo Solar -->
+            <div class="space-y-2">
+              <div class="flex justify-between items-center">
+                <h4 class="font-label-sm text-[11px] text-on-surface-variant uppercase tracking-widest">Estudo Solar</h4>
+                <span class="text-[12px] font-semibold text-primary" id="sunAngleVal">0°</span>
+              </div>
+              <input type="range" id="sunAngle" min="0" max="360" value="0" class="w-full h-1 bg-surface-container rounded-lg appearance-none cursor-pointer accent-primary">
+              <p class="text-[11px] text-outline">Controla o azimute da iluminação de estúdio.</p>
+            </div>
+
+            <!-- Cortes / Planos de Seção -->
+            <div class="space-y-4 pt-4 border-t border-outline-variant/10">
+              <div class="flex justify-between items-center">
+                <h4 class="font-label-sm text-[11px] text-on-surface-variant uppercase tracking-widest">Cortes e Planos</h4>
+                <button id="invertCutBtn" class="px-2.5 py-1 border border-outline-variant hover:bg-surface-container rounded text-[11px] font-bold text-primary transition-all">Inverter Sentido</button>
+              </div>
+              
+              <!-- Corte Y -->
+              <div class="space-y-2">
+                <div class="flex justify-between items-center">
+                  <span class="text-[12px] font-medium text-on-surface-variant">Corte Horizontal (Y)</span>
+                  <span class="text-[12px] font-semibold text-primary" id="clipYVal">Desativado</span>
+                </div>
+                <input type="range" id="clipY" min="-10" max="10" value="10" step="0.1" class="w-full h-1 bg-surface-container rounded-lg appearance-none cursor-pointer accent-primary">
+              </div>
+
+              <!-- Corte Z -->
+              <div class="space-y-2">
+                <div class="flex justify-between items-center">
+                  <span class="text-[12px] font-medium text-on-surface-variant">Corte Vertical (Z)</span>
+                  <span class="text-[12px] font-semibold text-primary" id="clipZVal">Desativado</span>
+                </div>
+                <input type="range" id="clipZ" min="-10" max="10" value="10" step="0.1" class="w-full h-1 bg-surface-container rounded-lg appearance-none cursor-pointer accent-primary">
+              </div>
+            </div>
+
+            <!-- Variantes de Modelo -->
+            <div class="space-y-2 pt-4 border-t border-outline-variant/10" id="variantSelectContainer" style="display:none">
+              <h4 class="font-label-sm text-[11px] text-on-surface-variant uppercase tracking-widest">Opção / Variante</h4>
+              <select id="variantSelect" class="w-full rounded-xl border border-outline-variant bg-white text-on-surface p-3 text-[13px]"></select>
+            </div>
+          </div>
+
+          <!-- Tab 3: Medições -->
+          <div id="tabMeasures" class="space-y-4 hidden">
+            <h4 class="font-label-sm text-[11px] text-on-surface-variant uppercase tracking-widest">Histórico de Medidas</h4>
+            <div id="measStrip" class="flex flex-col gap-2.5">
+              <!-- Dynamically populated with .meas-chip -->
+            </div>
+          </div>
+
+        </div>
+      </div>
+
     </div>
-    <div style="display:flex; flex-direction:column; gap:4px; max-height:360px; overflow-y:auto;">
-      <div style="font-size:11px; font-weight:700; color:var(--accent); margin:6px 0 2px;">ATALHOS SKETCHUP</div>
-      <div class="sc-row"><span>Selecionar / Órbita padrão</span><kbd>Espaço</kbd></div>
-      <div class="sc-row"><span>Mão (Pan - Arrastar tela)</span><kbd>H</kbd></div>
-      <div class="sc-row"><span>Orbitar (Girar câmera)</span><kbd>O</kbd></div>
-      <div class="sc-row"><span>Fita Métrica (Medir / Régua)</span><kbd>T</kbd></div>
-      <div class="sc-row"><span>Raio-X (Alternar Translúcido)</span><kbd>K</kbd></div>
-      <div class="sc-row"><span>Zoom Extents (Enquadrar tudo)</span><kbd>Shift + Z</kbd></div>
-      
-      <div style="font-size:11px; font-weight:700; color:var(--accent); margin:12px 0 2px;">ATALHOS SALSI</div>
-      <div class="sc-row"><span>Vistas Rápidas (Frente...Iso)</span><kbd>1 – 7</kbd></div>
-      <div class="sc-row"><span>Recentrar Modelo</span><kbd>R</kbd></div>
-      <div class="sc-row"><span>Capturar Imagem</span><kbd>C</kbd></div>
-      <div class="sc-row"><span>Tela Cheia</span><kbd>F</kbd></div>
-      <div class="sc-row"><span>Mostrar/Ocultar Atalhos</span><kbd>?</kbd></div>
+  </main>
+
+  <!-- Hidden file input -->
+  <input type="file" id="fileInput" accept=".glb,.gltf" style="display:none">
+
+  <!-- Keyboard Shortcuts Overlay -->
+  <div class="fixed inset-0 bg-primary/20 backdrop-blur-sm z-[999] flex items-center justify-center hidden" id="shortcutsOverlay">
+    <div class="bg-white p-8 rounded-2xl border border-outline-variant/30 max-w-md w-full shadow-2xl mx-4">
+      <div class="flex justify-between items-center mb-6">
+        <h3 class="font-headline-md text-headline-md text-primary">Atalhos de Teclado</h3>
+        <button id="closeShortcuts" class="w-8 h-8 rounded-full hover:bg-surface-container flex items-center justify-center text-on-surface-variant">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+      <div class="space-y-4 max-h-[380px] overflow-y-auto pr-2">
+        <div class="text-[11px] font-bold text-primary uppercase tracking-widest border-b border-outline-variant/10 pb-1">Teclado</div>
+        <div class="flex justify-between text-[13px]"><span>Vistas Rápidas</span><kbd class="px-2 py-0.5 bg-surface-container rounded border text-[11px] font-mono">1 – 7</kbd></div>
+        <div class="flex justify-between text-[13px]"><span>Recentrar</span><kbd class="px-2 py-0.5 bg-surface-container rounded border text-[11px] font-mono">R</kbd></div>
+        <div class="flex justify-between text-[13px]"><span>Fita Métrica (Régua)</span><kbd class="px-2 py-0.5 bg-surface-container rounded border text-[11px] font-mono">T</kbd></div>
+        <div class="flex justify-between text-[13px]"><span>Capturar Imagem</span><kbd class="px-2 py-0.5 bg-surface-container rounded border text-[11px] font-mono">C</kbd></div>
+        <div class="flex justify-between text-[13px]"><span>Tela Cheia</span><kbd class="px-2 py-0.5 bg-surface-container rounded border text-[11px] font-mono">F</kbd></div>
+        <div class="flex justify-between text-[13px]"><span>Ajuda / Atalhos</span><kbd class="px-2 py-0.5 bg-surface-container rounded border text-[11px] font-mono">?</kbd></div>
+      </div>
     </div>
   </div>
-</div>
 
-<!-- ── Scripts ───────────────────────────────────────── -->
-<script src="assets/db.js"></script>
-<script src="assets/shell.js"></script>
-<script>
-(async function () {
-  'use strict';
+  <div id="sync-card-root"></div>
 
-  // ── Init Shell ──────────────────────────────────────
-  SalsiShell.init('models');
-
-  const activeId = SalsiShell.getActiveProjectId();
-  if (!activeId) {
-    document.getElementById('noProjectState').style.display = '';
-    return;
-  }
-  document.getElementById('modelArea').style.display = '';
-
-  const project = await SalsiDB.getProject(activeId);
-  const pillEl  = document.getElementById('activeProjectPill');
-  if (pillEl) pillEl.querySelector('span').textContent = project ? project.name : 'Projeto';
-
-  // ── DOM refs ────────────────────────────────────────
-  const viewer        = document.getElementById('viewer');
-  const emptyState    = document.getElementById('emptyState');
-  const filenameEl    = document.getElementById('filename');
-  const dimsEl        = document.getElementById('dims');
-  const lastMeasureEl = document.getElementById('lastMeasure');
-  const progressWrap  = document.getElementById('progressWrap');
-  const progressBar   = document.getElementById('progressBar');
-  const animBtn       = document.getElementById('animBtn');
-
-  // ── State ───────────────────────────────────────────
-  let annotateMode = false;
-  let downPoint    = null;
-  let rulerStart   = null;   // { x, y, z } world coords of first click
-  let measurements = [];     // array of { from, to, dist, note } — session only
-
-  // Three.js live-line while dragging ruler
-  let rulerLine     = null;
-  let rulerLineGeo  = null;
-  let rulerLabel    = null;  // floating DOM badge
-
-  // Three.js clipping planes
-  let localClipPlaneY = null;
-  let localClipPlaneZ = null;
-
-  // ── Helpers ─────────────────────────────────────────
-  function esc(s) {
-    return String(s == null ? '' : s)
-      .replace(/[&<>"]/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;' }[c]));
-  }
-
-  function forceRender() {
-    try {
-      const sym = Symbol.for('3DViewer');
-      if (viewer[sym] && viewer[sym].renderer) {
-        viewer[sym].renderer.queueRender();
+  <!-- ── Scripts ───────────────────────────────────────── -->
+  <script src="assets/db.js"></script>
+  <script src="assets/shell.js"></script>
+  <script>
+    // Slider value visual helpers and drawer toggling
+    const techDrawer = document.getElementById('techDrawer');
+    const toggleDrawerBtn = document.getElementById('toggleDrawerBtn');
+    const closeDrawerBtn = document.getElementById('closeDrawerBtn');
+    const drawerIcon = document.getElementById('drawerIcon');
+    
+    function toggleDrawer() {
+      const isOpen = !techDrawer.classList.contains('translate-x-full');
+      if (isOpen) {
+        techDrawer.classList.add('translate-x-full');
+        drawerIcon.textContent = 'tune';
+      } else {
+        techDrawer.classList.remove('translate-x-full');
+        drawerIcon.textContent = 'arrow_forward';
       }
-    } catch (_) {}
-  }
-
-  // ── Three.js Clipping ────────────────────────────────
-  function initClipping() {
-    if (typeof THREE === 'undefined') return;
-    try {
-      const sym = Symbol.for('3DViewer');
-      if (viewer[sym] && viewer[sym].renderer && viewer[sym].renderer.threeRenderer) {
-        viewer[sym].renderer.threeRenderer.localClippingEnabled = true;
-      }
-      localClipPlaneY = new THREE.Plane(new THREE.Vector3(0, -1, 0), 999);
-      localClipPlaneZ = new THREE.Plane(new THREE.Vector3(0,  0,-1), 999);
-    } catch (e) { console.warn('Clipping init failed', e); }
-  }
-
-  function applyClippingToScene() {
-    if (typeof THREE === 'undefined' || !viewer.model || !viewer.model.scene) return;
-    viewer.model.scene.traverse(child => {
-      if (child.isMesh && child.material) {
-        const mats = Array.isArray(child.material) ? child.material : [child.material];
-        mats.forEach(mat => {
-          mat.clippingPlanes = [];
-          if (localClipPlaneY) mat.clippingPlanes.push(localClipPlaneY);
-          if (localClipPlaneZ) mat.clippingPlanes.push(localClipPlaneZ);
-          mat.clipShadows = true;
-          mat.needsUpdate = true;
-        });
-      }
-    });
-  }
-
-  // ── Vertex Snapping ──────────────────────────────────
-  function getSnappedPoint(hitPos) {
-    let closest = { x: hitPos.x, y: hitPos.y, z: hitPos.z };
-    let minDist = Infinity;
-    if (!viewer.model || !viewer.model.scene) return closest;
-
-    viewer.model.scene.traverse(child => {
-      if (!child.isMesh || !child.geometry) return;
-      const posAttr = child.geometry.attributes.position;
-      if (!posAttr) return;
-      const m    = child.matrixWorld.elements;
-      const step = posAttr.count > 5000 ? Math.ceil(posAttr.count / 5000) : 1;
-      for (let i = 0; i < posAttr.count; i += step) {
-        const vx = posAttr.getX(i), vy = posAttr.getY(i), vz = posAttr.getZ(i);
-        const wx = m[0]*vx + m[4]*vy + m[8]*vz  + m[12];
-        const wy = m[1]*vx + m[5]*vy + m[9]*vz  + m[13];
-        const wz = m[2]*vx + m[6]*vy + m[10]*vz + m[14];
-        const d  = Math.sqrt((wx-hitPos.x)**2 + (wy-hitPos.y)**2 + (wz-hitPos.z)**2);
-        if (d < minDist) { minDist = d; closest = { x:wx, y:wy, z:wz }; }
-      }
-    });
-    return minDist < 0.15 ? closest : hitPos;
-  }
-
-
-
-  // ── Load Model ───────────────────────────────────────
-  async function loadModelForProject() {
-    const stored = await SalsiDB.getProjectModel(activeId);
-    if (stored && stored.blob) {
-      viewer.src = URL.createObjectURL(stored.blob);
-      filenameEl.textContent = stored.filename || 'modelo.glb';
-      emptyState.classList.add('hidden');
-    } else {
-      filenameEl.textContent = '—';
-      emptyState.classList.remove('hidden');
     }
-  }
+    if (toggleDrawerBtn) toggleDrawerBtn.addEventListener('click', toggleDrawer);
+    if (closeDrawerBtn) closeDrawerBtn.addEventListener('click', toggleDrawer);
 
-  // ── Model Viewer Events ──────────────────────────────
-  viewer.addEventListener('progress', e => {
-    const pct = Math.round((e.detail.totalProgress || 0) * 100);
-    progressWrap.classList.remove('hidden');
-    progressBar.style.width = pct + '%';
-    if (pct >= 100) progressWrap.classList.add('hidden');
-  });
+    // Tab switching
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+      document.getElementById('tabViews').classList.add('hidden');
+      document.getElementById('tabStudies').classList.add('hidden');
+      document.getElementById('tabMeasures').classList.add('hidden');
 
-  viewer.addEventListener('error', () => {
-    emptyState.classList.remove('hidden');
-    progressWrap.classList.add('hidden');
-    dimsEl.textContent = '—';
-  });
-
-  viewer.addEventListener('load', async () => {
-    emptyState.classList.add('hidden');
-    progressWrap.classList.add('hidden');
-
-    // Dimensions
-    try {
-      const d = viewer.getDimensions();
-      dimsEl.textContent = `${d.x.toFixed(2)} × ${d.y.toFixed(2)} × ${d.z.toFixed(2)} m`;
-
-      // Adjust clipping sliders to model size
-      const clipYEl = document.getElementById('clipY');
-      const clipZEl = document.getElementById('clipZ');
-      clipYEl.min = String((-d.y * 0.1).toFixed(2));
-      clipYEl.max = String((d.y * 1.5).toFixed(2));
-      clipYEl.value = clipYEl.max;
-      clipZEl.min = String((-d.z * 1.5).toFixed(2));
-      clipZEl.max = String((d.z * 1.5).toFixed(2));
-      clipZEl.value = clipZEl.max;
-      document.getElementById('clipYVal').textContent = 'Desativado';
-      document.getElementById('clipZVal').textContent = 'Desativado';
-    } catch (_) { dimsEl.textContent = '—'; }
-
-    // Animations
-    const hasAnim = !!(viewer.availableAnimations && viewer.availableAnimations.length);
-    animBtn.classList.toggle('hidden', !hasAnim);
-
-    // Clipping init
-    initClipping();
-    applyClippingToScene();
-
-    // Variants
-    const variants        = viewer.availableVariants;
-    const variantContainer = document.getElementById('variantContainer');
-    const variantSelect    = document.getElementById('variantSelect');
-    if (variants && variants.length) {
-      variantContainer.style.display = 'block';
-      variantSelect.innerHTML = '<option value="">(Padrão)</option>'
-        + variants.map(v => `<option value="${esc(v)}">${esc(v)}</option>`).join('');
-      variantSelect.value = viewer.variantName || '';
-    } else {
-      variantContainer.style.display = 'none';
+      if (tabId === 'views') {
+        document.getElementById('tabBtnViews').classList.add('active');
+        document.getElementById('tabViews').classList.remove('hidden');
+      } else if (tabId === 'studies') {
+        document.getElementById('tabBtnStudies').classList.add('active');
+        document.getElementById('tabStudies').classList.remove('hidden');
+      } else if (tabId === 'measures') {
+        document.getElementById('tabBtnMeasures').classList.add('active');
+        document.getElementById('tabMeasures').classList.remove('hidden');
+      }
     }
 
-    // Apply share hash if present
-    applyShareHashIfPresent();
-  });
-
-  // ── Compass Rotation & Walkthrough (Visão Interna) ──
-  const dachshundPointer = document.getElementById('dachshundPointer');
-  const walkBtn          = document.getElementById('walkBtn');
-  let walkMode           = false;
-
-  // Track camera rotation to update Dachshund compass
-  viewer.addEventListener('camera-change', () => {
-    try {
-      const orbit = viewer.getCameraOrbit();
-      // Rotate the Dachshund pointer based on camera yaw (theta)
-      // Convert rad to deg (negated to match compass rotation)
-      const deg = -(orbit.theta * 180 / Math.PI);
-      dachshundPointer.style.transform = `rotate(${deg.toFixed(1)}deg)`;
-    } catch (_) {}
-  });
-
-  // Toggle Walkthrough (First Person Interior view)
-  walkBtn.addEventListener('click', () => {
-    walkMode = !walkMode;
-    walkBtn.classList.toggle('active', walkMode);
-
-    if (walkMode) {
-      // 1. Enter Interior mode: wider FOV to feel inside rooms
-      viewer.fieldOfView = '80deg';
-      
-      // 2. Unlock zoom limits completely to allow passing through walls and close up to furniture
-      viewer.minCameraOrbit = 'auto 0deg 0m';
-      viewer.maxCameraOrbit = 'auto 180deg auto';
-      
-      // 3. Move target closer to floor/center of the model
-      try {
-        const d = viewer.getDimensions();
-        // Place target at waist height inside the building
-        viewer.cameraTarget = `0m ${(d.y * 0.3).toFixed(2)}m 0m`;
-        // Move camera closer
-        viewer.cameraOrbit = `0rad 1.2rad ${(d.z * 0.4).toFixed(2)}m`;
-      } catch (_) {}
-
-      // Inform user about walkthrough controls
-      const helpToast = document.createElement('div');
-      Object.assign(helpToast.style, {
-        position: 'absolute', bottom: '16px', right: '16px',
-        background: 'rgba(10,14,20,0.92)', color: 'var(--accent)',
-        fontSize: '12px', fontWeight: '700', padding: '10px 16px',
-        borderRadius: '12px', border: '1.5px solid var(--accent)',
-        boxShadow: '0 4px 16px rgba(0,0,0,.5)', zIndex: '10',
-        fontFamily: 'Manrope, sans-serif', animation: 'chipIn 0.2s ease'
+    // Slider display updates
+    const sunAngle = document.getElementById('sunAngle');
+    if(sunAngle) {
+      sunAngle.addEventListener('input', (e) => {
+        document.getElementById('sunAngleVal').textContent = `${e.target.value}°`;
       });
-      helpToast.innerHTML = '🚶 <b>Modo Interno Ativo:</b> Use zoom/scroll para caminhar para dentro e o botão direito/dois dedos para mover a câmera.';
-      viewer.appendChild(helpToast);
-      setTimeout(() => helpToast.remove(), 6000);
-
-    } else {
-      // Restore default exterior orbit settings
-      viewer.fieldOfView = 'auto';
-      viewer.minCameraOrbit = 'auto 0deg auto';
-      viewer.maxCameraOrbit = 'auto 180deg auto';
-      viewer.cameraTarget = 'auto auto auto';
-      viewer.cameraOrbit = 'auto auto auto';
     }
-  });
-
-  // ── View Buttons ─────────────────────────────────────
-  document.querySelectorAll('.viewbtn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      viewer.cameraOrbit = btn.dataset.orbit;
-      viewer.jumpCameraToGoal();
-    });
-  });
-
-  document.getElementById('resetViewBtn').addEventListener('click', () => {
-    viewer.cameraOrbit = 'auto auto auto';
-    viewer.cameraTarget = 'auto auto auto';
-    viewer.fieldOfView = 'auto';
-    viewer.jumpCameraToGoal();
-  });
-
-  // ── Auto-Rotate ──────────────────────────────────────
-  const toggleRotateBtn = document.getElementById('toggleRotate');
-  toggleRotateBtn.addEventListener('click', () => {
-    const on = viewer.hasAttribute('auto-rotate');
-    viewer.toggleAttribute('auto-rotate', !on);
-    toggleRotateBtn.classList.toggle('active', !on);
-  });
-
-  // ── Zoom ─────────────────────────────────────────────
-  document.getElementById('zoomInBtn').addEventListener('click', () => viewer.zoom(1));
-  document.getElementById('zoomOutBtn').addEventListener('click', () => viewer.zoom(-1));
-
-  // ── Fullscreen ───────────────────────────────────────
-  function goFullscreen() {
-    const el = viewer;
-    if (el.requestFullscreen)       el.requestFullscreen();
-    else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
-  }
-  document.getElementById('fullscreenBtn').addEventListener('click', goFullscreen);
-
-  // ── Shortcuts Overlay ────────────────────────────────
-  const shortcutsOverlay = document.getElementById('shortcutsOverlay');
-  document.getElementById('helpBtn').addEventListener('click',   () => shortcutsOverlay.classList.toggle('hidden'));
-  document.getElementById('closeShortcuts').addEventListener('click', () => shortcutsOverlay.classList.add('hidden'));
-
-  // ── Animation ────────────────────────────────────────
-  animBtn.addEventListener('click', () => {
-    if (viewer.paused) { viewer.play();  animBtn.classList.add('active'); }
-    else               { viewer.pause(); animBtn.classList.remove('active'); }
-  });
-
-  // ═══════════════════════════════════════════════════════════════════════════
-  //  NAVEGAÇÃO ESTILO SKETCHUP (Orbit, Pan, Zoom Extents, Atalhos)
-  // ═══════════════════════════════════════════════════════════════════════════
-  let activeTool  = 'select'; // 'select' (default orbit), 'pan' (hand tool), 'orbit'
-  let isPanning   = false;
-  let panStartDoc = null;
-  let panStartTgt = null;
-
-  function setTool(tool) {
-    activeTool = tool;
-    if (tool === 'pan') {
-      viewer.style.cursor = 'grab';
-      // Temporarily disable viewer's default left-click orbit by customizing touch-action if needed,
-      // but we will override mouse movement manually.
-    } else if (tool === 'orbit') {
-      viewer.style.cursor = 'all-scroll';
-    } else {
-      viewer.style.cursor = '';
+    const clipY = document.getElementById('clipY');
+    if(clipY) {
+      clipY.addEventListener('input', (e) => {
+        const val = parseFloat(e.target.value);
+        document.getElementById('clipYVal').textContent = val >= 10 ? 'Desativado' : `${val.toFixed(1)}m`;
+      });
     }
-    
-    // Toast notification for tool change
-    const tToast = document.createElement('div');
-    Object.assign(tToast.style, {
-      position: 'absolute', top: '16px', left: '50%', transform: 'translateX(-50%)',
-      background: 'var(--bg-surface-solid)', color: 'var(--accent)',
-      fontSize: '12px', fontWeight: '800', padding: '8px 16px',
-      borderRadius: '12px', border: '1.5px solid var(--accent)',
-      boxShadow: '0 4px 16px rgba(0,0,0,.15)', zIndex: '10',
-      fontFamily: 'Manrope, sans-serif', animation: 'chipIn 0.15s ease'
-    });
-    const toolNames = { 'select': 'Seleção (Padrão)', 'pan': 'Mão (Pan - Arrastar)', 'orbit': 'Orbitar (Girar)' };
-    tToast.innerHTML = `Ferramenta: <b>${toolNames[tool]}</b>`;
-    viewer.appendChild(tToast);
-    setTimeout(() => tToast.remove(), 2000);
-  }
-
-  // Mouse drag overrides for Pan tool
-  viewer.addEventListener('pointerdown', e => {
-    if (activeTool !== 'pan' || e.button !== 0) return; // Only left click in Pan mode
-    isPanning = true;
-    viewer.style.cursor = 'grabbing';
-    panStartDoc = { x: e.clientX, y: e.clientY };
-    
-    // Get current camera target
-    try {
-      const tgt = viewer.getCameraTarget();
-      panStartTgt = { x: tgt.x, y: tgt.y, z: tgt.z };
-    } catch (_) {
-      panStartTgt = { x: 0, y: 0, z: 0 };
+    const clipZ = document.getElementById('clipZ');
+    if(clipZ) {
+      clipZ.addEventListener('input', (e) => {
+        const val = parseFloat(e.target.value);
+        document.getElementById('clipZVal').textContent = val >= 10 ? 'Desativado' : `${val.toFixed(1)}m`;
+      });
     }
-  });
+  </script>
+  <script>
+  (async function () {
+    'use strict';
 
-  viewer.addEventListener('pointermove', e => {
-    if (!isPanning || !panStartDoc || !panStartTgt) return;
-    
-    const dx = e.clientX - panStartDoc.x;
-    const dy = e.clientY - panStartDoc.y;
-    
-    // Calculate panning factor based on camera distance
-    try {
-      const orbit = viewer.getCameraOrbit();
-      const dist = orbit.radius || 5;
-      // Scale factor: how much target moves per pixel dragged
-      const factor = dist * 0.0015;
-      
-      // Move target horizontally/vertically relative to camera view angle (approximate)
-      const theta = orbit.theta;
-      const cosT = Math.cos(theta);
-      const sinT = Math.sin(theta);
-      
-      const mx = -dx * factor;
-      const my = dy * factor;
-      
-      const newX = panStartTgt.x + (mx * cosT);
-      const newY = panStartTgt.y + my;
-      const newZ = panStartTgt.z - (mx * sinT);
-      
-      viewer.cameraTarget = `${newX.toFixed(4)}m ${newY.toFixed(4)}m ${newZ.toFixed(4)}m`;
-      forceRender();
-    } catch (_) {}
-  });
+    // ── Init Shell ──────────────────────────────────────
+    SalsiShell.init('models');
 
-  window.addEventListener('pointerup', () => {
-    if (isPanning) {
-      isPanning = false;
-      if (activeTool === 'pan') viewer.style.cursor = 'grab';
-    }
-  });
-
-  // Zoom Extents (Fita métrica / Enquadramento completo)
-  function zoomExtents() {
-    viewer.cameraOrbit = 'auto auto auto';
-    viewer.cameraTarget = 'auto auto auto';
-    viewer.fieldOfView = 'auto';
-    viewer.jumpCameraToGoal();
-    
-    const zToast = document.createElement('div');
-    Object.assign(zToast.style, {
-      position: 'absolute', top: '16px', left: '50%', transform: 'translateX(-50%)',
-      background: 'var(--bg-surface-solid)', color: 'var(--accent)',
-      fontSize: '12px', fontWeight: '800', padding: '8px 16px',
-      borderRadius: '12px', border: '1.5px solid var(--accent)',
-      boxShadow: '0 4px 16px rgba(0,0,0,.15)', zIndex: '10',
-      fontFamily: 'Manrope, sans-serif'
-    });
-    zToast.innerHTML = '<b>Zoom Total (Extents)</b>';
-    viewer.appendChild(zToast);
-    setTimeout(() => zToast.remove(), 1500);
-  }
-
-  // ── Keyboard Shortcuts (Salsi + SketchUp) ────────────
-  const viewKeys = { '1':'0deg 90deg auto','2':'180deg 90deg auto','3':'90deg 90deg auto',
-    '4':'-90deg 90deg auto','5':'0deg 0.1deg auto','6':'0deg 179.9deg auto','7':'45deg 55deg auto' };
-
-  let xrayToggle = false;
-
-  window.addEventListener('keydown', e => {
-    if (e.ctrlKey || e.metaKey || e.altKey || e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
-    const k = e.key.toLowerCase();
-    
-    // View presets (1-7)
-    if (viewKeys[e.key]) {
-      viewer.cameraOrbit = viewKeys[e.key];
-      viewer.jumpCameraToGoal();
+    const activeId = SalsiShell.getActiveProjectId();
+    if (!activeId) {
+      document.getElementById('noProjectState').style.display = '';
       return;
     }
-    
-    // Salsi Shortcuts
-    if (k === 'r') { document.getElementById('resetViewBtn').click(); return; }
-    if (k === 'f') { goFullscreen(); return; }
-    if (k === 'c') { document.getElementById('captureBtn').click(); return; }
-    if (k === '?') { shortcutsOverlay.classList.toggle('hidden'); return; }
-    
-    // SketchUp Tools
-    if (k === 'h') { e.preventDefault(); setTool('pan'); }
-    else if (k === 'o') { e.preventDefault(); setTool('orbit'); }
-    else if (k === ' ') { e.preventDefault(); setTool('select'); }
-    else if (k === 't') { e.preventDefault(); document.getElementById('annotateBtn').click(); } // T = Tape Measure
-    else if (k === 'k') { // K = Back Edges / X-Ray style toggle
-      e.preventDefault();
-      xrayToggle = !xrayToggle;
-      applyFaceStyle(xrayToggle ? 'xray' : 'shaded');
-      toggleGroupActive(xrayToggle ? styleXrayBtn : styleShadedBtn, '#styleShadedBtn, #styleXrayBtn, #styleMonoBtn, #styleWireBtn');
+    document.getElementById('modelArea').style.display = '';
+
+    const project = await SalsiDB.getProject(activeId);
+    const pillEl  = document.getElementById('activeProjectPill');
+    if (pillEl) pillEl.textContent = project ? project.name : 'Projeto';
+
+    // ── DOM refs ────────────────────────────────────────
+    const viewer        = document.getElementById('viewer');
+    const emptyState    = document.getElementById('emptyState');
+    const filenameEl    = document.getElementById('filename');
+    const dimsEl        = document.getElementById('dims');
+    const lastMeasureEl = document.getElementById('lastMeasure');
+    const lastMeasureBox = document.getElementById('lastMeasureBox');
+    const progressWrap  = document.getElementById('progressWrap');
+    const progressBar   = document.getElementById('progressBar');
+    const animBtn       = document.getElementById('animBtn');
+    const animIcon      = document.getElementById('animIcon');
+    const animText      = document.getElementById('animText');
+    const fileInput     = document.getElementById('fileInput');
+
+    // ── State ───────────────────────────────────────────
+    let annotateMode = false;
+    let downPoint    = null;
+    let rulerStart   = null;   // { x, y, z } world coords of first click
+    let savedMeas    = [];     // array of { id, from, to, dist } — loaded from DB + session
+
+    // Three.js live-line while dragging ruler
+    let rulerLine     = null;
+    let rulerLineGeo  = null;
+    let rulerLabel    = null;  // floating DOM badge
+
+    // Three.js clipping planes
+    let localClipPlaneY = null;
+    let localClipPlaneZ = null;
+
+    // ── Helpers ─────────────────────────────────────────
+    function esc(s) {
+      return String(s == null ? '' : s)
+        .replace(/[&<>"]/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;' }[c]));
     }
-    else if (k === 'z') {
-      e.preventDefault();
-      if (e.shiftKey) {
-        // Shift + Z = Zoom Extents
-        zoomExtents();
-      } else {
-        // Z alone = Zoom (trigger recenter or zoom focus)
-        viewer.zoom(1);
-      }
+
+    function forceRender() {
+      try {
+        const sym = Symbol.for('3DViewer');
+        if (viewer[sym] && viewer[sym].renderer) {
+          viewer[sym].renderer.queueRender();
+        }
+      } catch (_) {}
     }
-  });
 
-  // ═══════════════════════════════════════════════════════════════════════════
-  //  RÉGUA — múltiplas medições, remoção individual, unidades inteligentes
-  // ═══════════════════════════════════════════════════════════════════════════
-  //
-  //  UX (como um arquiteto sênior descreveria):
-  //  1. Ativa régua → cursor vira crosshair
-  //  2. Clica ponto A → ponto laranja pequeno aparece NO modelo
-  //  3. Move o mouse → linha elástica Three.js + OVERLAY CSS na tela
-  //     mostrando a distância em tempo real (não flutuando no espaço 3D)
-  //  4. Clica ponto B → linha permanente, ponto azul no modelo
-  //  5. Medição aparece como chip na faixa ABAIXO do viewer
-  //     → chip tem número, distância e botão × confiável
-  //  6. Clicar × no chip remove linha + pontos daquela medição
-  // ═══════════════════════════════════════════════════════════════════════════
-
-  const measStrip    = document.getElementById('measStrip');
-  const rulerOverlay = document.getElementById('rulerOverlay');
-
-  // Saved measurements: { id, dot1, dot2, line, chip }
-  const savedMeas = [];
-  let   measCounter = 0;
-
-  // In-progress
-  let pinA_el = null; // small dot on model for point A
-
-  // ── Smart unit formatter ────────────────────────────────────────────────────
-  function fmtDist(meters) {
-    if (meters < 0.01)  return `${(meters * 1000).toFixed(0)} mm`;
-    if (meters < 1)     return `${(meters * 100).toFixed(1)} cm`;
-    return `${meters.toFixed(3)} m`;
-  }
-
-  // ── Small dot marker (hotspot) on model surface ─────────────────────────────
-  function makeDot(slotName, posStr, normStr, color, text) {
-    const el = document.createElement('div');
-    el.className        = 'hotspot-pin';
-    el.slot             = slotName;
-    el.dataset.position = posStr;
-    el.dataset.normal   = normStr;
-    Object.assign(el.style, {
-      width: '22px', height: '22px', borderRadius: '50%',
-      background: color, color: '#0a0e14',
-      border: '2px solid #fff',
-      boxShadow: `0 0 0 2px ${color}, 0 2px 8px rgba(0,0,0,.6)`,
-      display: 'flex', alignItems: 'center', justifyContent: 'center',
-      fontSize: '10px', fontWeight: '900',
-      fontFamily: 'Manrope, sans-serif',
-      userSelect: 'none',
-      pointerEvents: 'none',
-      position: 'absolute',
-      transform: 'translate(-50%, -50%)'
-    });
-    el.textContent = text || '';
-    viewer.appendChild(el);
-    return el;
-  }
-
-  // ── Measurement chip in the strip below viewer ──────────────────────────────
-  function makeChip(id, dist) {
-    const chip = document.createElement('div');
-    chip.className    = 'meas-chip';
-    chip.dataset.id   = id;
-
-    const label = document.createElement('span');
-    label.textContent = `Medição #${id}  (${fmtDist(dist)})`;
-
-    const btn = document.createElement('button');
-    btn.className   = 'meas-chip-remove';
-    btn.textContent = '×';
-    btn.title       = 'Remover medição';
-    btn.addEventListener('click', () => removeMeas(id));
-
-    chip.appendChild(label);
-    chip.appendChild(btn);
-    measStrip.appendChild(chip);
-    return chip;
-  }
-
-  // ── Remove one measurement completely ──────────────────────────────────────
-  function removeMeas(id) {
-    const idx = savedMeas.findIndex(m => m.id === id);
-    if (idx === -1) return;
-    const m = savedMeas.splice(idx, 1)[0];
-    if (m.dot1) m.dot1.remove();
-    if (m.dot2) m.dot2.remove();
-    if (m.line && viewer.model && viewer.model.scene) viewer.model.scene.remove(m.line);
-    if (m.chip) m.chip.remove();
-    // Update top chip
-    if (savedMeas.length === 0) lastMeasureEl.textContent = '—';
-    else lastMeasureEl.textContent = fmtDist(savedMeas[savedMeas.length - 1].dist);
-    forceRender();
-  }
-
-  // ── Clear all ───────────────────────────────────────────────────────────────
-  function clearAllMeas() {
-    // Cancel any in-progress
-    rulerStart = null;
-    if (rulerLine && viewer.model && viewer.model.scene) viewer.model.scene.remove(rulerLine);
-    rulerLine = null; rulerLineGeo = null;
-    if (rulerLabel) { rulerLabel.remove(); rulerLabel = null; }
-    if (pinA_el)    { pinA_el.remove();    pinA_el    = null; }
-    rulerOverlay.style.display = 'none';
-    // Remove all saved
-    [...savedMeas].forEach(m => removeMeas(m.id));
-    lastMeasureEl.textContent = '—';
-    forceRender();
-  }
-
-  // ── Ruler button ────────────────────────────────────────────────────────────
-  const annotateBtn = document.getElementById('annotateBtn');
-  annotateBtn.addEventListener('click', () => {
-    annotateMode = !annotateMode;
-    annotateBtn.classList.toggle('active', annotateMode);
-    if (!annotateMode) {
-      // Cancel in-progress only
-      rulerStart = null;
-      if (rulerLine && viewer.model && viewer.model.scene) viewer.model.scene.remove(rulerLine);
-      rulerLine = null; rulerLineGeo = null;
-      if (rulerLabel) { rulerLabel.remove(); rulerLabel = null; }
-      if (pinA_el)    { pinA_el.remove();    pinA_el    = null; }
-      rulerOverlay.style.display = 'none';
-      viewer.style.cursor = '';
-      lastMeasureEl.textContent = savedMeas.length ? fmtDist(savedMeas[savedMeas.length-1].dist) : '—';
-      forceRender();
-    } else {
-      viewer.style.cursor = 'crosshair';
+    function fmtDist(m) {
+      if (m < 1) return `${(m * 100).toFixed(1)} cm`;
+      return `${m.toFixed(2)} m`;
     }
-  });
 
-  // ── Track pointer-down (drag vs click) ─────────────────────────────────────
-  viewer.addEventListener('pointerdown', e => { downPoint = { x: e.clientX, y: e.clientY }; });
-
-  // ── Pointer-move: rubber band + screen overlay ──────────────────────────────
-  viewer.addEventListener('pointermove', e => {
-    if (!annotateMode || !rulerStart) return;
-    const hit = viewer.positionAndNormalFromPoint(e.clientX, e.clientY);
-
-    // Update rubber-band line if cursor is over the model
-    if (hit && rulerLineGeo) {
-      const end = getSnappedPoint(hit.position);
-      const dist = Math.sqrt(
-        (end.x - rulerStart.x)**2 +
-        (end.y - rulerStart.y)**2 +
-        (end.z - rulerStart.z)**2
-      );
-      if (typeof THREE !== 'undefined') {
-        rulerLineGeo.setFromPoints([
-          new THREE.Vector3(rulerStart.x, rulerStart.y, rulerStart.z),
-          new THREE.Vector3(end.x, end.y, end.z)
-        ]);
-      }
-      // Overlay on screen (CSS position, not 3D space)
-      rulerOverlay.style.display = 'block';
-      rulerOverlay.style.left    = e.clientX + 'px';
-      rulerOverlay.style.top     = e.clientY + 'px';
-      rulerOverlay.textContent   = `📏 ${fmtDist(dist)}`;
-      lastMeasureEl.textContent  = fmtDist(dist);
-      forceRender();
-    } else {
-      // Cursor left model surface
-      rulerOverlay.style.display = 'none';
+    // ── Three.js Clipping ────────────────────────────────
+    function initClipping() {
+      if (typeof THREE === 'undefined') return;
+      try {
+        const sym = Symbol.for('3DViewer');
+        if (viewer[sym] && viewer[sym].renderer && viewer[sym].renderer.threeRenderer) {
+          viewer[sym].renderer.threeRenderer.localClippingEnabled = true;
+        }
+        localClipPlaneY = new THREE.Plane(new THREE.Vector3(0, -1, 0), 999);
+        localClipPlaneZ = new THREE.Plane(new THREE.Vector3(0,  0,-1), 999);
+      } catch (e) { console.warn('Clipping init failed', e); }
     }
-  });
 
-  // ── Pointer-up: place A then B ──────────────────────────────────────────────
-  viewer.addEventListener('pointerup', e => {
-    if (!annotateMode || !downPoint) { downPoint = null; return; }
-    const mdx = e.clientX - downPoint.x;
-    const mdy = e.clientY - downPoint.y;
-    downPoint = null;
-    if (Math.hypot(mdx, mdy) > 6) return; // drag — ignore
-
-    const hit = viewer.positionAndNormalFromPoint(e.clientX, e.clientY);
-    if (!hit) return;
-    const pt      = getSnappedPoint(hit.position);
-    const posStr  = `${pt.x.toFixed(4)} ${pt.y.toFixed(4)} ${pt.z.toFixed(4)}`;
-    const normStr = `${hit.normal.x.toFixed(4)} ${hit.normal.y.toFixed(4)} ${hit.normal.z.toFixed(4)}`;
-
-    if (!rulerStart) {
-      // ── PONTO A ────────────────────────────────────────────────────────────
-      rulerStart = pt;
-
-      // Small orange dot on model (starts with label 'A')
-      pinA_el = makeDot('hotspot-dotA-live', posStr, normStr, '#dca153', 'A');
-
-      // Three.js rubber-band line (zero length, will grow on mousemove)
-      if (typeof THREE !== 'undefined' && viewer.model && viewer.model.scene) {
-        const v = new THREE.Vector3(pt.x, pt.y, pt.z);
-        rulerLineGeo = new THREE.BufferGeometry().setFromPoints([v.clone(), v.clone()]);
-        rulerLine    = new THREE.Line(rulerLineGeo,
-          new THREE.LineBasicMaterial({ color: 0xdca153, linewidth: 3, depthTest: false }));
-        rulerLine.renderOrder = 999;
-        viewer.model.scene.add(rulerLine);
-      }
-
-      lastMeasureEl.textContent = '📍 Ponto A — clique no Ponto B';
-      rulerOverlay.style.display = 'none';
-      forceRender();
-
-    } else {
-      // ── PONTO B ────────────────────────────────────────────────────────────
-      const dx   = pt.x - rulerStart.x;
-      const dy   = pt.y - rulerStart.y;
-      const dz   = pt.z - rulerStart.z;
-      const dist = Math.sqrt(dx*dx + dy*dy + dz*dz);
-      const id   = ++measCounter;
-
-      // Small blue dot on model for B (labeled B + id)
-      const dot2 = makeDot(`hotspot-dotB-${id}`, posStr, normStr, '#64b5f6', `B${id}`);
-
-      // Recreate Point A as a permanent hotspot so model-viewer processes the new slot correctly
-      let permanentDot1 = null;
-      if (pinA_el) {
-        const aPos = pinA_el.dataset.position;
-        const aNorm = pinA_el.dataset.normal;
-        // Remove the temporary live dot
-        pinA_el.remove();
-        // Create the permanent dot A (labeled A + id)
-        permanentDot1 = makeDot(`hotspot-dotA-${id}`, aPos, aNorm, '#dca153', `A${id}`);
-      }
-
-      // Freeze line
-      if (typeof THREE !== 'undefined' && rulerLineGeo) {
-        rulerLineGeo.setFromPoints([
-          new THREE.Vector3(rulerStart.x, rulerStart.y, rulerStart.z),
-          new THREE.Vector3(pt.x, pt.y, pt.z)
-        ]);
-      }
-
-      // Chip in the strip
-      const chip = makeChip(id, dist);
-
-      // Save
-      savedMeas.push({ id, dot1: permanentDot1, dot2, line: rulerLine, chip, dist });
-
-      // Reset in-progress (don't remove 3D objects — owned by savedMeas now)
-      pinA_el      = null;
-      rulerLine    = null;
-      rulerLineGeo = null;
-      rulerStart   = null;
-
-      // Overlay off
-      rulerOverlay.style.display = 'none';
-
-      // Update top chip
-      lastMeasureEl.textContent = fmtDist(dist);
-      forceRender();
-
-      // Stay in ruler mode for next measurement
-    }
-  });
-
-  // ── Clear All button ─────────────────────────────────────────────────────────
-  document.getElementById('clearAnnotationsBtn').addEventListener('click', clearAllMeas);
-
-
-
-
-
-  // ── Capture Screenshot ───────────────────────────────
-  async function buildCompositeBlob() {
-    const pins = Array.from(viewer.querySelectorAll('.hotspot-pin'));
-    const viewerRect = viewer.getBoundingClientRect();
-    const blob   = await viewer.toBlob({ mimeType: 'image/png', idealAspect: pins.length === 0 });
-    const imgUrl = URL.createObjectURL(blob);
-    const img    = await new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = rej; i.src = imgUrl; });
-    URL.revokeObjectURL(imgUrl);
-
-    const canvas = document.createElement('canvas');
-    canvas.width  = img.naturalWidth  || img.width;
-    canvas.height = img.naturalHeight || img.height;
-    const ctx = canvas.getContext('2d');
-    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-
-    pins.forEach(pin => {
-      const r    = pin.getBoundingClientRect();
-      const relX = (r.left + r.width/2  - viewerRect.left) / viewerRect.width;
-      const relY = (r.top  + r.height/2 - viewerRect.top)  / viewerRect.height;
-      const x = relX * canvas.width, y = relY * canvas.height;
-      const radius = canvas.width * 0.018;
-      ctx.beginPath(); ctx.arc(x, y, radius, 0, Math.PI*2);
-      ctx.fillStyle = '#dca153'; ctx.fill();
-      ctx.lineWidth = Math.max(2, radius*0.18); ctx.strokeStyle = '#fff'; ctx.stroke();
-      ctx.fillStyle = '#fff';
-      ctx.font = `bold ${Math.round(radius*1.1)}px sans-serif`;
-      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-      ctx.fillText(pin.textContent, x, y + 1);
-    });
-    return new Promise(res => canvas.toBlob(res, 'image/png'));
-  }
-
-  document.getElementById('captureBtn').addEventListener('click', async () => {
-    try {
-      const blob     = await buildCompositeBlob();
-      const basename = (filenameEl.textContent.replace(/\.[^.]+$/, '') || 'modelo');
-      const filename = `${basename}-captura.png`;
-      const file     = new File([blob], filename, { type: 'image/png' });
-      if (navigator.canShare && navigator.canShare({ files: [file] })) {
-        try { await navigator.share({ files: [file], title: 'Captura do modelo 3D' }); return; }
-        catch (e) { if (e && e.name === 'AbortError') return; }
-      }
-      const url = URL.createObjectURL(blob);
-      const a   = Object.assign(document.createElement('a'), { href: url, download: filename });
-      document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
-    } catch (_) { alert('Não foi possível capturar a imagem.'); }
-  });
-
-  // ── Share View ───────────────────────────────────────
-  document.getElementById('shareBtn').addEventListener('click', async () => {
-    try {
-      const o = viewer.getCameraOrbit(), t = viewer.getCameraTarget(), f = viewer.getFieldOfView();
-      const params = new URLSearchParams({
-        o: `${o.theta.toFixed(4)},${o.phi.toFixed(4)},${o.radius.toFixed(4)}`,
-        t: `${t.x.toFixed(4)},${t.y.toFixed(4)},${t.z.toFixed(4)}`,
-        f: f.toFixed(2)
-      });
-      const url = `${location.origin}${location.pathname}#${params}`;
-      if (navigator.share) {
-        try { await navigator.share({ title: 'Vista 3D', url }); return; }
-        catch (e) { if (e && e.name === 'AbortError') return; }
-      }
-      try { await navigator.clipboard.writeText(url); alert('Link copiado!'); }
-      catch (_) {
-        const tmp = Object.assign(document.createElement('input'), { value: url });
-        document.body.appendChild(tmp); tmp.select(); document.execCommand('copy'); tmp.remove();
-        alert('Link copiado!');
-      }
-    } catch (_) { alert('Não foi possível compartilhar a vista.'); }
-  });
-
-  // ── Replace Model File ───────────────────────────────
-  document.getElementById('fileInput').addEventListener('change', async e => {
-    const file = e.target.files[0];
-    if (!file) return;
-    cancelRulerInProgress();
-    lastMeasureEl.textContent = '—';
-    await SalsiDB.setProjectModel(activeId, file, file.name);
-    viewer.src = URL.createObjectURL(file);
-    filenameEl.textContent = file.name;
-    emptyState.classList.add('hidden');
-    e.target.value = '';
-  });
-
-  // ── Share Hash Restore ───────────────────────────────
-  function applyShareHashIfPresent() {
-    if (!location.hash) return;
-    try {
-      const p = new URLSearchParams(location.hash.slice(1));
-      const o = p.get('o'), t = p.get('t'), f = p.get('f');
-      if (o) { const [th,ph,r] = o.split(',').map(Number); viewer.cameraOrbit  = `${th}rad ${ph}rad ${r}m`; }
-      if (t) { const [x,y,z]   = t.split(',').map(Number); viewer.cameraTarget = `${x}m ${y}m ${z}m`; }
-      if (f) viewer.fieldOfView = `${Number(f)}deg`;
-      viewer.jumpCameraToGoal();
-    } catch (_) {}
-  }
-
-  // ── Solar Study Slider ───────────────────────────────
-  const sunAngleSlider = document.getElementById('sunAngle');
-  const sunAngleVal    = document.getElementById('sunAngleVal');
-  sunAngleSlider.addEventListener('input', e => {
-    const deg = parseInt(e.target.value);
-    sunAngleVal.textContent = `${deg}°`;
-    viewer.skyboxRotation = `0rad ${(deg * Math.PI / 180).toFixed(4)}rad 0rad`;
-    forceRender();
-  });
-
-  // ── Variant Select ───────────────────────────────────
-  document.getElementById('variantSelect').addEventListener('change', e => {
-    viewer.variantName = e.target.value || null;
-    forceRender();
-  });
-
-  // ── Clipping — Horizontal Y ──────────────────────────
-  const clipYSlider = document.getElementById('clipY');
-  const clipYVal    = document.getElementById('clipYVal');
-  clipYSlider.addEventListener('input', e => {
-    const val    = parseFloat(e.target.value);
-    const maxVal = parseFloat(clipYSlider.max);
-    if (val >= maxVal - 0.01) {
-      clipYVal.textContent = 'Desativado';
-      if (localClipPlaneY) localClipPlaneY.constant = 999;
-    } else {
-      clipYVal.textContent = `${val.toFixed(2)} m`;
-      if (localClipPlaneY) localClipPlaneY.constant = val;
-    }
-    forceRender();
-  });
-
-  // ── Clipping — Vertical Z ────────────────────────────
-  const clipZSlider = document.getElementById('clipZ');
-  const clipZVal    = document.getElementById('clipZVal');
-  clipZSlider.addEventListener('input', e => {
-    const val    = parseFloat(e.target.value);
-    const maxVal = parseFloat(clipZSlider.max);
-    if (val >= maxVal - 0.01) {
-      clipZVal.textContent = 'Desativado';
-      if (localClipPlaneZ) localClipPlaneZ.constant = 999;
-    } else {
-      clipZVal.textContent = `${val.toFixed(2)} m`;
-      if (localClipPlaneZ) localClipPlaneZ.constant = val;
-    }
-    forceRender();
-  });
-
-  // ═══════════════════════════════════════════════════════════════════════════
-  //  LÓGICA DO PAINEL SKETCHUP (Estilos de Face & Projeção)
-  // ═══════════════════════════════════════════════════════════════════════════
-  const projPerspBtn    = document.getElementById('projPerspBtn');
-  const projParallelBtn = document.getElementById('projParallelBtn');
-  const styleShadedBtn  = document.getElementById('styleShadedBtn');
-  const styleXrayBtn    = document.getElementById('styleXrayBtn');
-  const styleMonoBtn    = document.getElementById('styleMonoBtn');
-  const styleWireBtn    = document.getElementById('styleWireBtn');
-  const invertCutBtn    = document.getElementById('invertCutBtn');
-
-  // Helper to toggle active classes on button groups
-  function toggleGroupActive(activeBtn, groupSelector) {
-    document.querySelectorAll(groupSelector).forEach(btn => btn.classList.remove('primary'));
-    activeBtn.classList.add('primary');
-  }
-
-  // 1. Camera Projection
-  projPerspBtn.addEventListener('click', () => {
-    viewer.fieldOfView = 'auto';
-    toggleGroupActive(projPerspBtn, '#projPerspBtn, #projParallelBtn');
-  });
-
-  projParallelBtn.addEventListener('click', () => {
-    // 1deg field of view simulates a perfect parallel projection in model-viewer
-    viewer.fieldOfView = '1.0deg';
-    toggleGroupActive(projParallelBtn, '#projPerspBtn, #projParallelBtn');
-  });
-
-  // Helper to traverse Three.js scene and apply face styles
-  function applyFaceStyle(mode) {
-    try {
-      const sym = Symbol.for('3DViewer');
-      if (!viewer[sym] || !viewer[sym].model) return;
-      
-      viewer[sym].model.scene.traverse(node => {
-        if (node.isMesh && node.material) {
-          const materials = Array.isArray(node.material) ? node.material : [node.material];
-          
-          materials.forEach(mat => {
-            // Backup original state on first style change
-            if (!mat.userData.originalOpacity) mat.userData.originalOpacity = mat.opacity || 1;
-            if (mat.userData.originalTransparent === undefined) mat.userData.originalTransparent = mat.transparent || false;
-            if (mat.userData.originalWireframe === undefined) mat.userData.originalWireframe = mat.wireframe || false;
-            if (!mat.userData.originalColor) mat.userData.originalColor = mat.color.getHex();
-            if (mat.userData.originalMap === undefined) mat.userData.originalMap = mat.map || null;
-
-            if (mode === 'shaded') {
-              // Restore original
-              mat.opacity = mat.userData.originalOpacity;
-              mat.transparent = mat.userData.originalTransparent;
-              mat.wireframe = mat.userData.originalWireframe;
-              mat.color.setHex(mat.userData.originalColor);
-              mat.map = mat.userData.originalMap;
-            } else if (mode === 'xray') {
-              // Translucent
-              mat.opacity = 0.35;
-              mat.transparent = true;
-              mat.wireframe = false;
-              mat.color.setHex(mat.userData.originalColor);
-              mat.map = mat.userData.originalMap;
-            } else if (mode === 'mono') {
-              // Monochrome white faces, no textures
-              mat.opacity = 1.0;
-              mat.transparent = false;
-              mat.wireframe = false;
-              mat.color.setHex(0xffffff);
-              mat.map = null; // hide texture map
-            } else if (mode === 'wireframe') {
-              // Structural wireframe
-              mat.opacity = 1.0;
-              mat.transparent = false;
-              mat.wireframe = true;
-              mat.color.setHex(0xdca153); // amber wireframe
-            }
-            
+    function applyClippingToScene() {
+      if (typeof THREE === 'undefined' || !viewer.model || !viewer.model.scene) return;
+      viewer.model.scene.traverse(child => {
+        if (child.isMesh && child.material) {
+          const mats = Array.isArray(child.material) ? child.material : [child.material];
+          mats.forEach(mat => {
+            mat.clippingPlanes = [];
+            if (localClipPlaneY) mat.clippingPlanes.push(localClipPlaneY);
+            if (localClipPlaneZ) mat.clippingPlanes.push(localClipPlaneZ);
+            mat.clipShadows = true;
             mat.needsUpdate = true;
           });
         }
       });
-      forceRender();
-    } catch (_) {}
-  }
-
-  styleShadedBtn.addEventListener('click', () => {
-    applyFaceStyle('shaded');
-    toggleGroupActive(styleShadedBtn, '#styleShadedBtn, #styleXrayBtn, #styleMonoBtn, #styleWireBtn');
-  });
-
-  styleXrayBtn.addEventListener('click', () => {
-    applyFaceStyle('xray');
-    toggleGroupActive(styleXrayBtn, '#styleShadedBtn, #styleXrayBtn, #styleMonoBtn, #styleWireBtn');
-  });
-
-  styleMonoBtn.addEventListener('click', () => {
-    applyFaceStyle('mono');
-    toggleGroupActive(styleMonoBtn, '#styleShadedBtn, #styleXrayBtn, #styleMonoBtn, #styleWireBtn');
-  });
-
-  styleWireBtn.addEventListener('click', () => {
-    applyFaceStyle('wireframe');
-    toggleGroupActive(styleWireBtn, '#styleShadedBtn, #styleXrayBtn, #styleMonoBtn, #styleWireBtn');
-  });
-
-  // 3. Section Cut Inversion
-  invertCutBtn.addEventListener('click', () => {
-    try {
-      if (localClipPlaneY) {
-        localClipPlaneY.normal.negate();
-        // Shift slider value to match inverted coordinate space
-        const clipY = document.getElementById('clipY');
-        clipY.value = String(clipY.max - clipY.value);
-      }
-      if (localClipPlaneZ) {
-        localClipPlaneZ.normal.negate();
-        const clipZ = document.getElementById('clipZ');
-        clipZ.value = String(clipZ.max - clipZ.value);
-      }
-      
-      invertCutBtn.classList.toggle('primary');
-      forceRender();
-      
-      const iToast = document.createElement('div');
-      Object.assign(iToast.style, {
-        position: 'absolute', top: '16px', left: '50%', transform: 'translateX(-50%)',
-        background: 'rgba(10,14,20,0.92)', color: 'var(--accent)',
-        fontSize: '12px', fontWeight: '800', padding: '8px 16px',
-        borderRadius: '12px', border: '1.5px solid var(--accent)',
-        boxShadow: '0 4px 16px rgba(0,0,0,.5)', zIndex: '10',
-        fontFamily: 'Manrope, sans-serif'
-      });
-      iToast.innerHTML = '🔄 <b>Sentido do corte invertido</b>';
-      viewer.appendChild(iToast);
-      setTimeout(() => iToast.remove(), 1500);
-    } catch (_) {}
-  });
-
-  // ── PDF Report ───────────────────────────────────────
-  document.getElementById('pdfReportBtn').addEventListener('click', async () => {
-    if (typeof window.jspdf === 'undefined') {
-      alert('A biblioteca PDF não carregou (necessita de internet na primeira vez). Tente novamente com conexão.'); return;
     }
-    try {
-      const { jsPDF } = window.jspdf;
-      const doc = new jsPDF();
 
-      doc.setFont('helvetica','bold'); doc.setFontSize(22); doc.setTextColor(220,161,83);
-      doc.text('Relatório Técnico de Visita', 20, 22);
-      doc.setFont('helvetica','normal'); doc.setFontSize(9); doc.setTextColor(130,130,130);
-      doc.text(`Gerado em: ${new Date().toLocaleString('pt-BR')} | Salsi Offline BIM`, 20, 29);
+    // ── Vertex Snapping ──────────────────────────────────
+    function getSnappedPoint(hitPos) {
+      let closest = { x: hitPos.x, y: hitPos.y, z: hitPos.z };
+      let minDist = Infinity;
+      if (!viewer.model || !viewer.model.scene) return closest;
 
-      doc.setFontSize(11); doc.setFont('helvetica','bold'); doc.setTextColor(40,40,40);
-      doc.text(`PROJETO: ${project ? project.name : 'Sem nome'}`, 20, 40);
-      doc.setFont('helvetica','normal');
-      doc.text(`Descrição: ${project ? (project.description || 'Nenhuma') : 'Nenhuma'}`, 20, 46);
-      doc.text(`Modelo: ${filenameEl.textContent}  |  Dimensões: ${dimsEl.textContent}`, 20, 52);
-
-      doc.setDrawColor(220,161,83); doc.setLineWidth(0.5); doc.line(20,56,190,56);
-
-      let yPos = 62;
-      try {
-        const blob    = await buildCompositeBlob();
-        const b64     = await new Promise(res => { const r = new FileReader(); r.onloadend = () => res(r.result); r.readAsDataURL(blob); });
-        doc.addImage(b64, 'PNG', 20, yPos, 170, 85); yPos += 92;
-      } catch (_) {
-        doc.setTextColor(200,80,60); doc.text('[Captura indisponível]', 20, yPos);
-        doc.setTextColor(40,40,40); yPos += 12;
-      }
-
-      doc.line(20,yPos,190,yPos); yPos += 8;
-      doc.setFont('helvetica','bold'); doc.setFontSize(13); doc.setTextColor(43,61,82);
-      doc.text('Medições realizadas nesta sessão:', 20, yPos); yPos += 8;
-
-      doc.setFontSize(10); doc.setFont('helvetica','normal'); doc.setTextColor(50,50,50);
-
-      if (!savedMeas.length) {
-        doc.text('Nenhuma medição realizada nesta sessão.', 20, yPos);
-      } else {
-        for (const m of savedMeas) {
-          if (yPos > 270) { doc.addPage(); yPos = 20; }
-          doc.setFont('helvetica','bold'); doc.setTextColor(220,161,83);
-          doc.text(`MEDIÇÃO #${m.id}:`, 20, yPos);
-          doc.setFont('helvetica','normal'); doc.setTextColor(50,50,50);
-          doc.text(fmtDist(m.dist), 55, yPos);
-          yPos += 8;
+      viewer.model.scene.traverse(child => {
+        if (!child.isMesh || !child.geometry) return;
+        const posAttr = child.geometry.attributes.position;
+        if (!posAttr) return;
+        const m    = child.matrixWorld.elements;
+        const step = posAttr.count > 5000 ? Math.ceil(posAttr.count / 5000) : 1;
+        for (let i = 0; i < posAttr.count; i += step) {
+          const vx = posAttr.getX(i), vy = posAttr.getY(i), vz = posAttr.getZ(i);
+          const wx = m[0]*vx + m[4]*vy + m[8]*vz  + m[12];
+          const wy = m[1]*vx + m[5]*vy + m[9]*vz  + m[13];
+          const wz = m[2]*vx + m[6]*vy + m[10]*vz + m[14];
+          const d  = Math.sqrt((wx-hitPos.x)**2 + (wy-hitPos.y)**2 + (wz-hitPos.z)**2);
+          if (d < minDist) { minDist = d; closest = { x:wx, y:wy, z:wz }; }
         }
+      });
+      return minDist < 0.15 ? closest : hitPos;
+    }
+
+    // ── Load Model ───────────────────────────────────────
+    async function loadModelForProject() {
+      const stored = await SalsiDB.getProjectModel(activeId);
+      if (stored && stored.blob) {
+        viewer.src = URL.createObjectURL(stored.blob);
+        filenameEl.textContent = stored.filename || 'modelo.glb';
+        emptyState.classList.add('hidden');
+      } else {
+        filenameEl.textContent = '—';
+        emptyState.classList.remove('hidden');
+      }
+    }
+
+    // ── Model Viewer Events ──────────────────────────────
+    viewer.addEventListener('progress', e => {
+      const pct = Math.round((e.detail.totalProgress || 0) * 100);
+      progressWrap.classList.remove('hidden');
+      progressBar.style.width = pct + '%';
+      if (pct >= 100) progressWrap.classList.add('hidden');
+    });
+
+    viewer.addEventListener('error', () => {
+      emptyState.classList.remove('hidden');
+      progressWrap.classList.add('hidden');
+      dimsEl.textContent = '—';
+    });
+
+    viewer.addEventListener('load', async () => {
+      emptyState.classList.add('hidden');
+      progressWrap.classList.add('hidden');
+
+      // Dimensions
+      try {
+        const d = viewer.getDimensions();
+        dimsEl.textContent = `${d.x.toFixed(2)} × ${d.y.toFixed(2)} × ${d.z.toFixed(2)} m`;
+
+        // Adjust clipping sliders to model size
+        const clipYEl = document.getElementById('clipY');
+        const clipZEl = document.getElementById('clipZ');
+        clipYEl.min = String((-d.y * 0.1).toFixed(2));
+        clipYEl.max = String((d.y * 1.5).toFixed(2));
+        clipYEl.value = clipYEl.max;
+        clipZEl.min = String((-d.z * 1.5).toFixed(2));
+        clipZEl.max = String((d.z * 1.5).toFixed(2));
+        clipZEl.value = clipZEl.max;
+        document.getElementById('clipYVal').textContent = 'Desativado';
+        document.getElementById('clipZVal').textContent = 'Desativado';
+      } catch (_) { dimsEl.textContent = '—'; }
+
+      // Animations
+      const hasAnim = !!(viewer.availableAnimations && viewer.availableAnimations.length);
+      animBtn.classList.toggle('hidden', !hasAnim);
+
+      // Clipping init
+      initClipping();
+      applyClippingToScene();
+
+      // Variants
+      const variants        = viewer.availableVariants;
+      const variantContainer = document.getElementById('variantSelectContainer');
+      const variantSelect    = document.getElementById('variantSelect');
+      if (variants && variants.length) {
+        variantContainer.style.display = 'block';
+        variantSelect.innerHTML = '<option value="">(Padrão)</option>'
+          + variants.map(v => `<option value="${esc(v)}">${esc(v)}</option>`).join('');
+        variantSelect.value = viewer.variantName || '';
+      } else {
+        variantContainer.style.display = 'none';
       }
 
-      const pdfName = `Relatorio_${project ? project.name.replace(/\s+/g,'_') : 'Projeto'}.pdf`;
-      doc.save(pdfName);
-    } catch (err) {
-      console.error(err);
-      alert('Erro ao gerar o relatório em PDF.');
-    }
-  });
-
-  // ── Tab Switching Logic ─────────────────────────────
-  document.querySelectorAll('.tab-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const tabId = btn.dataset.tab;
-      
-      // Toggle buttons
-      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      
-      // Toggle panes
-      document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
-      const targetPane = document.getElementById(tabId);
-      if (targetPane) targetPane.classList.add('active');
+      // Render saved measurements from database
+      await loadSavedMeasurements();
     });
-  });
 
-  // ── Kick off ─────────────────────────────────────────
-  await loadModelForProject();
+    // ── View Buttons ─────────────────────────────────────
+    document.querySelectorAll('.viewbtn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        viewer.cameraOrbit = btn.dataset.orbit;
+        viewer.jumpCameraToGoal();
+      });
+    });
 
-})();
-</script>
+    document.getElementById('resetViewBtn').addEventListener('click', () => {
+      viewer.cameraOrbit = 'auto auto auto';
+      viewer.cameraTarget = 'auto auto auto';
+      viewer.fieldOfView = 'auto';
+      viewer.jumpCameraToGoal();
+    });
+
+    // ── Auto-Rotate ──────────────────────────────────────
+    const toggleRotateBtn = document.getElementById('toggleRotate');
+    toggleRotateBtn.addEventListener('click', () => {
+      const on = viewer.hasAttribute('auto-rotate');
+      viewer.toggleAttribute('auto-rotate', !on);
+      toggleRotateBtn.classList.toggle('bg-primary', !on);
+      toggleRotateBtn.classList.toggle('text-white', !on);
+    });
+
+    // ── Zoom ─────────────────────────────────────────────
+    document.getElementById('zoomInBtn').addEventListener('click', () => viewer.zoom(1));
+    document.getElementById('zoomOutBtn').addEventListener('click', () => viewer.zoom(-1));
+
+    // ── Fullscreen ───────────────────────────────────────
+    function goFullscreen() {
+      const el = viewer;
+      if (el.requestFullscreen)       el.requestFullscreen();
+      else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+    }
+    document.getElementById('fullscreenBtn').addEventListener('click', goFullscreen);
+
+    // ── Animation ────────────────────────────────────────
+    animBtn.addEventListener('click', () => {
+      if (viewer.paused) { 
+        viewer.play();  
+        animIcon.textContent = 'pause';
+        animText.textContent = 'Pausar';
+      } else { 
+        viewer.pause(); 
+        animIcon.textContent = 'play_arrow';
+        animText.textContent = 'Girar Câmera';
+      }
+    });
+
+    // Keyboard Shortcuts
+    window.addEventListener('keydown', e => {
+      if (e.ctrlKey || e.metaKey || e.altKey || e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+      const k = e.key.toLowerCase();
+      const viewKeys = { '1':'0deg 90deg auto','2':'180deg 90deg auto','3':'90deg 90deg auto',
+        '4':'-90deg 90deg auto','5':'0deg 0.1deg auto','6':'0deg 179.9deg auto','7':'45deg 55deg auto' };
+      
+      if (viewKeys[e.key]) {
+        viewer.cameraOrbit = viewKeys[e.key];
+        viewer.jumpCameraToGoal();
+        return;
+      }
+      if (k === 'r') { document.getElementById('resetViewBtn').click(); return; }
+      if (k === 'f') { goFullscreen(); return; }
+      if (k === 'c') { document.getElementById('captureBtn').click(); return; }
+      if (k === 't') { document.getElementById('annotateBtn').click(); return; }
+      if (k === '?') { document.getElementById('shortcutsOverlay').classList.toggle('hidden'); }
+    });
+
+    document.getElementById('closeShortcuts').addEventListener('click', () => {
+      document.getElementById('shortcutsOverlay').classList.add('hidden');
+    });
+
+    // ── Three.js Measurement Ruler ───────────────────────
+    const annotateBtn = document.getElementById('annotateBtn');
+    annotateBtn.addEventListener('click', () => {
+      annotateMode = !annotateMode;
+      annotateBtn.classList.toggle('bg-primary', annotateMode);
+      annotateBtn.classList.toggle('text-white', annotateMode);
+      
+      // Update cursor style
+      viewer.style.cursor = annotateMode ? 'crosshair' : '';
+      
+      // Reset active ruler drawing state
+      if (rulerStart) clearActiveLine();
+    });
+
+    function getThreeInstance() {
+      try {
+        const sym = Symbol.for('3DViewer');
+        return viewer[sym];
+      } catch(_) { return null; }
+    }
+
+    function clearActiveLine() {
+      rulerStart = null;
+      if (rulerLine && viewer.model) {
+        viewer.model.scene.remove(rulerLine);
+        rulerLine = null;
+      }
+      // Remove pins
+      const pinA = viewer.querySelector('.hotspot-pin.point-a');
+      const pinB = viewer.querySelector('.hotspot-pin.point-b');
+      if (pinA) pinA.remove();
+      if (pinB) pinB.remove();
+      
+      if (rulerLabel) { rulerLabel.style.display = 'none'; }
+      forceRender();
+    }
+
+    // Pointer events on viewer for clicking points
+    viewer.addEventListener('pointerdown', e => {
+      if (!annotateMode || e.button !== 0) return;
+      downPoint = { x: e.clientX, y: e.clientY };
+    });
+
+    viewer.addEventListener('pointerup', async e => {
+      if (!annotateMode || !downPoint || e.button !== 0) return;
+      const dx = Math.abs(e.clientX - downPoint.x);
+      const dy = Math.abs(e.clientY - downPoint.y);
+      if (dx > 4 || dy > 4) return; // Dragging, not clicking
+
+      const hit = viewer.positionAndNormalFromPoint(e.clientX, e.clientY);
+      if (!hit) return;
+
+      const snapped = getSnappedPoint(hit.position);
+
+      if (!rulerStart) {
+        // Point A
+        rulerStart = snapped;
+        createPin('point-a', snapped);
+      } else {
+        // Point B
+        const end = snapped;
+        const dx = end.x - rulerStart.x;
+        const dy = end.y - rulerStart.y;
+        const dz = end.z - rulerStart.z;
+        const dist = Math.sqrt(dx*dx + dy*dy + dz*dz);
+
+        createPin('point-b', end);
+
+        // Add to Database
+        await SalsiDB.addMarkup({
+          projectId: activeId,
+          number: savedMeas.length + 1,
+          from: rulerStart,
+          to: end,
+          dist: dist
+        });
+
+        lastMeasureEl.textContent = fmtDist(dist);
+        lastMeasureBox.style.display = 'inline-block';
+
+        await loadSavedMeasurements();
+        clearActiveLine();
+      }
+    });
+
+    function createPin(className, pos) {
+      const pin = document.createElement('div');
+      pin.className = `hotspot-pin ${className}`;
+      pin.slot = `hotspot-${className}-${Date.now()}`;
+      pin.dataset.position = `${pos.x} ${pos.y} ${pos.z}`;
+      viewer.appendChild(pin);
+    }
+
+    async function loadSavedMeasurements() {
+      savedMeas = await SalsiDB.getMarkups(activeId);
+      const container = document.getElementById('measStrip');
+      if (!container) return;
+
+      if (savedMeas.length === 0) {
+        container.innerHTML = `<p class="text-[12px] text-outline italic">Nenhuma medição realizada.</p>`;
+        return;
+      }
+
+      container.innerHTML = savedMeas.map(m => `
+        <div class="meas-chip">
+          <span>Medida #${m.number}: <b>${fmtDist(m.dist)}</b></span>
+          <button class="meas-chip-remove" data-del-meas="${m.id}">&times;</button>
+        </div>
+      `).join('');
+
+      container.querySelectorAll('[data-del-meas]').forEach(btn => {
+        btn.addEventListener('click', async (e) => {
+          e.stopPropagation();
+          const mid = btn.dataset.delMeas;
+          await SalsiDB.deleteMarkup(mid);
+          await loadSavedMeasurements();
+        });
+      });
+
+      // Render 3D lines for all measurements in Three.js
+      drawAll3DLines();
+    }
+
+    function drawAll3DLines() {
+      if (typeof THREE === 'undefined') return;
+      const three = getThreeInstance();
+      if (!three || !viewer.model) return;
+
+      // Remove any existing lines from scene first
+      const scene = viewer.model.scene;
+      const toRemove = [];
+      scene.traverse(child => {
+        if (child.isLine && child.userData.isRulerLine) {
+          toRemove.push(child);
+        }
+      });
+      toRemove.forEach(l => scene.remove(l));
+
+      // Draw line for each measurement
+      savedMeas.forEach(m => {
+        const points = [
+          new THREE.Vector3(m.from.x, m.from.y, m.from.z),
+          new THREE.Vector3(m.to.x, m.to.y, m.to.z)
+        ];
+        const geo = new THREE.BufferGeometry().setFromPoints(points);
+        const mat = new THREE.LineBasicMaterial({
+          color: 0x391E10, // Bistre
+          linewidth: 3,
+          depthTest: false
+        });
+        const line = new THREE.Line(geo, mat);
+        line.userData.isRulerLine = true;
+        scene.add(line);
+      });
+
+      forceRender();
+    }
+
+    document.getElementById('clearAnnotationsBtn').addEventListener('click', async () => {
+      if (confirm('Deseja excluir todas as medições do projeto?')) {
+        await SalsiDB.clearMarkups(activeId);
+        await loadSavedMeasurements();
+        clearActiveLine();
+      }
+    });
+
+    // ── Studies: Solar Light azimuthal angle ─────────────
+    const sunAngleSlider = document.getElementById('sunAngle');
+    sunAngleSlider.addEventListener('input', () => {
+      const angle = parseFloat(sunAngleSlider.value);
+      // model-viewer doesn't expose lights easily, but we can rotate environment/shadow-intensity
+      // or change skybox-image orientation if available
+      const rad = (angle * Math.PI) / 180;
+      viewer.skyboxImage = ''; // Clear custom skybox to keep neutral studio
+      
+      // We rotate the studio lighting environment dynamically
+      // model-viewer supports env-rotation
+      viewer.style.setProperty('--min-hotspot-opacity', '0.2');
+      try {
+        viewer.environmentRotation = `${angle}deg`;
+      } catch(_) {}
+    });
+
+    // ── Studies: Section Clipping Planes Y and Z ──────────
+    const clipYSlider = document.getElementById('clipY');
+    const clipZSlider = document.getElementById('clipZ');
+
+    function updateClippingPlanes() {
+      if (typeof THREE === 'undefined' || !localClipPlaneY || !localClipPlaneZ) return;
+      
+      const valY = parseFloat(clipYSlider.value);
+      const valZ = parseFloat(clipZSlider.value);
+
+      // A plane is defined by normal vector and constant offset.
+      // Offset matches value from slider. If value is at max, we place plane far away (disabled).
+      const d = viewer.getDimensions();
+      
+      if (valY >= d.y * 1.48) {
+        localClipPlaneY.constant = 999;
+      } else {
+        localClipPlaneY.constant = valY;
+      }
+
+      if (valZ >= d.z * 1.48) {
+        localClipPlaneZ.constant = 999;
+      } else {
+        localClipPlaneZ.constant = valZ;
+      }
+
+      forceRender();
+    }
+
+    clipYSlider.addEventListener('input', updateClippingPlanes);
+    clipZSlider.addEventListener('input', updateClippingPlanes);
+
+    // ── Variants Selection ───────────────────────────────
+    const variantSelect = document.getElementById('variantSelect');
+    variantSelect.addEventListener('change', () => {
+      viewer.variantName = variantSelect.value || null;
+    });
+
+    // ── Capture Image ────────────────────────────────────
+    document.getElementById('captureBtn').addEventListener('click', () => {
+      const url = viewer.toDataURL('image/png');
+      const a = Object.assign(document.createElement('a'), {
+        href: url,
+        download: `Salsi_Captura_${project ? project.name.replace(/\s+/g,'_') : 'Projeto'}.png`
+      });
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+    });
+
+    // ── Share view via URL hash ──────────────────────────
+    document.getElementById('shareBtn').addEventListener('click', () => {
+      try {
+        const orbit = viewer.getCameraOrbit();
+        const target = viewer.getCameraTarget();
+        const hash = `#orbit=${orbit.theta.toFixed(3)}rad_${orbit.phi.toFixed(3)}rad_${orbit.radius.toFixed(3)}m&target=${target.x.toFixed(3)}m_${target.y.toFixed(3)}m_${target.z.toFixed(3)}m`;
+        
+        // Copy to clipboard
+        const url = window.location.href.split('#')[0] + hash;
+        navigator.clipboard.writeText(url).then(() => {
+          const sToast = document.createElement('div');
+          Object.assign(sToast.style, {
+            position: 'absolute', bottom: '16px', left: '50%', transform: 'translateX(-50%)',
+            background: 'rgba(57, 30, 16, 0.95)', color: '#C7A27A',
+            fontSize: '12px', fontWeight: '700', padding: '10px 16px',
+            borderRadius: '12px', border: '1.5px solid #E2CEB1',
+            boxShadow: '0 4px 16px rgba(0,0,0,.15)', zIndex: '99'
+          });
+          sToast.textContent = 'Link de visualização copiado para a área de transferência!';
+          document.body.appendChild(sToast);
+          setTimeout(() => sToast.remove(), 2500);
+        });
+      } catch (_) {
+        alert('Não foi possível gerar o link de compartilhamento.');
+      }
+    });
+
+    function applyShareHashIfPresent() {
+      const hash = window.location.hash;
+      if (!hash) return;
+      try {
+        const params = new URLSearchParams(hash.substring(1).replace(/_/g, ' ').replace(/&/g, '\n'));
+        const orbit = params.get('orbit');
+        const target = params.get('target');
+        if (orbit) viewer.cameraOrbit = orbit;
+        if (target) viewer.cameraTarget = target;
+        viewer.jumpCameraToGoal();
+      } catch(_) {}
+    }
+
+    // ── PDF Report ───────────────────────────────────────
+    document.getElementById('pdfReportBtn').addEventListener('click', async () => {
+      if (typeof window.jspdf === 'undefined') {
+        alert('Aguarde o carregamento da biblioteca PDF.'); 
+        return;
+      }
+      try {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+
+        doc.setFont('helvetica','bold'); doc.setFontSize(22); doc.setTextColor(57,30,16); // Bistre
+        doc.text('Relatório Técnico de Visita', 20, 22);
+        doc.setFont('helvetica','normal'); doc.setFontSize(9); doc.setTextColor(115,65,40); // Kobicha
+        doc.text(`Gerado em: ${new Date().toLocaleString('pt-BR')} | Salsi`, 20, 29);
+
+        doc.setFontSize(11); doc.setFont('helvetica','bold'); doc.setTextColor(57,30,16);
+        doc.text(`PROJETO: ${project ? project.name : 'Sem nome'}`, 20, 40);
+        doc.setFont('helvetica','normal'); doc.setTextColor(80,80,80);
+        doc.text(`Modelo: ${filenameEl.textContent}  |  Dimensões: ${dimsEl.textContent}`, 20, 46);
+
+        doc.setDrawColor(226,206,177); doc.setLineWidth(0.5); doc.line(20,50,190,50); // Dun
+
+        let yPos = 60;
+        try {
+          const dataUrl = viewer.toDataURL('image/png');
+          doc.addImage(dataUrl, 'PNG', 20, yPos, 170, 95); 
+          yPos += 105;
+        } catch (_) {
+          doc.setTextColor(200,80,60); doc.text('[Captura indisponível]', 20, yPos);
+          doc.setTextColor(80,80,80); yPos += 12;
+        }
+
+        doc.line(20,yPos,190,yPos); yPos += 8;
+        doc.setFont('helvetica','bold'); doc.setFontSize(13); doc.setTextColor(57,30,16);
+        doc.text('Medições consolidadas:', 20, yPos); yPos += 8;
+
+        doc.setFontSize(10); doc.setFont('helvetica','normal'); doc.setTextColor(80,80,80);
+
+        if (!savedMeas.length) {
+          doc.text('Nenhuma medição realizada no modelo 3D.', 20, yPos);
+        } else {
+          for (const m of savedMeas) {
+            if (yPos > 270) { doc.addPage(); yPos = 20; }
+            doc.setFont('helvetica','bold'); doc.setTextColor(199,162,122); // Lion
+            doc.text(`MEDIÇÃO #${m.number}:`, 20, yPos);
+            doc.setFont('helvetica','normal'); doc.setTextColor(80,80,80);
+            doc.text(fmtDist(m.dist), 55, yPos);
+            yPos += 8;
+          }
+        }
+
+        const pdfName = `Relatorio_${project ? project.name.replace(/\s+/g,'_') : 'Projeto'}.pdf`;
+        doc.save(pdfName);
+      } catch (err) {
+        console.error(err);
+        alert('Erro ao gerar o relatório em PDF.');
+      }
+    });
+
+    // ── File Input Upload Model ──────────────────────────
+    fileInput.addEventListener('change', async e => {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      progressWrap.classList.remove('hidden');
+      progressBar.style.width = '15%';
+
+      try {
+        await SalsiDB.setProjectModel(activeId, file, file.name);
+        await loadModelForProject();
+      } catch (err) {
+        console.error(err);
+        alert('Erro ao salvar o modelo 3D no banco de dados local.');
+      } finally {
+        progressWrap.classList.add('hidden');
+      }
+    });
+
+    // ── Kick off ─────────────────────────────────────────
+    await loadModelForProject();
+
+  })();
+  </script>
 </body>
 </html>

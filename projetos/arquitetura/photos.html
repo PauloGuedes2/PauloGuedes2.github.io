@@ -1,286 +1,375 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-br">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Salsi — Fotos</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
-<link rel="icon" href="logo.png">
-<link rel="apple-touch-icon" href="logo.png">
-<link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#fbfaf8">
-<link rel="stylesheet" href="assets/app.css">
-<style>
-  /* Lightbox Styles — Quiet Luxury Edition */
-  .lightbox-overlay {
-    position: fixed;
-    top: 0; left: 0; width: 100vw; height: 100vh;
-    background: rgba(251, 250, 248, 0.98);
-    z-index: 10000;
-    display: none;
-    align-items: center;
-    justify-content: center;
-    opacity: 0;
-    transition: opacity 0.25s ease;
-  }
-  .lightbox-overlay.active {
-    display: flex;
-    opacity: 1;
-  }
-  .lightbox-content {
-    max-width: 95vw;
-    max-height: 85vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 16px;
-    animation: zoomIn 0.2s ease-out;
-  }
-  @keyframes zoomIn {
-    from { transform: scale(0.95); opacity: 0; }
-    to { transform: scale(1); opacity: 1; }
-  }
-  .lightbox-image {
-    max-width: 100%;
-    max-height: 75vh;
-    object-fit: contain;
-    border: 1px solid var(--border);
-    box-shadow: 0 12px 40px rgba(142, 130, 115, 0.08);
-  }
-  .lightbox-caption {
-    color: var(--text-primary);
-    font-family: var(--font-serif);
-    font-size: 16px;
-    font-style: italic;
-    text-align: center;
-  }
-  .lightbox-close {
-    position: absolute;
-    top: 30px; right: 30px;
-    background: transparent;
-    border: none;
-    color: var(--text-primary);
-    font-size: 32px;
-    font-weight: 200;
-    cursor: pointer;
-  }
-</style>
-</head>
-<body>
-<svg width="0" height="0" style="position:absolute" aria-hidden="true">
-<defs>
-<symbol id="i-home" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-  <path d="M4 11l8-7 8 7"/><path d="M6 10v9a1 1 0 0 0 1 1h3v-6h4v6h3a1 1 0 0 0 1-1v-9"/>
-</symbol>
-<symbol id="i-building" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-  <rect x="6" y="3" width="12" height="18" rx="1"/>
-  <rect x="9" y="6.5" width="2" height="2" fill="currentColor" stroke="none"/><rect x="13" y="6.5" width="2" height="2" fill="currentColor" stroke="none"/>
-  <rect x="9" y="11" width="2" height="2" fill="currentColor" stroke="none"/><rect x="13" y="11" width="2" height="2" fill="currentColor" stroke="none"/>
-  <rect x="9" y="15.5" width="2" height="2" fill="currentColor" stroke="none"/><rect x="13" y="15.5" width="2" height="2" fill="currentColor" stroke="none"/>
-</symbol>
-<symbol id="i-camera" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-  <rect x="3" y="7" width="18" height="13" rx="2"/><circle cx="12" cy="13.5" r="3.5"/>
-</symbol>
-<symbol id="i-notes" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-  <rect x="4" y="3" width="16" height="18" rx="2"/><line x1="8" y1="8" x2="16" y2="8"/><line x1="8" y1="12" x2="16" y2="12"/>
-</symbol>
-<symbol id="i-cube" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-  <path d="M12 2L20 6.5V17.5L12 22L4 17.5V6.5L12 2Z"/><path d="M12 12V22"/><path d="M12 12L20 6.5"/><path d="M12 12L4 6.5"/>
-</symbol>
-<symbol id="i-report" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-  <path d="M7 3h7l4 4v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/><path d="M14 3v4h4"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="16" x2="15" y2="16"/>
-</symbol>
-<symbol id="i-settings" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-  <circle cx="12" cy="12" r="3.2"/><path d="M12 2.5v3M12 18.5v3M3.5 12h3M17.5 12h3"/>
-</symbol>
-<symbol id="i-trash" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-  <path d="M5 7h14"/><path d="M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/><path d="M7 7l1 13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1l1-13"/>
-</symbol>
-<symbol id="i-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-  <path d="M5 13l4 4L19 7"/>
-</symbol>
-</defs>
-</svg>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <title>Galeria | Salsi</title>
+  
+  <!-- PWA Manifest & Icons -->
+  <link rel="icon" href="logo.png">
+  <link rel="apple-touch-icon" href="logo.png">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#FDFCE8">
 
-<div id="offline-banner-root"></div>
-<div class="shell">
-  <div id="sidebar-root"></div>
-  <main class="main">
-    <div class="topbar">
-      <div class="brand-mark"><img src="logo.png" alt="Salsi"><span class="display">Salsi</span></div>
-      <a class="project-pill" href="projects.html" id="activeProjectPill">
-        <svg><use href="#i-building"/></svg><span>Carregando…</span>
-      </a>
-    </div>
-    <div class="content">
-      
-      <!-- Editorial Page Header -->
-      <div class="page-header-block">
-        <h1 class="page-title">Galeria do Local</h1>
-        <p class="page-sub">Registros fotográficos integrados ao projeto ativo</p>
-      </div>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  
+  <!-- Google Fonts: EB Garamond & Outfit -->
+  <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:wght@400;500;600;700&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  
+  <!-- Material Symbols -->
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
 
-      <div id="noProjectState" class="empty" style="display:none">
-        <img src="logo.png" alt=""><strong>Nenhum projeto selecionado</strong>
-        <span>Escolha um projeto antes de adicionar fotos.</span>
-        <div style="margin-top:14px"><a class="btn primary" href="projects.html">Ir para Projetos</a></div>
-      </div>
-
-      <div id="photosArea" style="display:none">
-        <div class="card" style="margin-bottom: 60px;">
-          <h3 style="font-size: 16px; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 24px;">Adicionar foto</h3>
-          <input type="file" id="photoInput" accept="image/*" capture="environment" style="display:none">
-          <div style="display:flex; gap:16px; flex-wrap:wrap; align-items:center;">
-            <label class="btn primary" for="photoInput" style="min-height:42px; cursor:pointer;">Tirar / escolher foto</label>
-            <input type="text" id="photoCaption" placeholder="Escreva uma legenda descritiva" style="flex:1; min-width:200px; padding:8px 0;">
-          </div>
-          <div id="photoPreviewWrap" style="display:none; margin-top:24px; border-top: 1px solid var(--border); padding-top:24px;">
-            <img id="photoPreview" style="max-width:260px; border:1px solid var(--border); display:block; margin-bottom:16px;">
-            <button class="btn primary" id="confirmPhotoBtn" style="min-height:42px;">Salvar foto</button>
-          </div>
-        </div>
-        <div class="grid" id="photosGrid" style="gap: 32px;"></div>
-      </div>
-
-    </div>
-  </main>
-</div>
-<div id="sync-card-root"></div>
-
-<!-- Lightbox Modal -->
-<div class="lightbox-overlay" id="lightbox">
-  <button class="lightbox-close" id="lightboxClose" title="Fechar">&times;</button>
-  <div class="lightbox-content" id="lightboxContent">
-    <img src="" class="lightbox-image" id="lightboxImg" alt="Foto ampliada">
-    <div class="lightbox-caption" id="lightboxCaption"></div>
-  </div>
-</div>
-
-<script src="assets/db.js"></script>
-<script src="assets/shell.js"></script>
-<script>
-SalsiShell.init('photos');
-(async function () {
-  'use strict';
-
-  function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
-
-  const activeId = SalsiShell.getActiveProjectId();
-  const activeProj = activeId ? await SalsiDB.getProject(activeId) : null;
-  const pillEl = document.getElementById('activeProjectPill');
-  if (pillEl) pillEl.querySelector('span').textContent = activeProj ? activeProj.name : 'Nenhum Projeto';
-
-  if (!activeId) {
-    document.getElementById('noProjectState').style.display = '';
-    return;
-  }
-  document.getElementById('photosArea').style.display = '';
-
-  const photoInput      = document.getElementById('photoInput');
-  const photoCaption    = document.getElementById('photoCaption');
-  const photoPreview    = document.getElementById('photoPreview');
-  const photoPreviewWrap = document.getElementById('photoPreviewWrap');
-  const confirmPhotoBtn = document.getElementById('confirmPhotoBtn');
-  const photosGrid      = document.getElementById('photosGrid');
-
-  let selectedBlob = null;
-
-  photoInput.addEventListener('change', e => {
-    const file = e.target.files[0];
-    if (!file) return;
-    selectedBlob = file;
-    photoPreview.src = URL.createObjectURL(file);
-    photoPreviewWrap.style.display = 'block';
-  });
-
-  confirmPhotoBtn.addEventListener('click', async () => {
-    if (!selectedBlob) return;
-    const caption = photoCaption.value.trim();
-
-    await SalsiDB.addPhoto({
-      projectId: activeId,
-      blob: selectedBlob,
-      caption,
-      synced: 0
-    });
-
-    // Reset
-    photoInput.value = '';
-    photoCaption.value = '';
-    photoPreview.src = '';
-    photoPreviewWrap.style.display = 'none';
-    selectedBlob = null;
-
-    renderGrid();
-  });
-
-  async function renderGrid() {
-    const list = await SalsiDB.getPhotos(activeId);
-    if (list.length === 0) {
-      photosGrid.innerHTML = `<div class="empty" style="grid-column:1/-1"><strong>Nenhuma imagem registrada</strong><span>Suas fotos de campo aparecerão aqui.</span></div>`;
-      return;
+  <script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "surface-dim": "#e6d8cb",
+            "on-secondary-fixed-variant": "#474743",
+            "on-primary-container": "#ffd7bb",
+            "on-tertiary-fixed-variant": "#603f2b",
+            "on-tertiary-fixed": "#2e1505",
+            "surface-container": "#faebde",
+            "secondary-fixed-dim": "#c8c6c2",
+            "surface": "#fff8f4",
+            "tertiary": "#64432f",
+            "secondary-fixed": "#e5e2dd",
+            "on-background": "#211a13",
+            "error": "#ba1a1a",
+            "surface-container-high": "#f4e6d9",
+            "tertiary-container": "#7f5a45",
+            "primary-fixed-dim": "#ffb77f",
+            "on-secondary": "#ffffff",
+            "primary-fixed": "#ffdcc3",
+            "tertiary-fixed": "#ffdbc8",
+            "on-tertiary": "#ffffff",
+            "on-secondary-fixed": "#1c1c19",
+            "outline": "#847469",
+            "on-surface-variant": "#52443a",
+            "on-error": "#ffffff",
+            "error-container": "#ffdad6",
+            "outline-variant": "#d7c3b6",
+            "inverse-surface": "#372f26",
+            "secondary-container": "#e5e2dd",
+            "surface-bright": "#fff8f4",
+            "on-primary-fixed": "#2f1500",
+            "on-primary-fixed-variant": "#6c3a0a",
+            "on-primary": "#ffffff",
+            "surface-container-low": "#fff1e6",
+            "inverse-primary": "#ffb77f",
+            "surface-tint": "#885120",
+            "on-secondary-container": "#656461",
+            "inverse-on-surface": "#fdeee1",
+            "on-tertiary-container": "#ffd7c1",
+            "secondary": "#5f5e5b",
+            "surface-container-lowest": "#ffffff",
+            "on-surface": "#211a13",
+            "primary": "#391E10", /* Bistre */
+            "on-error-container": "#93000a",
+            "background": "#FDFCE8", /* Ivory */
+            "surface-container-highest": "#efe0d3",
+            "primary-container": "#734128", /* Kobicha */
+            "tertiary-fixed-dim": "#ecbda2",
+            "surface-variant": "#efe0d3"
+          },
+          "fontFamily": {
+            "headline-xl": ["EB Garamond"],
+            "headline-lg": ["EB Garamond"],
+            "headline-md": ["EB Garamond"],
+            "body-md": ["Outfit"],
+            "body-lg": ["Outfit"],
+            "label-md": ["Outfit"],
+            "label-sm": ["Outfit"]
+          }
+        }
+      }
+    }
+  </script>
+  
+  <style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    }
+    .glass-nav {
+      backdrop-filter: blur(12px);
+      background-color: rgba(255, 248, 244, 0.8);
+    }
+    .linen-texture {
+      background-image: radial-gradient(#e5e2dd 0.5px, transparent 0.5px);
+      background-size: 24px 24px;
     }
 
-    photosGrid.innerHTML = list.map(p => {
-      const url = URL.createObjectURL(p.blob);
-      return `
-        <div class="card" style="margin:0; border-bottom:1px solid var(--border); padding-bottom:16px;">
-          <div style="aspect-ratio:4/3; overflow:hidden; border:1px solid var(--border); margin-bottom:12px; cursor:pointer;" data-zoom="${url}" data-caption="${esc(p.caption || 'Sem legenda')}">
-            <img src="${url}" alt="" style="width:100%; height:100%; object-fit:cover; transition:transform 0.3s;" onmouseover="this.style.transform='scale(1.03)'" onmouseout="this.style.transform='scale(1)'">
-          </div>
-          <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:12px;">
-            <p style="font-size:13px; color:var(--text-secondary); margin:0; line-height:1.4;">${esc(p.caption || 'Sem legenda')}</p>
-            <button class="btn danger" data-del="${p.id}" style="padding:4px 8px; font-size:10px;">Remover</button>
-          </div>
-        </div>`;
-    }).join('');
+    .lightbox-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(33, 26, 19, 0.95);
+      z-index: 10000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      transition: opacity 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .lightbox-overlay.active {
+      display: flex;
+      opacity: 1;
+      backdrop-filter: blur(8px);
+    }
+    .lightbox-content {
+      max-width: 90vw;
+      max-height: 80vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+      animation: zoomIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    @keyframes zoomIn {
+      from { transform: scale(0.95); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+  </style>
+</head>
+<body class="bg-background text-on-background font-body-md overflow-x-hidden">
 
-    // Wire zoom
-    photosGrid.querySelectorAll('[data-zoom]').forEach(div => {
-      div.addEventListener('click', () => {
-        const url = div.dataset.zoom;
-        const cap = div.dataset.caption;
-        openLightbox(url, cap);
+
+
+  <!-- Dynamic SideNav Root -->
+  <div id="offline-banner-root"></div>
+  <div id="sidebar-root"></div>
+
+  <!-- Mobile TopAppBar -->
+  <header class="md:hidden sticky top-0 z-40 w-full h-20 bg-surface/80 backdrop-blur-md flex justify-between items-center px-6 border-b border-outline-variant/20">
+    <div class="flex items-center gap-3">
+      <img alt="Salsi Logo" class="h-8 w-8 rounded-full" src="logo.png"/>
+      <span class="font-headline-md text-headline-md text-primary">Salsi</span>
+    </div>
+    <div class="flex items-center gap-4">
+      <a href="settings.html" class="w-8 h-8 rounded-full overflow-hidden bg-surface-container flex items-center justify-center">
+        <span class="material-symbols-outlined text-primary">settings</span>
+      </a>
+    </div>
+  </header>
+
+  <!-- Main Content Canvas -->
+  <main class="md:ml-64 transition-all duration-300">
+    
+    <div class="content px-6 md:px-16 py-12 max-w-7xl mx-auto">
+      
+      <!-- Editorial Page Header -->
+      <div class="page-header-block mb-10 border-b border-outline-variant/25 pb-6">
+        <h1 class="page-title font-headline-xl text-headline-xl text-primary">Galeria de Fotos</h1>
+        <p class="page-sub font-body-md text-on-surface-variant italic mt-1">Registros visuais de vistoria vinculados ao projeto ativo</p>
+      </div>
+
+      <!-- No project selected state -->
+      <div id="noProjectState" class="p-12 border border-dashed border-outline-variant rounded-2xl flex flex-col items-center justify-center text-center space-y-4 bg-white" style="display:none">
+        <span class="material-symbols-outlined text-[48px] text-outline opacity-40">pets</span>
+        <h4 class="font-headline-md text-headline-md text-primary">Nenhum projeto selecionado</h4>
+        <p class="font-body-md text-on-surface-variant max-w-xs">Escolha ou crie um projeto para gerenciar e visualizar a galeria de fotos.</p>
+        <button onclick="location.href='projects.html'" class="px-6 py-2 bg-primary text-white rounded-full font-label-md text-label-md">
+          Ir para Projetos
+        </button>
+      </div>
+
+      <div id="photosArea" class="space-y-10" style="display:none">
+        
+        <!-- Add Photo Card -->
+        <div class="bg-white p-6 rounded-2xl border border-outline-variant/30 shadow-sm space-y-4">
+          <h3 class="font-headline-md text-[18px] font-semibold text-primary">Adicionar Novo Registro</h3>
+          <input type="file" id="photoInput" accept="image/*" capture="environment" style="display:none">
+          
+          <div class="flex flex-col md:flex-row gap-4 items-stretch md:items-center">
+            <label for="photoInput" class="px-6 py-3 border border-primary text-primary hover:bg-surface-container rounded-full font-label-md text-label-md transition-all flex items-center justify-center gap-2 cursor-pointer shadow-sm">
+              <span class="material-symbols-outlined">photo_camera</span>
+              Tirar ou escolher foto
+            </label>
+            <input type="text" id="photoCaption" placeholder="Escreva uma legenda descritiva..." class="flex-grow rounded-xl border border-outline-variant/40 bg-surface/30 text-on-background focus:ring-1 focus:ring-primary focus:border-primary p-3 text-[14px]">
+          </div>
+
+          <!-- Preview wrapper -->
+          <div id="photoPreviewWrap" class="hidden border-t border-outline-variant/20 pt-6 mt-4 animate-fadeIn">
+            <div class="max-w-[320px] rounded-xl overflow-hidden border border-outline-variant/35 shadow-md bg-surface-container">
+              <img id="photoPreview" class="w-full h-auto object-cover" alt="Preview">
+            </div>
+            <button id="confirmPhotoBtn" class="mt-4 px-8 py-3 bg-primary text-white rounded-full font-label-md text-label-md hover:bg-primary-container transition-all">
+              Confirmar e Salvar
+            </button>
+          </div>
+        </div>
+
+        <!-- Photos Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8" id="photosGrid">
+          <!-- Dynamically populated -->
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- Footer / Credits -->
+    <footer class="px-6 md:px-16 py-12 bg-surface text-center border-t border-outline-variant/15 mt-16">
+      <div class="max-w-7xl mx-auto flex flex-col items-center">
+        <img alt="Salsi Logo" class="h-10 w-10 mb-4 opacity-80 rounded-full" src="logo.png"/>
+        <p class="font-headline-md text-headline-md text-primary mb-2">Estúdio Salsi</p>
+        <p class="font-label-sm text-label-sm text-on-surface-variant max-w-lg mx-auto">
+          Galeria fotográfica de vistoria e registro de evolução de obra offline.
+        </p>
+        <p class="font-label-sm text-label-sm text-outline mt-8">© 2026 Salsi.</p>
+      </div>
+    </footer>
+  </main>
+
+  <!-- Lightbox Modal -->
+  <div class="lightbox-overlay flex flex-col justify-center items-center" id="lightbox">
+    <button class="absolute top-6 right-6 text-white hover:text-primary transition-colors w-12 h-12 rounded-full flex items-center justify-center" id="lightboxClose" title="Fechar">
+      <span class="material-symbols-outlined text-[32px]">close</span>
+    </button>
+    <div class="lightbox-content">
+      <img src="" class="rounded-xl border border-white/25 shadow-2xl max-w-[85vw] max-h-[75vh] object-contain" id="lightboxImg" alt="Foto ampliada">
+      <div class="text-white font-headline-md text-[18px] tracking-wide italic mt-4" id="lightboxCaption"></div>
+    </div>
+  </div>
+
+  <div id="sync-card-root"></div>
+
+  <script src="assets/db.js"></script>
+  <script src="assets/shell.js"></script>
+  <script>
+    SalsiShell.init('photos');
+    (async function () {
+      'use strict';
+
+      function esc(s) { 
+        return String(s == null ? '' : s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); 
+      }
+
+      const activeId = localStorage.getItem('salsi_active_project_id');
+      if (!activeId) {
+        document.getElementById('noProjectState').style.display = 'block';
+        return;
+      }
+      document.getElementById('photosArea').style.display = 'block';
+
+      const photoInput       = document.getElementById('photoInput');
+      const photoCaption     = document.getElementById('photoCaption');
+      const photoPreview     = document.getElementById('photoPreview');
+      const photoPreviewWrap = document.getElementById('photoPreviewWrap');
+      const confirmPhotoBtn  = document.getElementById('confirmPhotoBtn');
+      const photosGrid       = document.getElementById('photosGrid');
+
+      let selectedBlob = null;
+
+      photoInput.addEventListener('change', e => {
+        const file = e.target.files[0];
+        if (!file) return;
+        selectedBlob = file;
+        photoPreview.src = URL.createObjectURL(file);
+        photoPreviewWrap.classList.remove('hidden');
       });
-    });
 
-    // Wire delete
-    photosGrid.querySelectorAll('[data-del]').forEach(btn => {
-      btn.addEventListener('click', async (e) => {
-        e.stopPropagation();
-        if (confirm('Deseja remover esta foto?')) {
-          await SalsiDB.deletePhoto(Number(btn.dataset.del));
-          renderGrid();
+      confirmPhotoBtn.addEventListener('click', async () => {
+        if (!selectedBlob) return;
+        const caption = photoCaption.value.trim();
+
+        await SalsiDB.addPhoto({
+          projectId: activeId,
+          blob: selectedBlob,
+          caption,
+          synced: 0
+        });
+
+        // Reset
+        photoInput.value = '';
+        photoCaption.value = '';
+        photoPreview.src = '';
+        photoPreviewWrap.classList.add('hidden');
+        selectedBlob = null;
+
+        renderGrid();
+      });
+
+      async function renderGrid() {
+        const list = await SalsiDB.getPhotos(activeId);
+        
+        if (list.length === 0) {
+          photosGrid.innerHTML = `
+            <div class="col-span-1 md:col-span-3 p-12 border border-dashed border-outline-variant/60 rounded-2xl flex flex-col items-center justify-center text-center space-y-4 bg-white">
+              <span class="material-symbols-outlined text-[48px] text-outline opacity-40">gallery_thumbnail</span>
+              <h4 class="font-headline-md text-headline-md text-primary">Nenhuma foto registrada</h4>
+              <p class="font-body-md text-on-surface-variant max-w-xs">Tire uma foto acima para anexar registros visuais da evolução da obra.</p>
+            </div>`;
+          return;
         }
+
+        photosGrid.innerHTML = list.map((p, index) => {
+          const url = URL.createObjectURL(p.blob);
+          const delay = (index % 3 + 1) * 100;
+          return `
+            <div class="bg-white rounded-2xl overflow-hidden border border-outline-variant/20 shadow-sm hover:shadow-xl hover:-translate-y-1.5 transition-all duration-500 ease-out group cursor-pointer" data-zoom="${url}" data-caption="${esc(p.caption || 'Sem legenda')}">
+              <div class="aspect-[4/3] overflow-hidden relative bg-surface-container-high">
+                <img src="${url}" decoding="async" loading="lazy" class="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105" alt="Foto">
+                <div class="absolute inset-0 bg-gradient-to-t from-primary/10 to-transparent"></div>
+              </div>
+              <div class="p-5 flex justify-between items-center gap-4">
+                <div>
+                  <p class="font-body-md text-[14px] text-primary font-semibold truncate max-w-[180px]">
+                    ${esc(p.caption || 'Visita de Campo')}
+                  </p>
+                  <span class="text-[11px] text-outline italic block mt-0.5">Clique para ampliar</span>
+                </div>
+                <button data-del="${p.id}" class="w-8 h-8 rounded-full hover:bg-error/10 hover:text-error text-outline transition-colors flex items-center justify-center" title="Remover Foto">
+                  <span class="material-symbols-outlined text-[18px]">delete</span>
+                </button>
+              </div>
+            </div>`;
+        }).join('');
+
+        // Wire zoom
+        photosGrid.querySelectorAll('[data-zoom]').forEach(div => {
+          div.addEventListener('click', () => {
+            openLightbox(div.dataset.zoom, div.dataset.caption);
+          });
+        });
+
+        // Wire delete
+        photosGrid.querySelectorAll('[data-del]').forEach(btn => {
+          btn.addEventListener('click', async (e) => {
+            e.stopPropagation();
+            if (confirm('Deseja remover este registro fotográfico?')) {
+              await SalsiDB.deletePhoto(btn.dataset.del);
+              renderGrid();
+            }
+          });
+        });
+      }
+
+      // Lightbox
+      const lightbox        = document.getElementById('lightbox');
+      const lightboxImg     = document.getElementById('lightboxImg');
+      const lightboxCaption = document.getElementById('lightboxCaption');
+
+      function openLightbox(url, cap) {
+        lightboxImg.src = url;
+        lightboxCaption.textContent = cap;
+        lightbox.style.display = 'flex';
+        setTimeout(() => lightbox.classList.add('active'), 10);
+      }
+
+      function closeLightbox() {
+        lightbox.classList.remove('active');
+        setTimeout(() => { lightbox.style.display = 'none'; }, 250);
+      }
+
+      document.getElementById('lightboxClose').addEventListener('click', closeLightbox);
+      lightbox.addEventListener('click', (e) => {
+        if (e.target === lightbox) closeLightbox();
       });
-    });
-  }
 
-  // Lightbox
-  const lightbox        = document.getElementById('lightbox');
-  const lightboxImg     = document.getElementById('lightboxImg');
-  const lightboxCaption = document.getElementById('lightboxCaption');
-
-  function openLightbox(url, cap) {
-    lightboxImg.src = url;
-    lightboxCaption.textContent = cap;
-    lightbox.style.display = 'flex';
-    setTimeout(() => lightbox.classList.add('active'), 10);
-  }
-
-  function closeLightbox() {
-    lightbox.classList.remove('active');
-    setTimeout(() => { lightbox.style.display = 'none'; }, 250);
-  }
-
-  document.getElementById('lightboxClose').addEventListener('click', closeLightbox);
-  lightbox.addEventListener('click', (e) => {
-    if (e.target === lightbox) closeLightbox();
-  });
-
-  renderGrid();
-})();
-</script>
+      renderGrid();
+    })();
+  </script>
 </body>
 </html>
