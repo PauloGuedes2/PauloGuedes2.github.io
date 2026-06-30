@@ -192,7 +192,7 @@
 
     <!-- Metrics Counters Section -->
     <section class="px-6 md:px-16 py-8">
-      <div class="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-7xl mx-auto">
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-6 max-w-7xl mx-auto">
         <div class="fade-slide-up delay-100 bg-white p-8 rounded-2xl border border-outline-variant/30 flex flex-col items-center text-center group hover:border-primary/50 hover:shadow-xl transition-all duration-500 ease-out">
           <span class="font-headline-xl text-headline-xl text-primary block group-hover:scale-115 transition-transform duration-500 ease-out" id="statProjects">0</span>
           <span class="font-label-md text-label-md text-on-surface-variant mt-2 uppercase tracking-wide">Projetos</span>
@@ -200,10 +200,6 @@
         <div class="fade-slide-up delay-200 bg-white p-8 rounded-2xl border border-outline-variant/30 flex flex-col items-center text-center group hover:border-primary/50 hover:shadow-xl transition-all duration-500 ease-out">
           <span class="font-headline-xl text-headline-xl text-primary-container block group-hover:scale-115 transition-transform duration-500 ease-out" id="statPending">0</span>
           <span class="font-label-md text-label-md text-on-surface-variant mt-2 uppercase tracking-wide">Pendentes</span>
-        </div>
-        <div class="fade-slide-up delay-300 bg-white p-8 rounded-2xl border border-outline-variant/30 flex flex-col items-center text-center group hover:border-primary/50 hover:shadow-xl transition-all duration-500 ease-out">
-          <span class="font-headline-xl text-headline-xl text-primary-container block group-hover:scale-115 transition-transform duration-500 ease-out" id="statPhotos">0</span>
-          <span class="font-label-md text-label-md text-on-surface-variant mt-2 uppercase tracking-wide">Fotos</span>
         </div>
         <div class="fade-slide-up delay-400 bg-white p-8 rounded-2xl border border-outline-variant/30 flex flex-col items-center text-center group hover:border-primary/50 hover:shadow-xl transition-all duration-500 ease-out">
           <span class="font-headline-xl text-headline-xl text-primary block group-hover:scale-115 transition-transform duration-500 ease-out" id="statNotes">0</span>
@@ -225,9 +221,6 @@
           <div class="flex flex-wrap gap-3">
             <a class="flex items-center gap-2 px-5 py-3 rounded-full bg-primary text-white font-label-md text-label-md hover:bg-primary-container transition-all duration-300" href="models.html">
               <span class="material-symbols-outlined text-[18px]">view_in_ar</span> Modelo 3D
-            </a>
-            <a class="flex items-center gap-2 px-5 py-3 rounded-full border border-outline-variant text-primary font-label-md text-label-md hover:bg-surface-container transition-all duration-300" href="photos.html">
-              <span class="material-symbols-outlined text-[18px]">gallery_thumbnail</span> Fotos
             </a>
             <a class="flex items-center gap-2 px-5 py-3 rounded-full border border-outline-variant text-primary font-label-md text-label-md hover:bg-surface-container transition-all duration-300" href="notes.html">
               <span class="material-symbols-outlined text-[18px]">edit_note</span> Notas
@@ -304,14 +297,10 @@
 
       // Load counts
       const counts = await Promise.all(projects.map(async p => {
-        const [pList, nList] = await Promise.all([
-          SalsiDB.getPhotos(p.id),
-          SalsiDB.getNotes(p.id)
-        ]);
-        return { photos: pList.length, notes: nList.length };
+        const nList = await SalsiDB.getNotes(p.id);
+        return { notes: nList.length };
       }));
 
-      const photoTotal = counts.reduce((sum, item) => sum + item.photos, 0);
       const noteTotal  = counts.reduce((sum, item) => sum + item.notes, 0);
 
       // Animate Counters
@@ -334,8 +323,7 @@
       };
 
       animateCounter('statProjects', projects.length);
-      animateCounter('statPending', pending.photos.length + pending.notes.length + pending.markups.length);
-      animateCounter('statPhotos', photoTotal);
+      animateCounter('statPending', pending.notes.length + pending.markups.length);
       animateCounter('statNotes', noteTotal);
 
       // Active Project

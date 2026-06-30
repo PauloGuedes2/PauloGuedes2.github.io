@@ -3,7 +3,6 @@
   const NAV_ITEMS = [
     { key: 'home', label: 'Atelier', href: 'index.html', icon: 'home_work' },
     { key: 'models', label: 'Modelo 3D', href: 'models.html', icon: 'view_in_ar' },
-    { key: 'photos', label: 'Galeria', href: 'photos.html', icon: 'gallery_thumbnail', badgeKey: 'photos' },
     { key: 'notes', label: 'Notas', href: 'notes.html', icon: 'edit_note', badgeKey: 'notes' },
     { key: 'reports', label: 'Relatórios', href: 'reports.html', icon: 'description' },
     { key: 'projects', label: 'Projetos', href: 'projects.html', icon: 'folder_open' },
@@ -16,17 +15,17 @@
   async function badgeFlags() {
     const pending = await SalsiDB.getPendingSyncItems();
     return {
-      photos: pending.photos.length > 0,
+      photos: false,
       notes: (pending.notes.length + pending.markups.length) > 0,
-      total: pending.photos.length + pending.notes.length + pending.markups.length,
+      total: pending.notes.length + pending.markups.length,
       pending,
     };
   }
 
-  async function renderSidebar(activeKey) {
+  async function renderSidebar(activeKey, cachedFlags) {
     const root = document.getElementById('sidebar-root');
     if (!root) return;
-    const flags = await badgeFlags();
+    const flags = cachedFlags || await badgeFlags();
 
     // --- Expanded w-64 Sidebar (Unified across all pages) ---
     const items = NAV_ITEMS.map(item => {
@@ -71,9 +70,9 @@
     const root = document.getElementById('offline-banner-root');
     if (!root) return;
     root.outerHTML = `
-      <div class="fixed top-0 left-0 right-0 bg-primary text-white text-[11px] font-bold uppercase tracking-widest text-center py-2.5 z-[9999] shadow-md border-b border-white/10 hidden" id="offlineBanner">
-        <div class="flex items-center justify-center gap-2">
-          <span class="w-2 h-2 rounded-full bg-amber-500 animate-ping"></span>
+      <div id="offlineBanner" class="hidden sticky top-0 z-50 w-full bg-primary text-white text-[13px] font-medium py-2.5 px-4 text-center transition-all duration-300">
+        <div class="max-w-7xl mx-auto flex items-center justify-center gap-2">
+          <span class="material-symbols-outlined animate-spin text-[16px]">sync</span>
           <span id="offlineBannerText">Modo local ativo — Alterações armazenadas offline</span>
         </div>
       </div>`;
@@ -102,10 +101,10 @@
     }
   }
 
-  async function renderSyncCard() {
+  async function renderSyncCard(cachedFlags) {
     const root = document.getElementById('sync-card-root');
     if (!root) return;
-    const flags = await badgeFlags();
+    const flags = cachedFlags || await badgeFlags();
     if (flags.total === 0 || sessionStorage.getItem('salsi:syncCardDismissed') === '1') {
       root.innerHTML = '<div id="sync-card-root"></div>';
       return;
@@ -174,15 +173,17 @@
   }
 
   async function refreshAll() {
-    await renderSyncCard();
-    await renderSidebar(currentActiveKey);
+    const flags = await badgeFlags();
+    await renderSyncCard(flags);
+    await renderSidebar(currentActiveKey, flags);
   }
 
   async function init(activeKey) {
     currentActiveKey = activeKey;
     renderOfflineBanner();
-    await renderSidebar(activeKey);
-    await renderSyncCard();
+    const flags = await badgeFlags();
+    await renderSidebar(activeKey, flags);
+    await renderSyncCard(flags);
   }
 
   function getActiveProjectId() { return localStorage.getItem('salsi_active_project_id') || null; }

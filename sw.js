@@ -1,4 +1,4 @@
-const CACHE_NAME = 'salsi-viewer-v4';
+const CACHE_NAME = 'salsi-viewer-v6';
 const APP_SHELL = [
   '/projetos/arquitetura/',
   '/projetos/arquitetura/index.html',

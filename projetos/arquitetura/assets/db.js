@@ -4,7 +4,7 @@
 */
 (function () {
   const DB_NAME = 'salsi-db';
-  const DB_VERSION = 3;
+  const DB_VERSION = 15;
   let dbPromise = null;
 
   function openDB() {
@@ -22,9 +22,6 @@
         if (!db.objectStoreNames.contains('photos')) {
           const s = db.createObjectStore('photos', { keyPath: 'id' });
           s.createIndex('byProject', 'projectId');
-        }
-        if (!db.objectStoreNames.contains('photoFiles')) {
-          db.createObjectStore('photoFiles', { keyPath: 'photoId' });
         }
         if (!db.objectStoreNames.contains('notes')) {
           const s = db.createObjectStore('notes', { keyPath: 'id' });
@@ -95,20 +92,10 @@
     },
 
     async deleteProject(id) {
-      await tx(['projects', 'modelFiles', 'photos', 'photoFiles', 'notes', 'markups'], 'readwrite', async (projects, models, photos, photoFiles, notes, markups) => {
+      await tx(['projects', 'modelFiles', 'photos', 'notes', 'markups'], 'readwrite', async (projects, models, photos, notes, markups) => {
         await reqToPromise(projects.delete(id));
         await reqToPromise(models.delete(id));
-        
-        // delete photos and photoFiles
-        const photoIdx = photos.index('byProject');
-        const photoList = await reqToPromise(photoIdx.getAll(id));
-        for (const p of photoList) {
-          await reqToPromise(photos.delete(p.id));
-          await reqToPromise(photoFiles.delete(p.id));
-        }
-
-        // delete notes and markups
-        for (const store of [notes, markups]) {
+        for (const store of [photos, notes, markups]) {
           const idx = store.index('byProject');
           const items = await reqToPromise(idx.getAll(id));
           for (const it of items) await reqToPromise(store.delete(it.id));
@@ -127,37 +114,16 @@
 
     // ---------- fotos ----------
     async addPhoto({ projectId, blob, caption }) {
-      const id = uid();
-      const photo = { 
-        id, 
-        projectId, 
-        caption: caption || '', 
-        createdAt: Date.now(), 
-        synced: !!(typeof navigator !== 'undefined' && navigator.onLine) 
-      };
-      
-      await tx(['photos', 'photoFiles'], 'readwrite', async (photosStore, photoFilesStore) => {
-        await reqToPromise(photosStore.add(photo));
-        await reqToPromise(photoFilesStore.add({ photoId: id, blob }));
-      });
+      const photo = { id: uid(), projectId, blob, caption: caption || '', createdAt: Date.now(), synced: !!(typeof navigator !== 'undefined' && navigator.onLine) };
+      await tx('photos', 'readwrite', (store) => reqToPromise(store.add(photo)));
       return photo;
     },
-
     async getPhotos(projectId) {
       const list = await tx('photos', 'readonly', (store) => reqToPromise(store.index('byProject').getAll(projectId)));
       return list.sort((a, b) => b.createdAt - a.createdAt);
     },
-
-    async getPhotoBlob(photoId) {
-      const row = await tx('photoFiles', 'readonly', (store) => reqToPromise(store.get(photoId)));
-      return row ? row.blob : null;
-    },
-
     async deletePhoto(id) {
-      await tx(['photos', 'photoFiles'], 'readwrite', async (photosStore, photoFilesStore) => {
-        await reqToPromise(photosStore.delete(id));
-        await reqToPromise(photoFilesStore.delete(id));
-      });
+      await tx('photos', 'readwrite', (store) => reqToPromise(store.delete(id)));
     },
 
     // ---------- notas ----------
@@ -196,13 +162,12 @@
 
     // ---------- fila de sincronização (itens com synced:false, de todos os projetos) ----------
     async getPendingSyncItems() {
-      const [photos, notes, markups] = await Promise.all([
-        tx('photos', 'readonly', (s) => reqToPromise(s.getAll())),
+      const [notes, markups] = await Promise.all([
         tx('notes', 'readonly', (s) => reqToPromise(s.getAll())),
         tx('markups', 'readonly', (s) => reqToPromise(s.getAll())),
       ]);
       return {
-        photos: photos.filter(p => !p.synced),
+        photos: [],
         notes: notes.filter(n => !n.synced),
         markups: markups.filter(m => !m.synced),
       };
@@ -258,7 +223,7 @@
     },
 
     async clearAllData() {
-      await tx(['projects', 'modelFiles', 'photos', 'photoFiles', 'notes', 'markups', 'settings'], 'readwrite', async (...stores) => {
+      await tx(['projects', 'modelFiles', 'photos', 'notes', 'markups', 'settings'], 'readwrite', async (...stores) => {
         for (const s of stores) await reqToPromise(s.clear());
       });
     },
